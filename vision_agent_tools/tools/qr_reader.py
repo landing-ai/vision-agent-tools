@@ -19,11 +19,11 @@ class QRReader(BaseTool):
     def __init__(self):
         self.qreader = QReader()
 
-    def __call__(self, image: Image) -> list[QRCodeDetection]:
-        image = np.array(image)
+    def __call__(self, image: Image.Image) -> list[QRCodeDetection]:
+        image_array: np.ndarray[np.uint8, np.dtype[np.uint8]] = np.array(image)
 
         all_text, all_meta = self.qreader.detect_and_decode(
-            image=image, return_detections=True
+            image=image_array, return_detections=True
         )
 
         detections = [
