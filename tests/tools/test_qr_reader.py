@@ -21,3 +21,17 @@ def test_successful_qr_detection(expected_text):
         assert len(detections) > 0
 
         assert detections[0].text == expected_text
+
+
+def test_empty_image():
+    """
+    This test verifies that the QRReader handles an empty image.
+    """
+
+    empty_image = Image.open("tests/tools/data/qr_reader/empty.png")
+
+    qr_reader = QRReader()
+
+    detections = qr_reader(empty_image)
+
+    assert len(detections) == 0
