@@ -16,6 +16,7 @@ pydantic = "^2.7.4"
 qreader = {version = "^3.14", optional = true}
 numpy = ">=1.17,<2.0"
 pillow = ">=10.0.1,<=15.0"
+transformers = {version = "^4.42.3", optional = true}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -25,8 +26,9 @@ ruff = "^0.5.0"
 mypy = "^1.10.1"
 
 [tool.poetry.extras]
-all = ["qreader"]
+all = ["qreader", "owlv2"]
 qr-reader = ["qreader"]
+owlv2 = ["transformers"]
 
 [build-system]
 requires = ["poetry-core"]
