@@ -27,7 +27,7 @@ ruff = "^0.5.0"
 mypy = "^1.10.1"
 
 [tool.poetry.extras]
-all = ["qreader", "owlv2"]
+all = ["qreader", "transformers", "scipy"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
 
