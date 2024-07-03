@@ -16,7 +16,10 @@ pydantic = "^2.7.4"
 qreader = {version = "^3.14", optional = true}
 numpy = ">=1.17,<2.0"
 pillow = ">=10.0.1,<=15.0"
-
+gdown = "^5.1.0"
+wget= "^3.2"
+torch="2.2.2"
+loca = { git = "git@github.com:landing-ai/loca.git", branch = "feat/add-setup" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
