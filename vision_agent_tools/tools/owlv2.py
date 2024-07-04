@@ -52,7 +52,7 @@ class Owlv2(BaseTool):
         image: Image.Image,
         prompts: list[str],
         confidence: Optional[float] = DEFAULT_CONFIDENCE,
-    ):
+    ) -> Optional[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
 
