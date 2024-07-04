@@ -16,14 +16,7 @@ class QRCodeDetection(BaseModel):
 
 
 class QRReader(BaseTool):
-    """
-    this is a test
-    """
-
     def __init__(self):
-        """
-        another test
-        """
         self.qreader = QReader()
 
     def __call__(self, image: Image.Image) -> list[QRCodeDetection]:
