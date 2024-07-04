@@ -18,7 +18,10 @@ numpy = ">=1.17,<2.0"
 pillow = ">=10.0.1,<=15.0"
 transformers = {extras = ["torch"], version = "^4.42.3", optional = true}
 scipy = {version = "^1.13.1", optional = true}
-
+gdown = "^5.1.0"
+wget= "^3.2"
+torch="2.2.2"
+loca = { git = "git@github.com:landing-ai/loca.git" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
@@ -32,9 +35,10 @@ mkdocstrings = {extras = ["python"], version = "^0.25.1"}
 mkdocs-material = "^9.5.28"
 
 [tool.poetry.extras]
-all = ["qreader", "transformers", "scipy"]
+all = ["qreader", "transformers", "scipy", "loca"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
+loca = ["loca"]
 
 [build-system]
 requires = ["poetry-core"]
