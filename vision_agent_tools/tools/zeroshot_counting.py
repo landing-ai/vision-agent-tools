@@ -25,6 +25,7 @@ class CountingDetection(BaseModel):
         masks (list[Any]): A list of numpy arrays representing the masks
                         of the detected objects in the image.
     """
+
     count: int
     masks: List[Any]
 
@@ -35,6 +36,7 @@ class ZeroShotCounting(BaseTool):
     [A Low-Shot Object Counting Network With Iterative Prototype Adaptation ](https://github.com/djukicn/loca).
 
     """
+
     _CHECKPOINT_DIR = CHECKPOINT_DIR
 
     def __init__(self, img_size=512) -> None:
@@ -78,7 +80,9 @@ class ZeroShotCounting(BaseTool):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
         )
 
         self.model_checkpoint_path = download(
