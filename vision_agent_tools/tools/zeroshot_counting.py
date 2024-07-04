@@ -1,10 +1,14 @@
-import os.path as osp
 import os
+
+# Run this line before loading torch
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
+import os.path as osp
 import torch
 
 from PIL import Image
 from loca.loca import LOCA
-from .utils import download
+from .utils import download, CHECKPOINT_DIR
 from typing import Union, List, Optional, Any
 from torch import nn
 from torchvision import transforms as T
@@ -18,9 +22,7 @@ class CountingDetection(BaseModel):
 
 
 class ZeroShotCounting(BaseTool):
-    _CURRENT_DIR = osp.dirname(osp.abspath(__file__))
-    _TARGET_DIR = f"{_CURRENT_DIR}/counting_model"
-    _CHECKPOINT_DIR = osp.join(_TARGET_DIR, "checkpoint")
+    _CHECKPOINT_DIR = CHECKPOINT_DIR
 
     def __init__(self, img_size=512) -> None:
         if not osp.exists(self._CHECKPOINT_DIR):
@@ -53,15 +55,11 @@ class ZeroShotCounting(BaseTool):
             norm=True,
         )
 
-        # Check if CUDA (GPU support) is available
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-            print(
-                "Using GPU:", torch.cuda.get_device_name(0)
-            )  # Prints the GPU device name
-        else:
-            self.device = torch.device("cpu")
-            print("Using CPU")
+        self.device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps" if torch.backends.mps.is_available() else "cpu"
+        )
 
         self.model_checkpoint_path = download(
             url=ZSHOT_CHECKPOINT[0],
@@ -72,8 +70,8 @@ class ZeroShotCounting(BaseTool):
             self.model_checkpoint_path, map_location=torch.device(self.device)
         )["model"]
         self._model.load_state_dict(state_dict)
-        self._model.eval()
         self._model.to(self.device)
+        self._model.eval()
         self.img_size = img_size
 
     @torch.no_grad()
@@ -102,9 +100,5 @@ class ZeroShotCounting(BaseTool):
         n_objects = out.flatten(1).sum(dim=1).cpu().numpy().item()
 
         dmap = (out - torch.min(out)) / (torch.max(out) - torch.min(out)) * 255
-        dmap = dmap.squeeze().cpu().numpy().astype("uint8")
-        density_map = Image.fromarray(dmap, mode="L")
+        density_map = dmap.squeeze().cpu().numpy().astype("uint8")
         return CountingDetection(count=round(n_objects), masks=[density_map])
-
-    def to(self, device):
-        self._model.to(device)

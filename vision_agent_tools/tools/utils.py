@@ -1,6 +1,11 @@
 import os
 import wget
 import gdown
+import os.path as osp
+
+
+CURRENT_DIR = osp.dirname(osp.abspath(__file__))
+CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
 
 
 def download(url, path):
