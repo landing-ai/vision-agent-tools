@@ -38,8 +38,8 @@ mkdocs-material = "^9.5.28"
 all = ["qreader", "transformers", "scipy", "loca"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
-loca = ["loca"]
-depth-anything-v2 = ["depth-anything-v2"]
+loca-model = ["loca"]
+depth-anything-v2-model = ["depth-anything-v2"]
 
 [build-system]
 requires = ["poetry-core"]

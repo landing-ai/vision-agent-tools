@@ -4056,12 +4056,12 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 
 [extras]
 all = ["loca", "qreader", "scipy", "transformers"]
-depth-anything-v2 = ["depth-anything-v2"]
-loca = ["loca"]
+depth-anything-v2-model = ["depth-anything-v2"]
+loca-model = ["loca"]
 owlv2 = ["scipy", "transformers"]
 qr-reader = ["qreader"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "f34b234030a33fcf4119f92327af4c508878048a5466abd3bc16309692e0fdca"
+content-hash = "04414d97d9b1b6f6cb92967693cf855c8b02b4194c705ec798f1a7fd4fb588e3"
