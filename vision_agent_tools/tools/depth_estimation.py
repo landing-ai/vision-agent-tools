@@ -21,9 +21,17 @@ class DepthMap(BaseModel):
 
 
 class DepthEstimation(BaseTool):
+    """
+    Tool for depth estimation using the Depth-Anything-V2 model from the paper
+    [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2).
+
+    """
     _CHECKPOINT_DIR = CHECKPOINT_DIR
 
     def __init__(self) -> None:
+        """
+        Initializes the Depth-Anything-V2 model.
+        """
         if not osp.exists(self._CHECKPOINT_DIR):
             os.makedirs(self._CHECKPOINT_DIR)
 
@@ -56,6 +64,15 @@ class DepthEstimation(BaseTool):
 
     @torch.no_grad()
     def __call__(self, image: Union[str, Image.Image]) -> DepthMap:
+        """
+        Depth-Anything-V2 is a highly practical solution for robust monocular depth estimation.
+
+        Args:
+            image (Image.Image): The input image for object detection.
+
+        Returns:
+            DepthMap: An object type containing a numpy array with the HxW depth map of the image.
+        """
         if isinstance(image, str):
             image = cv2.imread(image)
         elif isinstance(image, Image.Image):

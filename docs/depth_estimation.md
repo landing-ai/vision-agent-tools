@@ -12,12 +12,14 @@ test_image = "path/to/your/image.jpg"
 
 # Load the image
 image = Image.open(test_image)
-# Initialize the counting model and choose the image output size you expect.
+# Initialize the depth map estimation model.
 depth_estimate = DepthEstimation()
 
 # Run the inference
 results = depth_estimate(image)
 
+# Let's print the obtained depth map
+print(results.map)
 ```
 
 ::: vision_agent_tools.tools.depth_estimation
