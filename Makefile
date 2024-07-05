@@ -19,6 +19,10 @@ install-zeroshot-counting:
 	# Install loca dependencies only
 	$(POETRY) install -E loca
 
+install-depth-estimation:
+	# Install depth-anything-v2 dependencies only
+	$(POETRY) install -E depth-anything-v2
+
 test:
 	# Run all unit tests
 	$(POETRY) run pytest tests

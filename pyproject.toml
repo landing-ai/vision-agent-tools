@@ -22,13 +22,13 @@ gdown = "^5.1.0"
 wget= "^3.2"
 torch="2.2.2"
 loca = { git = "git@github.com:landing-ai/loca.git" }
+depth-anything-v2 = { git = "git@github.com:landing-ai/depth-anything-v2.git" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
 pytest = "^8.2.2"
 ruff = "^0.5.0"
 mypy = "^1.10.1"
-
 
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = {extras = ["python"], version = "^0.25.1"}
@@ -39,6 +39,7 @@ all = ["qreader", "transformers", "scipy", "loca"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
 loca = ["loca"]
+depth-anything-v2 = ["depth-anything-v2"]
 
 [build-system]
 requires = ["poetry-core"]
