@@ -397,8 +397,8 @@ torchvision = "*"
 
 [package.source]
 type = "git"
-url = "git@github.com:landing-ai/depth-anything-v2.git"
-reference = "HEAD"
+url = "https://github.com/landing-ai/depth-anything-v2.git"
+reference = "main"
 resolved_reference = "91a112bb483b183c452539b4dc014f8d4643fb6f"
 
 [[package]]
@@ -1154,8 +1154,8 @@ torchvision = "*"
 
 [package.source]
 type = "git"
-url = "git@github.com:landing-ai/loca.git"
-reference = "HEAD"
+url = "https://github.com/landing-ai/loca.git"
+reference = "main"
 resolved_reference = "70e26a05d789c05499f65434a8652a4fea694cd9"
 
 [[package]]
@@ -4064,4 +4064,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "1ada5b48fe328606f0be3a9a8cca95127b058534687eefc8fdb97db83c8f512c"
+content-hash = "f34b234030a33fcf4119f92327af4c508878048a5466abd3bc16309692e0fdca"

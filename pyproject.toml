@@ -21,8 +21,8 @@ scipy = {version = "^1.13.1", optional = true}
 gdown = "^5.1.0"
 wget= "^3.2"
 torch="2.2.2"
-loca = { git = "git@github.com:landing-ai/loca.git" }
-depth-anything-v2 = { git = "git@github.com:landing-ai/depth-anything-v2.git" }
+loca = { git = "https://github.com/landing-ai/loca.git", branch = "main" }
+depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
