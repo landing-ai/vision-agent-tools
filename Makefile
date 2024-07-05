@@ -15,6 +15,10 @@ install-owlv2:
 	# Install owlv2 dependencies only
 	$(POETRY) install -E owlv2
 
+install-zeroshot-counting:
+	# Install loca dependencies only
+	$(POETRY) install -E loca
+
 test:
 	# Run all unit tests
 	$(POETRY) run pytest tests
