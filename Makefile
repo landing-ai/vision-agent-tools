@@ -30,3 +30,7 @@ test:
 serve/docs:
 	# Start the documentation server
 	$(POETRY) run mkdocs serve
+
+build/docs:
+	# Builds the documentation
+	$(POETRY) run mkdocs build -d site

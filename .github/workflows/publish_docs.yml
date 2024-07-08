@@ -1,0 +1,55 @@
+name: Generate Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'poetry'
+
+      - name: Install dependencies with Poetry
+        run: poetry install --only docs --no-interaction
+
+      - name: Generate tutorial docs
+        run: |
+          make build/docs
+
+      - name: Switch to page Branch
+        uses: actions/checkout@v3
+        with:
+          ref: pages
+          clean: false
+
+      - name: Configure Git User
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Add docs to git
+        run: |
+          mv site/* .
+          git add .
+
+      - name: Commit Changes
+        run: |
+          git commit -m "updated docs"
+          git --no-pager log -p -2
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: pages
