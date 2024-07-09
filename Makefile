@@ -17,11 +17,11 @@ install-owlv2:
 
 install-zeroshot-counting:
 	# Install loca dependencies only
-	$(POETRY) install -E loca
+	$(POETRY) install -E loca-model
 
 install-depth-estimation:
 	# Install depth-anything-v2 dependencies only
-	$(POETRY) install -E depth-anything-v2
+	$(POETRY) install -E depth-anything-v2-model
 
 test:
 	# Run all unit tests
