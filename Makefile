@@ -23,6 +23,10 @@ install-depth-estimation:
 	# Install depth-anything-v2 dependencies only
 	$(POETRY) install -E depth-anything-v2-model
 
+install-florencev2:
+	# Install florencev2 dependencies only
+	$(POETRY) install -E florencev2
+
 test:
 	# Run all unit tests
 	$(POETRY) run pytest tests

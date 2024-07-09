@@ -26,6 +26,7 @@ class DepthEstimation(BaseTool):
     [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2).
 
     """
+
     _CHECKPOINT_DIR = CHECKPOINT_DIR
 
     def __init__(self) -> None:
