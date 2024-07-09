@@ -55,7 +55,7 @@ class Florencev2(BaseTool):
         self._model.to(self.device)
 
     def __call__(
-        self, image: Image.Image, task: PromptTask, prompt: Optional[str]
+        self, image: Image.Image, task: PromptTask, prompt: Optional[str] = ""
     ) -> Any:
         """
         Florence-2 model sequence-to-sequence architecture enables it to excel in both
