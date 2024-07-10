@@ -50,6 +50,7 @@ class Florencev2(BaseTool):
     [Florence-2](https://huggingface.co/microsoft/Florence-2-base) can interpret simple
     text prompts to perform tasks like captioning, object detection, and segmentation.
 
+    NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
     def __init__(self):
