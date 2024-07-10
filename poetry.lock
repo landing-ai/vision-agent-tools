@@ -1870,14 +1870,17 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "24.1"
+version = "21.3"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.6"
 files = [
-    {file = "packaging-24.1-py3-none-any.whl", hash = "sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"},
-    {file = "packaging-24.1.tar.gz", hash = "sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"},
+    {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
+    {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
+
+[package.dependencies]
+pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "paginate"
@@ -2326,7 +2329,7 @@ extra = ["pygments (>=2.12)"]
 name = "pyparsing"
 version = "3.1.2"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-optional = true
+optional = false
 python-versions = ">=3.6.8"
 files = [
     {file = "pyparsing-3.1.2-py3-none-any.whl", hash = "sha256:f9db75911801ed778fe61bb643079ff86601aca99fcae6345aa67292038fb742"},
@@ -4057,6 +4060,7 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [extras]
 all = ["depth-anything-v2", "loca", "qreader", "scipy", "transformers"]
 depth-anything-v2-model = ["depth-anything-v2"]
+florencev2 = ["scipy", "transformers"]
 loca-model = ["loca"]
 owlv2 = ["scipy", "transformers"]
 qr-reader = ["qreader"]
@@ -4064,4 +4068,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "d3d4755341493b76ecbb93bc3cfefc4e108608b8f61053eb7d49b8e5149cb780"
+content-hash = "cae864510b9c2e399a01ab2ae429c18873077075ce6402ab903408dd8aab812e"

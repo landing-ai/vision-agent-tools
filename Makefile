@@ -6,6 +6,7 @@ all: install test
 install:
 	# Install all dependencies
 	$(POETRY) install -E all
+	pip install timm flash-attn
 
 install-qr-reader:
 	# Install qr-reader dependencies only
@@ -22,6 +23,11 @@ install-zeroshot-counting:
 install-depth-estimation:
 	# Install depth-anything-v2 dependencies only
 	$(POETRY) install -E depth-anything-v2-model
+
+install-florencev2:
+	# Install florencev2 dependencies only
+	$(POETRY) install -E florencev2
+	pip install timm flash-attn
 
 test:
 	# Run all unit tests
