@@ -12,7 +12,7 @@ test:
 
 serve/docs:
 	# Start the documentation server
-mkdocs serve
+	mkdocs serve
 
 build/docs:
 	# Builds the documentation
