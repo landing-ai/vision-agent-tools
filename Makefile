@@ -4,37 +4,16 @@ all: install test
 
 install:
 	# Install all dependencies
-	python setup.py install easy_install "vision-agent-tools[all]"
-
-install-qr-reader:
-	# Install qr-reader dependencies only
-	$(POETRY) install -E qr-reader
-
-install-owlv2:
-	# Install owlv2 dependencies only
-	$(POETRY) install -E owlv2
-
-install-zeroshot-counting:
-	# Install loca dependencies only
-	$(POETRY) install -E loca-model
-
-install-depth-estimation:
-	# Install depth-anything-v2 dependencies only
-	$(POETRY) install -E depth-anything-v2-model
-
-install-florencev2:
-	# Install florencev2 dependencies only
-	python setup.py install easy_install "vision-agent-tools[florencev2]"
-
+	pip install -r requirements.txt
 
 test:
 	# Run all unit tests
-	$(POETRY) run pytest tests
+	pytest tests
 
 serve/docs:
 	# Start the documentation server
-	$(POETRY) run mkdocs serve
+mkdocs serve
 
 build/docs:
 	# Builds the documentation
-	$(POETRY) run mkdocs build -d site
+	mkdocs build -d site
