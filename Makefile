@@ -50,3 +50,7 @@ test-qr-reader:
 test-owlv2:
 	# Run owlv2 unit tests
 	$(POETRY) run pytest tests/tools/test_owlv2.py
+
+test-zeroshot-counting:
+	# Run zeroshot-counting unit tests
+	$(POETRY) run pytest tests/tools/test_loca.py

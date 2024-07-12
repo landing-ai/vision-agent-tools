@@ -27,3 +27,8 @@ jobs:
         run: |
           make install-owlv2
           make test-owlv2
+
+      - name: zeroshot-counting tests
+        run: |
+          make install-zeroshot-counting
+          make test-zeroshot-counting
