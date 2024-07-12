@@ -12,15 +12,21 @@ from PIL import Image
 from .utils import download, CHECKPOINT_DIR
 from typing import Union, Any
 from vision_agent_tools.tools.shared_types import BaseTool
-from depth_anything_v2.dpt import DepthAnythingV2
+from depth_anything_v2.dpt import DepthAnythingV2 as DepthAnythingV2Model
 from pydantic import BaseModel
 
 
 class DepthMap(BaseModel):
+    """Represents the depth map of an image.
+
+    Attributes:
+        map (Any): HxW raw depth map of the image.
+    """
+
     map: Any
 
 
-class DepthEstimation(BaseTool):
+class DepthAnythingV2(BaseTool):
     """
     Tool for depth estimation using the Depth-Anything-V2 model from the paper
     [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2).
@@ -41,7 +47,7 @@ class DepthEstimation(BaseTool):
             "depth_anything_v2_vits.pth",
         )
         # init model
-        self._model = DepthAnythingV2(
+        self._model = DepthAnythingV2Model(
             encoder="vits", features=64, out_channels=[48, 96, 192, 384]
         )
 
@@ -78,8 +84,6 @@ class DepthEstimation(BaseTool):
             image = cv2.imread(image)
         elif isinstance(image, Image.Image):
             image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        else:
-            raise ValueError("Invalid image type. Expected str or PIL.Image.Image.")
 
         depth = self._model.infer_image(image)  # HxW raw depth map
 

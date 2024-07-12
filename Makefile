@@ -22,7 +22,7 @@ install-zeroshot-counting:
 	# Install loca dependencies only
 	$(POETRY) install -E loca-model
 
-install-depth-estimation:
+install-depth-anything-v2:
 	# Install depth-anything-v2 dependencies only
 	$(POETRY) install -E depth-anything-v2-model --no-interaction
 
@@ -55,8 +55,8 @@ test-zeroshot-counting:
 	# Run zeroshot-counting unit tests
 	$(POETRY) run pytest tests/tools/test_loca.py
 
-test-depth-estimation:
-	# Run depth-estimation unit tests
+test-depth-anything-v2:
+	# Run depth-anything-v2 unit tests
 	$(POETRY) run pytest tests/tools/test_depth_anything_v2.py
 
 test-florencev2:

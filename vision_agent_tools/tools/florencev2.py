@@ -15,6 +15,7 @@ class PromptTask(str, Enum):
     Valid task_prompts options for the Florence2 model.
 
     """
+
     CAPTION = "<CAPTION>"
     """"""
     CAPTION_TO_PHRASE_GROUNDING = "<CAPTION_TO_PHRASE_GROUNDING>"
