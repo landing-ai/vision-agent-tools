@@ -16,7 +16,7 @@ install-qr-reader:
 
 install-owlv2:
 	# Install owlv2 dependencies only
-	$(POETRY) install -E owlv2
+	$(POETRY) install -E owlv2 --no-interaction
 
 install-zeroshot-counting:
 	# Install loca dependencies only
@@ -46,3 +46,7 @@ build/docs:
 test-qr-reader:
 	# Run qr-reader unit tests
 	$(POETRY) run pytest tests/tools/test_qr_reader.py
+
+test-owlv2:
+	# Run owlv2 unit tests
+	$(POETRY) run pytest tests/tools/test_owlv2.py

@@ -22,3 +22,8 @@ jobs:
         run: |
           make install-qr-reader
           make test-qr-reader
+
+      - name: owlv2 tests
+        run: |
+          make install-owlv2
+          make test-owlv2
