@@ -10,7 +10,7 @@ install:
 
 install-qr-reader:
 	# Install qr-reader dependencies only
-	$(POETRY) install -E qr-reader
+	$(POETRY) install -E qr-reader --no-interaction
 
 install-owlv2:
 	# Install owlv2 dependencies only
@@ -40,3 +40,7 @@ serve/docs:
 build/docs:
 	# Builds the documentation
 	$(POETRY) run mkdocs build -d site
+
+test-qr-reader:
+	# Run all unit tests
+	$(POETRY) run pytest tests/tools_qr_reader.py
