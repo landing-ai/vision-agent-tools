@@ -40,7 +40,8 @@ jobs:
 
       - name: Add docs to git
         run: |
-          mv site/* .
+          cp -R site/* .
+          rm -R site/
           git add .
 
       - name: Commit Changes
