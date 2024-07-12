@@ -22,7 +22,7 @@ install-zeroshot-counting:
 	# Install loca dependencies only
 	$(POETRY) install -E loca-model
 
-install-depth-estimation:
+install-depth-anything-v2:
 	# Install depth-anything-v2 dependencies only
 	$(POETRY) install -E depth-anything-v2-model --no-interaction
 
