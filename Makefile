@@ -42,5 +42,5 @@ build/docs:
 	$(POETRY) run mkdocs build -d site
 
 test-qr-reader:
-	# Run all unit tests
-	$(POETRY) run pytest tests/tools_qr_reader.py
+	# Run qr-reader unit tests
+	$(POETRY) run pytest tests/tools/test_qr_reader.py
