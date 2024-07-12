@@ -3,7 +3,7 @@ name: Generate Documentation
 on:
   push:
     branches:
-      - docs/fix_script
+      - main
 
 jobs:
   run_script:
