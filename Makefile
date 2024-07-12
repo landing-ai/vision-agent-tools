@@ -55,8 +55,8 @@ test-zeroshot-counting:
 	# Run zeroshot-counting unit tests
 	$(POETRY) run pytest tests/tools/test_loca.py
 
-test-depth-estimation:
-	# Run depth-estimation unit tests
+test-depth-anything-v2:
+	# Run depth-anything-v2 unit tests
 	$(POETRY) run pytest tests/tools/test_depth_anything_v2.py
 
 test-florencev2:
