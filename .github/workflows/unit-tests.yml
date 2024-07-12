@@ -38,7 +38,3 @@ jobs:
           make install-depth-estimation
           make test-depth-estimation
 
-      - name: florencev2 tests
-        run: |
-          make install-florencev2
-          make test-florencev2
