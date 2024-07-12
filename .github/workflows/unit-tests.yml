@@ -1,0 +1,40 @@
+name: Unit Tests
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'poetry'
+
+      - name: qr-reader tests
+        run: |
+          make install-qr-reader
+          make test-qr-reader
+
+      - name: owlv2 tests
+        run: |
+          make install-owlv2
+          make test-owlv2
+
+      - name: zeroshot-counting tests
+        run: |
+          make install-zeroshot-counting
+          make test-zeroshot-counting
+
+      - name: depth-estimation tests
+        run: |
+          make install-depth-estimation
+          make test-depth-estimation
+
