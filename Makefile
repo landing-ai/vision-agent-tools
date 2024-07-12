@@ -24,15 +24,15 @@ install-zeroshot-counting:
 
 install-depth-estimation:
 	# Install depth-anything-v2 dependencies only
-	$(POETRY) install -E depth-anything-v2-model
+	$(POETRY) install -E depth-anything-v2-model --no-interaction
 
 install-florencev2:
 	# Install florencev2 dependencies only
-	$(POETRY) install -E florencev2
+	$(POETRY) install -E florencev2 --no-interaction
 	pip install timm flash-attn
 
 test:
-	# Run all unit tests
+	# Run all unit tests (experimental due posible dependencies conflict)
 	$(POETRY) run pytest tests
 
 serve/docs:
@@ -54,3 +54,11 @@ test-owlv2:
 test-zeroshot-counting:
 	# Run zeroshot-counting unit tests
 	$(POETRY) run pytest tests/tools/test_loca.py
+
+test-depth-estimation:
+	# Run depth-estimation unit tests
+	$(POETRY) run pytest tests/tools/test_depth_anything_v2.py
+
+test-florencev2:
+	# Run florencev2 unit tests
+	$(POETRY) run pytest tests/tools/test_florencev2.py
