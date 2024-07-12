@@ -10,8 +10,8 @@ install:
 
 install-qr-reader:
 	# Install qr-reader dependencies only
-	apt update
-	apt-get install libzbar0 -y
+	sudo apt update
+	sudo apt-get install -y libzbar0
 	$(POETRY) install -E qr-reader --no-interaction
 
 install-owlv2:
