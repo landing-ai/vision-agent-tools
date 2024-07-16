@@ -3,6 +3,8 @@ site_name: Vision Agent Tools
 
 theme:
   name: "material"
+  features:
+    - content.code.copy
 
 markdown_extensions:
   - admonition
@@ -27,3 +29,5 @@ plugins:
       python:
         options:
           show_source: false
+          extensions:
+          - griffe_fieldz
