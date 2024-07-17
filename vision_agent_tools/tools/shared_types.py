@@ -1,8 +1,16 @@
+from enum import Enum
 from pydantic import BaseModel
 
 
+class Device(str, Enum):
+    GPU = "cuda:0"
+    CPU = "cpu"
+
+
 class BaseTool:
-    pass
+    def to(self, device: Device):
+        print(device)
+        pass
 
 
 class Point(BaseModel):
