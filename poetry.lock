@@ -525,6 +525,24 @@ files = [
 ]
 
 [[package]]
+name = "fieldz"
+version = "0.0.2"
+description = "Utilities for providing compatibility with many dataclass-like libraries"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "fieldz-0.0.2-py3-none-any.whl", hash = "sha256:cf385cc75765370819cc6a87522316a6a3283d8bab5361b173b21dd0d921aec1"},
+    {file = "fieldz-0.0.2.tar.gz", hash = "sha256:dad3a0998fbf414acd9468d8110d8e9680428f2f8223f83a08641c43251ab9cc"},
+]
+
+[package.dependencies]
+typing-extensions = "*"
+
+[package.extras]
+dev = ["black", "hatch", "ipython", "mypy", "pdbpp", "rich", "ruff"]
+test = ["annotated-types", "attrs", "dataclassy", "msgspec", "pydantic", "pytest", "pytest-cov"]
+
+[[package]]
 name = "filelock"
 version = "3.15.4"
 description = "A platform independent file lock."
@@ -772,6 +790,25 @@ files = [
 [package.dependencies]
 backports-strenum = {version = ">=1.3", markers = "python_version < \"3.11\""}
 colorama = ">=0.4"
+
+[[package]]
+name = "griffe-fieldz"
+version = "0.1.2"
+description = "Griffe extension adding support for data-class like things (pydantic, attrs, etc...)"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "griffe_fieldz-0.1.2-py3-none-any.whl", hash = "sha256:2528af30f5a1ff91c3a34e73225e3d173b80c28b3ba019bcadfde119b6344d98"},
+    {file = "griffe_fieldz-0.1.2.tar.gz", hash = "sha256:7a109c0f3fc38cce2107f1ae6270045f937406587bd6c20a1d1e7565c9d8c57d"},
+]
+
+[package.dependencies]
+fieldz = ">=0.0.2"
+griffe = ">=0.35"
+
+[package.extras]
+dev = ["black", "ipython", "mypy", "pdbpp", "pre-commit", "rich", "ruff"]
+test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "h11"
@@ -1810,12 +1847,12 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
+    {version = ">=1.23.5", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\" and python_version < \"3.11\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
-    {version = ">=1.23.5", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 
 [[package]]
@@ -1939,9 +1976,9 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2184,8 +2221,8 @@ files = [
 annotated-types = ">=0.4.0"
 pydantic-core = "2.20.1"
 typing-extensions = [
-    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
     {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
+    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
 ]
 
 [package.extras]
@@ -4008,4 +4045,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "ff7966950c778266ae26f82baff080ebc4dde4f77465cb87849805a2221f2999"
+content-hash = "ad21a6c468ceab464c01cfe15891a42bbfa728101f623522203abd1c9e688b52"
