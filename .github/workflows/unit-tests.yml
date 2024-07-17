@@ -43,3 +43,8 @@ jobs:
           make install-depth-anything-v2
           make test-depth-anything-v2
 
+      - name: nsfw-classification tests
+        run: |
+          make install-nsfw-classification
+          make test-nsfw-classification
+

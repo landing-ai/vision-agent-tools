@@ -31,6 +31,10 @@ install-florencev2:
 	$(POETRY) install -E florencev2 --no-interaction
 	pip install timm flash-attn
 
+install-nsfw-classification:
+	# Install nsfw_classification dependencies only
+	$(POETRY) install -E nsfw-classification --no-interaction
+
 test:
 	# Run all unit tests (experimental due posible dependencies conflict)
 	$(POETRY) run pytest tests
@@ -62,6 +66,10 @@ test-depth-anything-v2:
 test-florencev2:
 	# Run florencev2 unit tests
 	$(POETRY) run pytest tests/tools/test_florencev2.py
+
+test-nsfw-classification:
+	# Run nsfw_classification unit tests
+	$(POETRY) run pytest tests/tools/test_nsfw_classification.py
 
 test-model-manager:
 	# Run Shared Model Manager tests

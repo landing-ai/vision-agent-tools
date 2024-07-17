@@ -43,6 +43,7 @@ owlv2 = ["transformers", "scipy"]
 florencev2 = ["transformers", "scipy"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
+nsfw-classification = ["transformers", "scipy"]
 
 
 [build-system]
