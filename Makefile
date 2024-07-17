@@ -62,3 +62,7 @@ test-depth-anything-v2:
 test-florencev2:
 	# Run florencev2 unit tests
 	$(POETRY) run pytest tests/tools/test_florencev2.py
+
+test-model-manager:
+	# Run Shared Model Manager tests
+	$(POETRY) run pytest tests/tools/test_shared_model_manager.py

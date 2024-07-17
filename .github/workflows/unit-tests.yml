@@ -18,6 +18,11 @@ jobs:
           python-version: '3.9'
           cache: 'poetry'
 
+      - name: model manager tests
+        run: |
+          poetry install --no-interaction
+          make test-model-manager
+
       - name: qr-reader tests
         run: |
           make install-qr-reader
