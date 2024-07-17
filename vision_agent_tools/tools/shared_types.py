@@ -3,13 +3,12 @@ from pydantic import BaseModel
 
 
 class Device(str, Enum):
-    GPU = "cuda:0"
+    GPU = "cuda"
     CPU = "cpu"
 
 
 class BaseTool:
     def to(self, device: Device):
-        print(device)
         pass
 
 
