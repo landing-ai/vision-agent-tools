@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from vision_agent_tools.tools.shared_model_manager import SharedModelManager
 from vision_agent_tools.tools.shared_types import BaseTool, Device
@@ -50,10 +51,9 @@ async def test_get_model_gpu(model_pool):
     def model_creation_fn():
         model = MockBaseModel()
         model.to = MagicMock()
-        model.device = Device.GPU
         return model
 
-    model_pool.add(model_creation_fn)
+    model_pool.add(model_creation_fn, device=Device.GPU)
 
     model_to_get = await model_pool.get_model(model_creation_fn.__name__)
 
@@ -72,17 +72,15 @@ async def test_get_model_multiple_gpu(model_pool):
     def model_creation_fn_a():
         model = MockBaseModel()
         model.to = MagicMock()
-        model.device = Device.GPU  # Set device during creation
         return model
 
     def model_creation_fn_b():
         model = MockBaseModel()
         model.to = MagicMock()
-        model.device = Device.GPU  # Set device during creation
         return model
 
-    model_pool.add(model_creation_fn_a)
-    model_pool.add(model_creation_fn_b)
+    model_pool.add(model_creation_fn_a, device=Device.GPU)
+    model_pool.add(model_creation_fn_b, device=Device.GPU)
 
     # Get Model1 first, should use GPU
     model1_to_get = await model_pool.get_model(model_creation_fn_a.__name__)
