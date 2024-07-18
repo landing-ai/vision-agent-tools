@@ -1,6 +1,8 @@
 # Shared Model Manager
 
-- The `SharedModelManager` class provides a simple way to add and retrieve models from a pool.
+The `SharedModelManager` class is designed to manage and facilitate the use of machine learning models across different devices, such as CPUs and GPUs, within an asynchronous environment.
+It ensures safe and efficient execution of these models, particularly in scenarios where GPU resources need to be shared exclusively among multiple models.
+
 - The `add` function takes the model class as input and stores it with a placeholder.
 - The `get_model` function retrieves the model class and lazily loads the actual model instance.
 
