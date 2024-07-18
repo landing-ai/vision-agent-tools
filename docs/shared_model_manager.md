@@ -2,9 +2,11 @@
 
 The `SharedModelManager` class is designed to manage and facilitate the use of machine learning models across different devices, such as CPUs and GPUs, within an asynchronous environment.
 It ensures safe and efficient execution of these models, particularly in scenarios where GPU resources need to be shared exclusively among multiple models.
+The manager coordinates access to the shared GPU, preventing conflicts when multiple models require it.
+Models are only loaded into memory when needed using the `fetch_model` function.
 
-- The `add` function takes the model class as input and stores it with a placeholder.
-- The `get_model` function retrieves the model class and lazily loads the actual model instance.
+- `add()`: Registers a machine learning model class with the manager. The actual model instance is not loaded at this point.
+- `fetch_model()`: Retrieves the previously added model class and creates (loads) the actual model instance. This function utilizes PyTorch interface `to`, to handle device (CPU/GPU) allocation based on availability.
 
 
 The usage example demonstrates adding models and then using them with their respective functionalities.
@@ -23,7 +25,7 @@ async def use_qr_reader():
     # Read image
     image = Image.open("path/to/your/image.jpg")
 
-    qr_reader = await model_pool.get_model(QRReader.__name__)
+    qr_reader = await model_pool.fetch_model(QRReader.__name__)
     detections = qr_reader(image)
     # Process detections ...
 
@@ -32,7 +34,7 @@ async def use_owlv2():
     # Read image
     image = Image.open("path/to/your/image.jpg")
 
-    owlv2 = await model_pool.get_model(Owlv2.__name__)
+    owlv2 = await model_pool.fetch_model(Owlv2.__name__)
     prompts = ["a photo of a cat", "a photo of a dog"]
     results = owlv2(image, prompts=prompts)
     # Process results ...

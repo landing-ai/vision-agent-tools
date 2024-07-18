@@ -36,7 +36,7 @@ class SharedModelManager:
             self.model_locks[class_name] = asyncio.Lock()
             self.devices[class_name] = device
 
-    async def get_model(self, class_name: str) -> BaseTool:
+    async def fetch_model(self, class_name: str) -> BaseTool:
         """
         Retrieves a model from the pool for safe execution.
 
