@@ -35,6 +35,10 @@ install-nsfw-classification:
 	# Install nsfw_classification dependencies only
 	$(POETRY) install -E nsfw-classification --no-interaction
 
+install-controlnet-aux:
+	# Install controlnet_aux dependencies only
+	$(POETRY) install -E controlnet-aux --no-interaction
+
 test:
 	# Run all unit tests (experimental due posible dependencies conflict)
 	$(POETRY) run pytest tests
@@ -70,3 +74,7 @@ test-florencev2:
 test-nsfw-classification:
 	# Run nsfw_classification unit tests
 	$(POETRY) run pytest tests/tools/test_nsfw_classification.py
+
+test-controlnet-aux:
+	# Run controlnet_aux unit tests
+	$(POETRY) run pytest tests/tools/test_controlnet_aux.py
