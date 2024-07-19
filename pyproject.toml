@@ -23,6 +23,7 @@ wget = "^3.2"
 torch ="2.2.2"
 loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
 depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main", optional = true }
+controlnet-aux = {version = "^0.0.9", optional = true}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -44,7 +45,7 @@ florencev2 = ["transformers", "scipy"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
-
+controlnet-aux = ["controlnet-aux"]
 
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel"]
