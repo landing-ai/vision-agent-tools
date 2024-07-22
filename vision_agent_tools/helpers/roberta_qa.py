@@ -1,0 +1,67 @@
+import torch
+
+from transformers import pipeline
+from pydantic import BaseModel
+from vision_agent_tools.tools.shared_types import BaseTool
+
+MODEL_NAME = "deepset/roberta-base-squad2"
+PROCESSOR_NAME = "deepset/roberta-base-squad2"
+
+
+class RobertaQAInferenceData(BaseModel):
+    """
+    Represents an inference result from the Roberta QA model.
+
+    Attributes:
+        answer (str): The predicted answer to the question.
+        score (float): The confidence score associated with the prediction (between 0 and 1).
+    """
+
+    answer: str
+    score: float
+
+
+class RobertaQA(BaseTool):
+    """
+    [Roberta QA](https://huggingface.co/deepset/roberta-base-squad2)
+    has been trained on question-answer pairs, including unanswerable questions,
+    for the task of Question Answering.
+
+    """
+
+    def __init__(self):
+        """
+        Initializes the Roberta QA model.
+        """
+        self.device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
+        )
+        self._model = pipeline(
+            "question-answering",
+            model=MODEL_NAME,
+            tokenizer=PROCESSOR_NAME,
+            device=self.device,
+        )
+
+    def __call__(self, context: str, question: str) -> str:
+        """
+        Roberta QA model solves the question-answering task.
+
+        Args:
+            context (str): Give context.
+            question (str): Give question.
+
+        Returns:
+            RobertaQAInferenceData: The output of the Roberta QA model.
+                answer (str): The predicted answer to the question.
+                score (float): The confidence score associated with the prediction (between 0 and 1).
+        """
+
+        data = self._model({"context": context, "question": question})
+        inference = RobertaQAInferenceData(answer=data["answer"], score=data["score"])
+
+        return inference
