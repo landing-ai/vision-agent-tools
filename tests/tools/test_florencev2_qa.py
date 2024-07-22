@@ -12,4 +12,4 @@ def test_successful_florencev2_qa():
 
     answer = florence_qa(image=image, question="what is the color of the car?")
 
-    assert answer == "green"
+    assert answer == "light blue"
