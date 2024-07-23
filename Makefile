@@ -6,7 +6,7 @@ all: install test
 install:
 	# Install all dependencies
 	$(POETRY) install -E all
-	pip install timm flash-attn
+	pip install flash-attn
 
 install-qr-reader:
 	# Install qr-reader dependencies only
@@ -29,7 +29,7 @@ install-depth-anything-v2:
 install-florencev2:
 	# Install florencev2 dependencies only
 	$(POETRY) install -E florencev2 --no-interaction
-	pip install timm flash-attn
+	pip install flash-attn
 
 install-nsfw-classification:
 	# Install nsfw_classification dependencies only
@@ -38,6 +38,11 @@ install-nsfw-classification:
 install-controlnet-aux:
 	# Install controlnet_aux dependencies only
 	$(POETRY) install -E controlnet-aux --no-interaction
+
+install-florencev2-qa:
+	# Install florencev2-qa dependencies only
+	$(POETRY) install -E florencev2-qa --no-interaction
+	pip install flash-attn
 
 test:
 	# Run all unit tests (experimental due posible dependencies conflict)
@@ -78,3 +83,7 @@ test-nsfw-classification:
 test-controlnet-aux:
 	# Run controlnet_aux unit tests
 	$(POETRY) run pytest tests/tools/test_controlnet_aux.py
+
+test-florencev2-qa:
+	# Run florencev2-qa unit tests
+	$(POETRY) run pytest tests/tools/test_florencev2_qa.py
