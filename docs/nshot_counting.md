@@ -1,11 +1,10 @@
 # LOCA (Low-shot Object Counting network with iterative prototype Adaptation).
 
-This example demonstrates using the zeroshot LOCA tool for object counting in images.
-
+This example demonstrates how to use the NShot LOCA tool for object counting in images.
 
 
 ```python
-from vision_agent_tools.tools.zeroshot_counting import ZeroShotCounting
+from vision_agent_tools.tools.nshot_counting import NShotCounting
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -13,7 +12,7 @@ test_image = "path/to/your/image.jpg"
 # Load the image
 image = Image.open(test_image)
 # Initialize the counting model and choose the image output size you expect.
-ObjectCounting = ZeroShotCounting(img_size=512)
+ObjectCounting = NShotCounting(zero_shot=False, img_size=512)
 
 # Run the inference
 results = ObjectCounting(image, bbox=[12, 34, 56, 78])
@@ -22,4 +21,4 @@ results = ObjectCounting(image, bbox=[12, 34, 56, 78])
 print("Found a total count of {results.count} objects on the image!")
 ```
 
-::: vision_agent_tools.tools.zeroshot_counting
+::: vision_agent_tools.tools.nshot_counting

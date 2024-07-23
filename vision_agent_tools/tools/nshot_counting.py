@@ -9,7 +9,7 @@ import torch
 from PIL import Image
 from loca.loca import LOCA
 from .utils import download, CHECKPOINT_DIR
-from typing import Union, List, Optional, Any
+from typing import Union, Optional, Any
 from torch import nn
 from torchvision import transforms as T
 from pydantic import BaseModel
@@ -27,19 +27,19 @@ class CountingDetection(BaseModel):
     """
 
     count: int
-    masks: List[Any]
+    heat_map: Any
 
 
-class ZeroShotCounting(BaseTool):
+class NShotCounting(BaseTool):
     """
-    Tool for object counting using the zeroshot version of the LOCA model from the paper
+    Tool for object counting using the zeroshot and n-shot versions of the LOCA model from the paper
     [A Low-Shot Object Counting Network With Iterative Prototype Adaptation ](https://github.com/djukicn/loca).
 
     """
 
     _CHECKPOINT_DIR = CHECKPOINT_DIR
 
-    def __init__(self, img_size=512) -> None:
+    def __init__(self, zero_shot=True, img_size=512) -> None:
         """
         Initializes the LOCA model.
 
@@ -54,14 +54,18 @@ class ZeroShotCounting(BaseTool):
             "https://drive.google.com/file/d/11-gkybBmBhQF2KZyo-c2-4IGUmor_JMu/view?usp=sharing",
             "count_zero_shot.pt",
         )
+        FSHOT_CHECKPOINT = (
+            "https://drive.google.com/file/d/1rTG7AjGmasfOYFm-ZzSbVQH9daYgOoIS/view?usp=sharing",
+            "count_few_shot.pt",
+        )
 
         # init model
         self._model = LOCA(
             image_size=img_size,
             num_encoder_layers=3,
             num_ope_iterative_steps=3,
-            num_objects=3,
-            zero_shot=True,
+            num_objects=3 if zero_shot else 1,
+            zero_shot=zero_shot,
             emb_dim=256,
             num_heads=8,
             kernel_dim=3,
@@ -85,10 +89,16 @@ class ZeroShotCounting(BaseTool):
             else "cpu"
         )
 
-        self.model_checkpoint_path = download(
-            url=ZSHOT_CHECKPOINT[0],
-            path=os.path.join(self._CHECKPOINT_DIR, ZSHOT_CHECKPOINT[1]),
-        )
+        if zero_shot:
+            self.model_checkpoint_path = download(
+                url=ZSHOT_CHECKPOINT[0],
+                path=os.path.join(self._CHECKPOINT_DIR, ZSHOT_CHECKPOINT[1]),
+            )
+        else:
+            self.model_checkpoint_path = download(
+                url=FSHOT_CHECKPOINT[0],
+                path=os.path.join(self._CHECKPOINT_DIR, FSHOT_CHECKPOINT[1]),
+            )
 
         state_dict = torch.load(
             self.model_checkpoint_path, map_location=torch.device(self.device)
@@ -100,7 +110,9 @@ class ZeroShotCounting(BaseTool):
 
     @torch.no_grad()
     def __call__(
-        self, image: Union[str, Image.Image], bbox: Optional[List[float]] = None
+        self,
+        image: Union[str, Image.Image],
+        bbox: Optional[list[int]] = None,
     ) -> CountingDetection:
         """
         LOCA injects shape and appearance information into object queries
@@ -110,7 +122,7 @@ class ZeroShotCounting(BaseTool):
 
         Args:
             image (Image.Image): The input image for object detection.
-            bbox (list[float]): A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax)
+            bbox (list[int]): A list of four ints representing the bounding box coordinates (xmin, ymin, xmax, ymax)
                         of the detected query in the image.
 
         Returns:
@@ -141,4 +153,4 @@ class ZeroShotCounting(BaseTool):
 
         dmap = (out - torch.min(out)) / (torch.max(out) - torch.min(out)) * 255
         density_map = dmap.squeeze().cpu().numpy().astype("uint8")
-        return CountingDetection(count=round(n_objects), masks=[density_map])
+        return CountingDetection(count=round(n_objects), heat_map=[density_map])
