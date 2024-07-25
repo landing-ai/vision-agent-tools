@@ -56,6 +56,7 @@ class Owlv2(BaseTool):
         )
 
         self._model.to(self.device)
+        self._processor.to(self.device)
         self._model.eval()
 
     def __call__(
