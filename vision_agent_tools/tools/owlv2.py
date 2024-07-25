@@ -82,7 +82,9 @@ class Owlv2(BaseTool):
         """
         texts = [prompts]
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt")
+        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
+            self.device
+        )
         # Forward pass
         with torch.no_grad():
             outputs = self._model(**inputs)
