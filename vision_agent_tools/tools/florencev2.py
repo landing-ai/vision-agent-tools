@@ -6,8 +6,8 @@ from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
 from vision_agent_tools.tools.shared_types import BaseTool
 
-MODEL_NAME = "microsoft/Florence-2-base"
-PROCESSOR_NAME = "microsoft/Florence-2-base"
+MODEL_NAME = "microsoft/Florence-2-large"
+PROCESSOR_NAME = "microsoft/Florence-2-large"
 
 
 class PromptTask(str, Enum):
@@ -73,6 +73,7 @@ class Florencev2(BaseTool):
             else "cpu"
         )
         self._model.to(self.device)
+        self._model.eval()
 
     def __call__(
         self, image: Image.Image, task: PromptTask, prompt: Optional[str] = ""
