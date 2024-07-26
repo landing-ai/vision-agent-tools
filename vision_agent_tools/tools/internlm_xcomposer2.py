@@ -5,11 +5,13 @@ from lmdeploy.vl import load_image
 from PIL import Image
 from transformers.dynamic_module_utils import get_class_from_dynamic_module
 
+from vision_agent_tools.tools.shared_types import BaseTool
 
-class InternLMXComposer2:
+
+class InternLMXComposer2(BaseTool):
     HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
 
-    def __init__(self, max_size = 1024):
+    def __init__(self, max_size=1024):
         self.load_image = load_image
         self.load_video = get_class_from_dynamic_module(
             "ixc_utils.load_video", self.HF_MODEL
@@ -70,4 +72,8 @@ if __name__ == "__main__":
     model = InternLMXComposer2()
     # print(model("section1_small.mp4", "describe this video."))
     # print(model("saved_frames/frame_0.jpg", "describe this image"))
-    print(model("section1_chunk_24_32.mp4", "what is the player number who makes the kick?"))
+    print(
+        model(
+            "section1_chunk_24_32.mp4", "what is the player number who makes the kick?"
+        )
+    )
