@@ -48,3 +48,7 @@ jobs:
           make install-nsfw-classification
           make test-nsfw-classification
 
+      - name: controlnet-aux tests
+        run: |
+          make install-controlnet-aux
+          make test-controlnet-aux

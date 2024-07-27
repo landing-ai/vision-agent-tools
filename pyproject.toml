@@ -20,9 +20,12 @@ transformers = {extras = ["torch"], version = "^4.42.3", optional = true}
 scipy = {version = "^1.13.1", optional = true}
 gdown = "^5.1.0"
 wget = "^3.2"
-torch ="2.2.2"
+torch = "2.2.2"
+timm = {version = "^0.6.7", optional = true}
+einops = {version = "^0.7.0", optional = true}
 loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
 depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main", optional = true }
+controlnet-aux = {version = "^0.0.9", optional = true}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -38,13 +41,15 @@ mkdocs-material = "^9.5.28"
 griffe-fieldz = "^0.1.2"
 
 [tool.poetry.extras]
-all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2"]
+all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2", "timm", "einops"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
-florencev2 = ["transformers", "scipy"]
+florencev2 = ["transformers", "scipy", "timm", "einops"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
+controlnet-aux = ["controlnet-aux"]
+florencev2-qa = ["transformers", "scipy", "timm", "einops"]
 
 
 [build-system]

@@ -7,9 +7,9 @@ from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 from vision_agent_tools.tools.shared_types import BaseTool, Device
 
-MODEL_NAME = "google/owlv2-base-patch16-ensemble"
-PROCESSOR_NAME = "google/owlv2-base-patch16-ensemble"
-DEFAULT_CONFIDENCE = 0.2
+MODEL_NAME = "google/owlv2-large-patch14-ensemble"
+PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
+DEFAULT_CONFIDENCE = 0.1
 
 
 class Owlv2InferenceData(BaseModel):
@@ -45,6 +45,17 @@ class Owlv2(BaseTool):
         self._processor = Owlv2Processor.from_pretrained(PROCESSOR_NAME)
         self._model = Owlv2ForObjectDetection.from_pretrained(MODEL_NAME)
 
+        self.device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
+        )
+
+        self._model.to(self.device)
+        self._model.eval()
+
     def __call__(
         self,
         image: Image.Image,
@@ -69,7 +80,9 @@ class Owlv2(BaseTool):
         """
         texts = [prompts]
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt")
+        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
+            self.device
+        )
         # Forward pass
         with torch.no_grad():
             outputs = self._model(**inputs)
@@ -78,7 +91,7 @@ class Owlv2(BaseTool):
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
         results = self._processor.post_process_object_detection(
-            outputs=outputs, threshold=0.1, target_sizes=target_sizes
+            outputs=outputs, threshold=confidence, target_sizes=target_sizes
         )
         i = 0  # given that we are predicting on only one image
         boxes, scores, labels = (
@@ -90,8 +103,6 @@ class Owlv2(BaseTool):
         inferences: list[Owlv2InferenceData] = []
         for box, score, label in zip(boxes, scores, labels):
             box = [round(i, 2) for i in box.tolist()]
-            if score < confidence:
-                continue
             inferences.append(
                 Owlv2InferenceData(
                     label=texts[i][label.item()], score=score.item(), bbox=box
