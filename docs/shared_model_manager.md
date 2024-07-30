@@ -13,6 +13,8 @@ The usage example demonstrates adding models and then using them with their resp
 
 
 ```python
+model_pool = SharedModelManager()
+
 # Add models to the pool
 model_pool.add(QRReader)
 model_pool.add(Owlv2)
