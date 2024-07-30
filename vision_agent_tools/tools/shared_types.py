@@ -1,8 +1,17 @@
+from enum import Enum
+
 from pydantic import BaseModel
 
 
+class Device(str, Enum):
+    GPU = "cuda"
+    CPU = "cpu"
+    MPS = "mps"
+
+
 class BaseTool:
-    pass
+    def to(self, device: Device):
+        raise NotImplementedError("Subclass must implement abstract method")
 
 
 class Point(BaseModel):

@@ -29,7 +29,7 @@ install-depth-anything-v2:
 install-florencev2:
 	# Install florencev2 dependencies only
 	$(POETRY) install -E florencev2 --no-interaction
-	pip install flash-attn
+	$(POETRY) run pip install flash-attn==1.0.5
 
 install-nsfw-classification:
 	# Install nsfw_classification dependencies only
@@ -79,6 +79,10 @@ test-florencev2:
 test-nsfw-classification:
 	# Run nsfw_classification unit tests
 	$(POETRY) run pytest tests/tools/test_nsfw_classification.py
+
+test-model-manager:
+	# Run Shared Model Manager tests
+	$(POETRY) run pytest tests/tools/test_shared_model_manager.py
 
 test-controlnet-aux:
 	# Run controlnet_aux unit tests

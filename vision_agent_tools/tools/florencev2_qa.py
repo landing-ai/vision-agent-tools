@@ -1,8 +1,8 @@
 from PIL import Image
 
-from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.tools.shared_types import BaseTool, Device
 
 
 class FlorenceQA(BaseTool):
@@ -37,3 +37,7 @@ class FlorenceQA(BaseTool):
         answer = self._roberta_qa(caption, question)
 
         return answer.answer
+
+    def to(self, device: Device):
+        self._florence.to(device=device)
+        self._roberta_qa.to(device=device)

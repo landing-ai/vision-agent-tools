@@ -1,10 +1,11 @@
-import torch
-
-from typing import Optional, Any
 from enum import Enum
+from typing import Any, Optional
+
+import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
-from vision_agent_tools.tools.shared_types import BaseTool
+
+from vision_agent_tools.tools.shared_types import BaseTool, Device
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"
@@ -117,3 +118,6 @@ class Florencev2(BaseTool):
         )
 
         return parsed_answer
+
+    def to(self, device: Device):
+        self._model.to(device=device.value)
