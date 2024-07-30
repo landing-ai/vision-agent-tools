@@ -1934,8 +1934,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
     {version = ">=1.23.5", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\" and python_version < \"3.11\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\" and python_version < \"3.11\""},
@@ -1960,13 +1960,35 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.21.0", markers = "python_version == \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
     {version = ">=1.23.5", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\" and python_version < \"3.11\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.19.3", markers = "platform_system == \"Linux\" and platform_machine == \"aarch64\" and python_version >= \"3.8\" and python_version < \"3.10\" or python_version > \"3.9\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_system != \"Darwin\" and python_version < \"3.10\" or python_version >= \"3.9\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
 ]
+
+[[package]]
+name = "opencv-stubs"
+version = "0.0.10"
+description = "Unofficial stubs for the opencv-python package."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "opencv_stubs-0.0.10-py3-none-any.whl", hash = "sha256:470f979b7403e1766857fd21922f292a9b84450da90d2e498d63c6b59148d87e"},
+    {file = "opencv_stubs-0.0.10.tar.gz", hash = "sha256:d739c5e7b0628838e1a9a7dc88f9eb1b2c0a9df14d5ae879f9615788a9de1436"},
+]
+
+[package.dependencies]
+numpy = ">=1.21"
+
+[package.extras]
+build = ["hatch"]
+dev = ["pip-tools", "pre-commit", "pyright", "ruff"]
+flake8 = ["flake8", "flake8-broken-line", "flake8-bugbear", "flake8-builtins", "flake8-commas", "flake8-comprehensions", "flake8-docstrings", "flake8-import-order", "flake8-noqa", "flake8-pyproject", "flake8-quotes", "pep8-naming"]
+opencv = ["opencv-python (>=4.7.0)"]
+opencv-contrib = ["opencv-contrib-python (>=4.7.0)"]
+opencv-headless = ["opencv-python-headless (>=4.7.0)"]
 
 [[package]]
 name = "orjson"
@@ -2089,8 +2111,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
@@ -2334,8 +2356,8 @@ files = [
 annotated-types = ">=0.4.0"
 pydantic-core = "2.20.1"
 typing-extensions = [
-    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
     {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
+    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
 ]
 
 [package.extras]
@@ -4248,4 +4270,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "aaafc87a34635f685ad556cf348465b4cdbd7d4c67e8dceaea6c59c31f1ce95b"
+content-hash = "552fcf6b0f1bf939414c67ef5bf276c9db8c8afdcb2b3332f9f7ef9fbe7b764b"

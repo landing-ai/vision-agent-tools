@@ -29,7 +29,7 @@ install-depth-anything-v2:
 install-florencev2:
 	# Install florencev2 dependencies only
 	$(POETRY) install -E florencev2 --no-interaction
-	pip install flash-attn
+	$(POETRY) run pip install flash-attn==1.0.5
 
 install-nsfw-classification:
 	# Install nsfw_classification dependencies only

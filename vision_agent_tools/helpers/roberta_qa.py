@@ -1,8 +1,8 @@
 import torch
-
-from transformers import pipeline
 from pydantic import BaseModel
-from vision_agent_tools.tools.shared_types import BaseTool
+from transformers import pipeline
+
+from vision_agent_tools.tools.shared_types import BaseTool, Device
 
 MODEL_NAME = "deepset/roberta-base-squad2"
 PROCESSOR_NAME = "deepset/roberta-base-squad2"
@@ -65,3 +65,6 @@ class RobertaQA(BaseTool):
         inference = RobertaQAInferenceData(answer=data["answer"], score=data["score"])
 
         return inference
+
+    def to(self, device: Device):
+        self._model.model.to(device=device.value)

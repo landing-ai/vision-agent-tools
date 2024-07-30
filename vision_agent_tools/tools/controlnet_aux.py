@@ -1,6 +1,8 @@
 from controlnet_aux import OpenposeDetector
 from PIL import Image
 
+from vision_agent_tools.tools.shared_types import Device
+
 
 class Image2Pose:
     """
@@ -45,5 +47,5 @@ class Image2Pose:
         pose = pose.resize(original_size)
         return pose
 
-    def to(self, device):
-        self.detector.to(device)
+    def to(self, device: Device):
+        self.detector.to(device.value)

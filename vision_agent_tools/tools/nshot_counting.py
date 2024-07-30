@@ -4,16 +4,18 @@ import os
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 import os.path as osp
-import torch
+from typing import Any, Optional, Union
 
-from PIL import Image
+import torch
 from loca.loca import LOCA
-from .utils import download, CHECKPOINT_DIR
-from typing import Union, Optional, Any
+from PIL import Image
+from pydantic import BaseModel
 from torch import nn
 from torchvision import transforms as T
-from pydantic import BaseModel
-from vision_agent_tools.tools.shared_types import BaseTool
+
+from vision_agent_tools.tools.shared_types import BaseTool, Device
+
+from .utils import CHECKPOINT_DIR, download
 
 
 class CountingDetection(BaseModel):
@@ -154,3 +156,6 @@ class NShotCounting(BaseTool):
         dmap = (out - torch.min(out)) / (torch.max(out) - torch.min(out)) * 255
         density_map = dmap.squeeze().cpu().numpy().astype("uint8")
         return CountingDetection(count=round(n_objects), heat_map=[density_map])
+
+    def to(self, device: Device):
+        self._model.to(device=device.value)
