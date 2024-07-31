@@ -8,6 +8,23 @@ from transformers.dynamic_module_utils import get_class_from_dynamic_module
 from vision_agent_tools.tools.shared_types import BaseTool
 
 
+def check_valid_image(file_name: str):
+    return file_name.endswith(
+        (".jpg", ".jpeg", ".png", ".bmp")
+    ) or file_name.startswith("data:image")
+
+
+def check_valid_video(file_name: str):
+    return file_name.endswith((".mp4", ".avi", ".mov"))
+
+
+def transform_image(image: Image.Image, max_size: int):
+    image = image.convert("RGB")
+    if image.size[0] > max_size or image.size[1] > max_size:
+        image.thumbnail((max_size, max_size))
+    return image
+
+
 class InternLMXComposer2(BaseTool):
     HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
 
@@ -31,32 +48,18 @@ class InternLMXComposer2(BaseTool):
         self.gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         self.max_size = max_size
 
-    def check_valid_image(self, file_name: str):
-        return file_name.endswith(
-            (".jpg", ".jpeg", ".png", ".bmp")
-        ) or file_name.startswith("data:image")
-
-    def check_valid_video(self, file_name: str):
-        return file_name.endswith((".mp4", ".avi", ".mov"))
-
-    def transform_image(self, image: Image.Image):
-        image = image.convert("RGB")
-        if image.size[0] > self.max_size or image.size[1] > self.max_size:
-            image.thumbnail((self.max_size, self.max_size))
-        return image
-
     def __call__(
         self,
         media: Union[str, Image.Image],
         prompt: str,
     ) -> str:
         if isinstance(media, Image.Image):
-            image = self.transform_image(media)
-        elif self.check_valid_image(media):
-            image = self.transform_image(self.load_image(media))
-        elif self.check_valid_video(media):
+            image = transform_image(media, self.max_size)
+        elif check_valid_image(media):
+            image = transform_image(self.load_image(media), self.max_size)
+        elif check_valid_video(media):
             video = self.load_video(media)
-            video = [self.transform_image(image) for image in video]
+            video = [transform_image(image, self.max_size) for image in video]
             if len(video) > 100:
                 raise ValueError("Video is too long")
             image = self.frame2img(video, self.get_font())
