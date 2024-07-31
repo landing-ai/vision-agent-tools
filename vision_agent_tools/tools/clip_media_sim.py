@@ -1,3 +1,4 @@
+import math
 from typing import List, Optional, Tuple, Union
 
 import cv2
@@ -23,7 +24,7 @@ def extract_frames(
         raise ValueError(
             f"Video length is too long, max is {max_duration} seconds got {total_frames / frame_rate}"
         )
-    interval_in_frames = int(frame_rate / fps)
+    interval_in_frames = math.ceil(frame_rate / fps)
 
     frame_count = 0
     timestamp_and_frames = []
