@@ -43,7 +43,9 @@ class InternLMXComposer2(BaseTool):
             "ixc_utils.get_font", self.HF_MODEL
         )
 
-        engine_config = TurbomindEngineConfig(model_format="awq")
+        engine_config = TurbomindEngineConfig(
+            model_format="awq", cache_max_entry_count=0.2
+        )
         self.pipe = pipeline(self.HF_MODEL + "-4bit", backend_config=engine_config)
         self.gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         self.max_size = max_size
@@ -60,7 +62,8 @@ class InternLMXComposer2(BaseTool):
         elif check_valid_video(media):
             video = self.load_video(media)
             video = [transform_image(image, self.max_size) for image in video]
-            if len(video) > 100:
+            # 32 frames is a ~60s video clip
+            if len(video) > 32:
                 raise ValueError("Video is too long")
             image = self.frame2img(video, self.get_font())
             image = self.video_transform(image)
@@ -69,14 +72,3 @@ class InternLMXComposer2(BaseTool):
 
         sess = self.pipe.chat((prompt, image), gen_config=self.gen_config)
         return sess.response.text
-
-
-if __name__ == "__main__":
-    model = InternLMXComposer2()
-    # print(model("section1_small.mp4", "describe this video."))
-    # print(model("saved_frames/frame_0.jpg", "describe this image"))
-    print(
-        model(
-            "section1_chunk_24_32.mp4", "what is the player number who makes the kick?"
-        )
-    )
