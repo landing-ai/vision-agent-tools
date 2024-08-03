@@ -8,13 +8,13 @@ from transformers.dynamic_module_utils import get_class_from_dynamic_module
 from vision_agent_tools.tools.shared_types import BaseTool
 
 
-def check_valid_image(file_name: str):
+def check_valid_image(file_name: str) -> bool:
     return file_name.endswith(
-        (".jpg", ".jpeg", ".png", ".bmp")
+        (".jpg", ".jpeg", ".png", ".bmp", ".webp")
     ) or file_name.startswith("data:image")
 
 
-def check_valid_video(file_name: str):
+def check_valid_video(file_name: str) -> bool:
     return file_name.endswith((".mp4", ".avi", ".mov"))
 
 
