@@ -1,11 +1,11 @@
-from annotated_types import Gt, Lt
+from annotated_types import Gt, Lt, Ge
 from typing_extensions import Annotated, Sequence
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from pydantic import PositiveFloat, validate_call
+from pydantic import validate_call
 from transformers import CLIPModel, CLIPProcessor
 
 from vision_agent_tools.tools.shared_types import BaseTool
@@ -17,19 +17,15 @@ _HF_MODEL = "openai/clip-vit-large-patch14"
 
 class CLIPMediaSim(BaseTool):
     def __init__(self, device: str = "cuda"):
-        self.model = (
-            CLIPModel.from_pretrained(_HF_MODEL, trust_remote_code=True)
-            .eval()
-            .to(device)
-        )
+        self.model = CLIPModel.from_pretrained(_HF_MODEL).eval().to(device)
         self.processor = CLIPProcessor.from_pretrained(_HF_MODEL)
         self.device = device
 
-    @validate_call
+    @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
         self,
         video: VideoNumpy[np.uint8],
-        timestamps: Sequence[PositiveFloat],
+        timestamps: Sequence[Annotated[float, Ge(0)]],
         target_image: Image.Image | None = None,
         target_text: str | None = None,
         thresh: Annotated[float, Gt(0), Lt(1)] = 0.3,
@@ -68,12 +64,3 @@ class CLIPMediaSim(BaseTool):
         output = np.concatenate([times[:, None], sims], axis=1)
         output = output[output[:, 1] > thresh]
         return output.tolist()
-
-
-if __name__ == "__main__":
-    model = CLIPMediaSim()
-    # out = output = model("section1_chunk_24_32.mp4", target_image="logo.png")
-    # out = output = model("section1.mp4", target_image="saved_frames/frame_0.jpg", thresh=0.9)
-    out = output = model("section1.mp4", target_text="soccer", thresh=0.2)
-    # out = output = model("liuxiang.mp4", target_image="logo.png")
-    print(out)
