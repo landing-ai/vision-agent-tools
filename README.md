@@ -3,7 +3,7 @@
 This repository contains tools to solve your vision problems. These tools can be used
 in conjunction with the [vision-agent](https://github.com/landing-ai/vision-agent).
 
-# Get started
+# Getting started
 
 ## Installation
 You can install by running `poetry install --extras "all"` to install all tools, or with
