@@ -4303,7 +4303,7 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["depth-anything-v2", "einops", "loca", "qreader", "scipy", "timm", "transformers"]
+all = ["controlnet-aux", "decord", "depth-anything-v2", "einops", "lmdeploy", "loca", "qreader", "scipy", "timm", "transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
 florencev2 = ["einops", "scipy", "timm", "transformers"]
@@ -4317,4 +4317,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "a336003a7f3a3e6daeffd6e9fee7a1c6acac36349ea0463e47e409931489a5b3"
+content-hash = "4b302a3516d4fe98ebd24797d8540bac9838b91017542053b5304c5b816f09a4"

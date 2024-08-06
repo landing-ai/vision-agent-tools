@@ -42,7 +42,7 @@ mkdocs-material = "^9.5.28"
 griffe-fieldz = "^0.1.2"
 
 [tool.poetry.extras]
-all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2", "timm", "einops"]
+all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2", "timm", "einops", "controlnet-aux", "lmdeploy", "decord"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
 florencev2 = ["transformers", "scipy", "timm", "einops"]
