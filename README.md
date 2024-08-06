@@ -28,8 +28,8 @@ detections = model(image=image, prompts=["cat"])
 ## Clone the repo and install it
 
 ```bash
->>> poetry install
->>> poetry run pre-commit install
+poetry install
+poetry run pre-commit install
 ```
 
 ## Adding new tool code
@@ -72,7 +72,7 @@ group under `[tool.poetry.extras]`. This will allow the installation of the pack
 specific tools.
 ```toml
 [tool.poetry.extras]
-all = [""transformers"]
+all = ["transformers"]
 owlv2 = ["transformers"]
 ```
 
