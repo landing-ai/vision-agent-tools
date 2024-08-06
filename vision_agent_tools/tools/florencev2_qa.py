@@ -1,4 +1,5 @@
 from PIL import Image
+import torch
 
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
@@ -20,6 +21,7 @@ class FlorenceQA(BaseTool):
         self._florence = Florencev2()
         self._roberta_qa = RobertaQA()
 
+    @torch.inference_mode()
     def __call__(self, image: Image.Image, question: str) -> str:
         """
         FlorenceQA model answers questions about images.
@@ -31,6 +33,7 @@ class FlorenceQA(BaseTool):
         Returns:
             str: The answer to the question.
         """
+        image = image.convert("RGB")
         task = PromptTask.MORE_DETAILED_CAPTION
         output_caption = self._florence(image, task)
         caption = output_caption[task]

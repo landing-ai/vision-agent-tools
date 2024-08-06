@@ -22,6 +22,7 @@ class CLIPMediaSim(BaseTool):
         self.device = device
 
     @validate_call(config={"arbitrary_types_allowed": True})
+    @torch.inference_mode()
     def __call__(
         self,
         video: VideoNumpy[np.uint8],
@@ -45,7 +46,7 @@ class CLIPMediaSim(BaseTool):
             inputs = self.processor(
                 text=[target_text], return_tensors="pt", padding=True
             )
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_text_features(**inputs)
 
@@ -54,7 +55,7 @@ class CLIPMediaSim(BaseTool):
         frame_embs = []
         for frame in video:
             inputs = self.processor(images=frame, return_tensors="pt")
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
             frame_embs.append(outputs.detach())

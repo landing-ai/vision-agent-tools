@@ -47,6 +47,7 @@ class RobertaQA(BaseTool):
             device=self.device,
         )
 
+    @torch.inference_mode()
     def __call__(self, context: str, question: str) -> str:
         """
         Roberta QA model solves the question-answering task.
@@ -61,7 +62,8 @@ class RobertaQA(BaseTool):
                 score (float): The confidence score associated with the prediction (between 0 and 1).
         """
 
-        data = self._model({"context": context, "question": question})
+        with torch.autocast(self.device):
+            data = self._model({"context": context, "question": question})
         inference = RobertaQAInferenceData(answer=data["answer"], score=data["score"])
 
         return inference
