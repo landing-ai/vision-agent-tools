@@ -42,10 +42,9 @@ class InternLMXComposer2(BaseTool):
         engine_config = TurbomindEngineConfig(
             model_format="awq", cache_max_entry_count=0.2
         )
-        self._model = pipeline(
+        self._pipe = pipeline(
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
-        self._model.eval()
 
     @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
@@ -64,5 +63,5 @@ class InternLMXComposer2(BaseTool):
             image = self._frame2img(video, self._get_font())
             image = self._video_transform(image)
 
-        sess = self._model.chat((prompt, image), gen_config=self._gen_config)
+        sess = self._pipe.chat((prompt, image), gen_config=self._gen_config)
         return sess.response.text
