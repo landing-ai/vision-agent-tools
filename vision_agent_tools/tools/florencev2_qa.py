@@ -1,4 +1,5 @@
 from PIL import Image
+from typing import Dict
 import torch
 
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
@@ -22,7 +23,7 @@ class FlorenceQA(BaseTool):
         self._roberta_qa = RobertaQA()
 
     @torch.inference_mode()
-    def __call__(self, image: Image.Image, question: str) -> str:
+    def __call__(self, image: Image.Image, question: str) -> Dict[str, str]:
         """
         FlorenceQA model answers questions about images.
 
@@ -39,4 +40,4 @@ class FlorenceQA(BaseTool):
         caption = output_caption[task]
         answer = self._roberta_qa(caption, question)
 
-        return answer.answer
+        return {"answer": answer.answer}

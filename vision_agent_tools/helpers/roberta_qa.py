@@ -48,7 +48,7 @@ class RobertaQA(BaseTool):
         )
 
     @torch.inference_mode()
-    def __call__(self, context: str, question: str) -> str:
+    def __call__(self, context: str, question: str) -> RobertaQAInferenceData:
         """
         Roberta QA model solves the question-answering task.
 
