@@ -25,8 +25,7 @@ class InternLMXComposer2(BaseTool):
             if torch.backends.mps.is_available()
             else "cpu"
         )
-        self._model.to(self.device)
-        self._model.eval()
+        self.max_size = max_size
         self._load_video = get_class_from_dynamic_module(
             "ixc_utils.load_video", self._HF_MODEL
         )
@@ -39,15 +38,15 @@ class InternLMXComposer2(BaseTool):
         self._get_font = get_class_from_dynamic_module(
             "ixc_utils.get_font", self._HF_MODEL
         )
-
+        self._gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         engine_config = TurbomindEngineConfig(
             model_format="awq", cache_max_entry_count=0.2
         )
-        self.pipe = pipeline(
+        self._model = pipeline(
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
-        self.gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
-        self.max_size = max_size
+        self._model.to(self.device)
+        self._model.eval()
 
     @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
@@ -66,5 +65,5 @@ class InternLMXComposer2(BaseTool):
             image = self._frame2img(video, self._get_font())
             image = self._video_transform(image)
 
-        sess = self.pipe.chat((prompt, image), gen_config=self.gen_config)
+        sess = self._model.chat((prompt, image), gen_config=self._gen_config)
         return sess.response.text
