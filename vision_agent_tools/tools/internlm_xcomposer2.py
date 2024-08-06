@@ -45,7 +45,6 @@ class InternLMXComposer2(BaseTool):
         self._model = pipeline(
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
-        self._model.to(self.device)
         self._model.eval()
 
     @validate_call(config={"arbitrary_types_allowed": True})
