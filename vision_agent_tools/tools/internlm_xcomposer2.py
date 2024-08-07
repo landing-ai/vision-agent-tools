@@ -49,13 +49,18 @@ class InternLMXComposer2(BaseTool):
     # @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
         self,
-        media: Image.Image | VideoNumpy,
+        image: Image.Image | None,
+        video:  VideoNumpy | None,
         prompt: str,
     ) -> str:
-        if isinstance(media, Image.Image):
-            image = self._transform_image(media, self.max_size)
-        elif isinstance(media, VideoNumpy):
-            video = self._load_video(media)
+        if not image and not video:
+            raise ValueError("Either 'image' or 'video' must be provided.")
+        if image and video:
+            raise ValueError("Only one of 'image' or 'video' can be provided.")
+        if image is not None:
+            image = self._transform_image(image, self.max_size)
+        elif video is not None:
+            video = self._load_video(video)
             video = [self._transform_image(image, self.max_size) for image in video]
             # 32 frames is a ~60s video clip
             if len(video) > 32:
