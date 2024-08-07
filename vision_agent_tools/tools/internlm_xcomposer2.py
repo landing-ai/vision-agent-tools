@@ -57,7 +57,7 @@ class InternLMXComposer2(BaseTool):
         if image is not None:
             image = self._transform_image(image, self.max_size)
         elif video is not None:
-            video = [self._transform_image(image, self.max_size) for _, image in video]
+            video = [self._transform_image(image, self.max_size) for image in video]
             # 32 frames is a ~60s video clip
             if len(video) > 32:
                 raise ValueError("Video is too long")
