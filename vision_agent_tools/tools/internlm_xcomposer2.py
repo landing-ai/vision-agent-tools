@@ -46,7 +46,7 @@ class InternLMXComposer2(BaseTool):
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
 
-    @validate_call(config={"arbitrary_types_allowed": True})
+    # @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
         self,
         media: Image.Image | VideoNumpy,
