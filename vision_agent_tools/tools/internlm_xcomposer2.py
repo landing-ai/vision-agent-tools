@@ -2,33 +2,43 @@ import torch
 from PIL import Image
 from vision_agent_tools.types import VideoNumpy
 from vision_agent_tools.tools.shared_types import BaseTool
+from pydantic import Field
 
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
 from transformers.dynamic_module_utils import get_class_from_dynamic_module
 
 
 class InternLMXComposer2(BaseTool):
-    _HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
-    MAX_NUMBER_OF_FRAMES = 32
-    MAX_IMAGE_SIZE = 1024
+    """
+    [InternLM-XComposer-2.5](https://huggingface.co/internlm/internlm-xcomposer2d5-7b-4bit) is a tool that excels in various text-image
+    comprehension and composition applications, achieving GPT-4V level capabilities.
 
-    def _transform_image(image: Image.Image, max_size: int):
+    NOTE: The InternLM-XComposer-2.5 model should be used in GPU environments.
+    """
+
+    _HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
+    _MAX_NUMBER_OF_FRAMES = 32
+    _MAX_IMAGE_SIZE = 1024
+
+    def _transform_image(self, image: Image.Image) -> Image.Image:
         image = image.convert("RGB")
-        if image.size[0] > max_size or image.size[1] > max_size:
-            image.thumbnail((max_size, max_size))
+        if image.size[0] > self._MAX_IMAGE_SIZE or image.size[1] > self._MAX_IMAGE_SIZE:
+            image.thumbnail((self._MAX_IMAGE_SIZE, self._MAX_IMAGE_SIZE))
         return image
 
-    def _process_video(self, images: VideoNumpy, num_frm: int = MAX_NUMBER_OF_FRAMES):
-        if len(images) > num_frm:
-            num_frm = min(num_frm, len(images))
-            step_size = len(images) / (num_frm + 1)
-            indices = [int(i * step_size) for i in range(num_frm)]
+    def _process_video(self, images: VideoNumpy, num_frames: int) -> list[Image.Image]:
+        if len(images) > num_frames:
+            num_frames = min(num_frames, len(images))
+            step_size = len(images) / (num_frames + 1)
+            indices = [int(i * step_size) for i in range(num_frames)]
             images = [images[i] for i in indices]
-        images = [Image.fromarray(arr) for arr in images]
-        print(f"sample {len(images)} frames.")
+        images = [self._transform_image(Image.fromarray(arr)) for arr in images]
         return images
 
-    def __init__(self, max_size=MAX_IMAGE_SIZE):
+    def __init__(self) -> None:
+        """
+        Initializes the InternLMXComposer2.5 model.
+        """
         self.device = (
             "cuda"
             if torch.cuda.is_available()
@@ -36,10 +46,6 @@ class InternLMXComposer2(BaseTool):
             if torch.backends.mps.is_available()
             else "cpu"
         )
-        self.max_size = max_size
-        # self._load_video = get_class_from_dynamic_module(
-        #     "ixc_utils.load_video", self._HF_MODEL
-        # )
         self._frame2img = get_class_from_dynamic_module(
             "ixc_utils.frame2img", self._HF_MODEL
         )
@@ -57,25 +63,39 @@ class InternLMXComposer2(BaseTool):
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
 
+    @torch.inference_mode()
     def __call__(
         self,
         image: Image.Image | None,
         video: VideoNumpy | None,
         prompt: str,
+        frames: int = Field(
+            ge=1, le=_MAX_NUMBER_OF_FRAMES, default=_MAX_NUMBER_OF_FRAMES
+        ),
     ) -> str:
+        """
+        InternLMXComposer2 model answers questions about a video or image.
+
+        Args:
+            image (Optional[Image.Image]): The image to be analyzed.
+            video (Optional[VideoNumpy]): A numpy array containing the different images, representing the video.
+            prompt (str): The question to be answered.
+            frames (int): The number of frames to be used from the video.
+
+        Returns:
+            str: The answer to the prompt.
+        """
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
         if image is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
         if image is not None:
-            image = self._transform_image(image, self.max_size)
-        elif video is not None:
-            video = self._process_video(video)
-            if len(video) > self.MAX_NUMBER_OF_FRAMES:
-                raise ValueError("Video is too long")
-            image = self._frame2img(video, self._get_font())
-            image = self._video_transform(image)
+            media = self._transform_image(image)
+        if video is not None:
+            video = self._process_video(video, frames)
+            image_frames = self._frame2img(video, self._get_font())
+            media = self._video_transform(image_frames)
 
-        sess = self._pipe.chat((prompt, image), gen_config=self._gen_config)
+        sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
         return sess.response.text
