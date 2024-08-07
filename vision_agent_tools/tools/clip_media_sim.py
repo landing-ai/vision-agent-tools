@@ -22,6 +22,7 @@ class CLIPMediaSim(BaseTool):
         self.device = device
 
     @validate_call(config={"arbitrary_types_allowed": True})
+    @torch.inference_mode()
     def __call__(
         self,
         video: VideoNumpy[np.uint8],
@@ -38,14 +39,14 @@ class CLIPMediaSim(BaseTool):
         if target_image is not None:
             target_image = target_image.convert("RGB")
             inputs = self.processor(images=target_image, return_tensors="pt")
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
         else:
             inputs = self.processor(
                 text=[target_text], return_tensors="pt", padding=True
             )
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_text_features(**inputs)
 
@@ -54,13 +55,25 @@ class CLIPMediaSim(BaseTool):
         frame_embs = []
         for frame in video:
             inputs = self.processor(images=frame, return_tensors="pt")
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
-            frame_embs.append(outputs.detach())
+                print("outputs", outputs.shape)
+            frame_embs.append(outputs.squeeze().detach())
         frame_embs = torch.stack(frame_embs)
-        sims = F.cosine_similarity(frame_embs, target, dim=-1).cpu().numpy()
+
+        sims = (
+            (
+                F.cosine_similarity(frame_embs, target, dim=-1)
+                * self.model.logit_scale.exp()
+            )
+            .squeeze()
+            .softmax(dim=0)
+            .detach()
+            .cpu()
+            .numpy()
+        )
         times = np.array(timestamps)
-        output = np.concatenate([times[:, None], sims], axis=1)
+        output = np.concatenate([times[:, None], sims[:, None]], axis=1)
         output = output[output[:, 1] > thresh]
         return output.tolist()
