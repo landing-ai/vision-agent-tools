@@ -1,6 +1,5 @@
 import torch
 from PIL import Image
-from pydantic import validate_call
 from vision_agent_tools.types import VideoNumpy
 from vision_agent_tools.tools.shared_types import BaseTool
 
@@ -26,9 +25,6 @@ class InternLMXComposer2(BaseTool):
             else "cpu"
         )
         self.max_size = max_size
-        self._load_video = get_class_from_dynamic_module(
-            "ixc_utils.load_video", self._HF_MODEL
-        )
         self._frame2img = get_class_from_dynamic_module(
             "ixc_utils.frame2img", self._HF_MODEL
         )
@@ -46,7 +42,6 @@ class InternLMXComposer2(BaseTool):
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
 
-    # @validate_call(config={"arbitrary_types_allowed": True})
     def __call__(
         self,
         image: Image.Image | None,
@@ -60,7 +55,6 @@ class InternLMXComposer2(BaseTool):
         if image is not None:
             image = self._transform_image(image, self.max_size)
         elif video is not None:
-            video = self._load_video(video)
             video = [self._transform_image(image, self.max_size) for image in video]
             # 32 frames is a ~60s video clip
             if len(video) > 32:
