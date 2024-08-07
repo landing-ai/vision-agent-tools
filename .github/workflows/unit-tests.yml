@@ -21,6 +21,5 @@ jobs:
 
       - name: tests
         run: |
-          poetry run pip install wheel
           make install
           make test
