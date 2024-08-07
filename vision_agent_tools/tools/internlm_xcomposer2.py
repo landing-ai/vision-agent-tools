@@ -2,6 +2,7 @@ import torch
 from PIL import Image
 from vision_agent_tools.types import VideoNumpy
 from vision_agent_tools.tools.shared_types import BaseTool
+import numpy as np
 
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
 from transformers.dynamic_module_utils import get_class_from_dynamic_module
@@ -10,7 +11,8 @@ from transformers.dynamic_module_utils import get_class_from_dynamic_module
 class InternLMXComposer2(BaseTool):
     _HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
 
-    def _transform_image(image: Image.Image, max_size: int):
+    def _transform_image(image: np.ndarray, max_size: int):
+        image = Image.fromarray(image)
         image = image.convert("RGB")
         if image.size[0] > max_size or image.size[1] > max_size:
             image.thumbnail((max_size, max_size))
@@ -55,7 +57,7 @@ class InternLMXComposer2(BaseTool):
         if image is not None:
             image = self._transform_image(image, self.max_size)
         elif video is not None:
-            video = [self._transform_image(image, self.max_size) for image in video]
+            video = [self._transform_image(image, self.max_size) for _, image in video]
             # 32 frames is a ~60s video clip
             if len(video) > 32:
                 raise ValueError("Video is too long")
