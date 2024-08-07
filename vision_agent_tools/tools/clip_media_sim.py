@@ -58,7 +58,6 @@ class CLIPMediaSim(BaseTool):
             with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
-                print("outputs", outputs.shape)
             frame_embs.append(outputs.squeeze().detach())
         frame_embs = torch.stack(frame_embs)
 
