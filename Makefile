@@ -8,7 +8,7 @@ install:
 	sudo apt update
 	sudo apt-get install -y libzbar0
 	$(POETRY) install -E all
-	pip install flash-attn
+	$(POETRY) run pip install flash-attn
 
 test:
 	$(POETRY) run pytest tests
