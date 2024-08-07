@@ -53,9 +53,9 @@ class InternLMXComposer2(BaseTool):
         video:  VideoNumpy | None,
         prompt: str,
     ) -> str:
-        if not image and not video:
+        if  image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
-        if image and video:
+        if image is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
         if image is not None:
             image = self._transform_image(image, self.max_size)
