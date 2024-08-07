@@ -24,9 +24,7 @@ class InternLMXComposer2(BaseTool):
             step_size = len(images) / (num_frm + 1)
             indices = [int(i * step_size) for i in range(num_frm)]
             images = [images[i] for i in indices]
-        images = [
-            self._transform_image(Image.fromarray(arr), self.max_size) for arr in images
-        ]
+        images = [Image.fromarray(arr) for arr in images]
         print(f"sample {len(images)} frames.")
         return images
 
