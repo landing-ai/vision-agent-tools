@@ -23,7 +23,7 @@ class FlorenceQA(BaseTool):
         self._roberta_qa = RobertaQA()
 
     @torch.inference_mode()
-    def __call__(self, image: Image.Image, question: str) -> Dict[str, str]:
+    def __call__(self, image: Image.Image, question: str) -> str:
         """
         FlorenceQA model answers questions about images.
 
@@ -40,4 +40,4 @@ class FlorenceQA(BaseTool):
         caption = output_caption[task]
         answer = self._roberta_qa(caption, question)
 
-        return {"answer": answer.answer}
+        return answer.answer
