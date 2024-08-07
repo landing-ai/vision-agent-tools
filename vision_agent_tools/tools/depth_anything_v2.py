@@ -85,7 +85,6 @@ class DepthAnythingV2(BaseTool):
         elif isinstance(image, Image.Image):
             image = np.array(image.convert("RGB"))
 
-        with torch.autocast(self.device):
-            depth = self._model.infer_image(image)  # HxW raw depth map
+        depth = self._model.infer_image(image)  # HxW raw depth map
 
         return DepthMap(map=depth)
