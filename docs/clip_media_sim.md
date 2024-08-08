@@ -49,9 +49,7 @@ print("Similarity detection complete!")
 You can also run similarity against a target text doing the following:
 
 ```python
-...
 results = clip_media_sim(video=frames, target_text="a turtle holding the earth")
 ```
 
-
-::: vision_agent_tools.tools.controlnet_aux
+::: vision_agent_tools.tools.clip_media_sim

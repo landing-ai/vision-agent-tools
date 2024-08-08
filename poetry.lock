@@ -3958,6 +3958,7 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 
 [extras]
 all = ["controlnet-aux", "depth-anything-v2", "einops", "loca", "qreader", "scipy", "timm", "transformers"]
+clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
 florencev2 = ["einops", "scipy", "timm", "transformers"]
@@ -3970,4 +3971,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "b291f421e75613bcc90948ac67d00666ad3d566212de2dd1f411fcb27eb1ef88"
+content-hash = "6d65e24429674db609f986e0ed763d2ae2a19d0fc39b649bb967a256f1ce7192"
