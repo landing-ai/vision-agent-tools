@@ -108,10 +108,10 @@ class NShotCounting(BaseTool):
         self._model.eval()
         self.img_size = img_size
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def __call__(
         self,
-        image: Union[str, Image.Image],
+        image: Image.Image,
         bbox: Optional[list[int]] = None,
     ) -> CountingDetection:
         """
@@ -132,6 +132,7 @@ class NShotCounting(BaseTool):
         """
         if bbox:
             assert len(bbox) == 4, "Bounding box should be in format [x1, y1, x2, y2]"
+        image = image.convert("RGB")
         w, h = image.size
         img_t = T.Compose(
             [

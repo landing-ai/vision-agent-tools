@@ -44,6 +44,7 @@ class NSFWClassification(BaseTool):
         )
         self._model.to(self.device)
 
+    @torch.inference_mode()
     def __call__(
         self,
         image: Image.Image,
@@ -59,14 +60,15 @@ class NSFWClassification(BaseTool):
                 label (str): The label for the unsafe content detected in the image.
                 score (float):The score for the unsafe content detected in the image.
         """
-        with torch.no_grad():
+        image = image.convert("RGB")
+        with torch.autocast(self.device):
             inputs = self._processor(
                 images=image,
                 return_tensors="pt",
             ).to(self.device)
             outputs = self._model(**inputs)
-            logits = outputs.logits
-            scores = logits.softmax(dim=1).tolist()[0]
-            predicted_label = logits.argmax(-1).item()
-            text = self._model.config.id2label[predicted_label]
-            return NSFWInferenceData(label=text, score=scores[predicted_label])
+        logits = outputs.logits
+        scores = logits.softmax(dim=1).tolist()[0]
+        predicted_label = logits.argmax(-1).item()
+        text = self._model.config.id2label[predicted_label]
+        return NSFWInferenceData(label=text, score=scores[predicted_label])
