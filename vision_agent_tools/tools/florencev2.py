@@ -75,6 +75,7 @@ class Florencev2(BaseTool):
         self._model.to(self.device)
         self._model.eval()
 
+    @torch.inference_mode()
     def __call__(
         self, image: Image.Image, task: PromptTask, prompt: Optional[str] = ""
     ) -> Any:
@@ -96,18 +97,21 @@ class Florencev2(BaseTool):
         else:
             text_input = task + prompt
 
+        image = image.convert("RGB")
+
         inputs = self._processor(text=text_input, images=image, return_tensors="pt").to(
             self.device
         )
 
-        generated_ids = self._model.generate(
-            input_ids=inputs["input_ids"],
-            pixel_values=inputs["pixel_values"],
-            max_new_tokens=1024,
-            num_beams=3,
-            early_stopping=False,
-            do_sample=False,
-        )
+        with torch.autocast(self.device):
+            generated_ids = self._model.generate(
+                input_ids=inputs["input_ids"],
+                pixel_values=inputs["pixel_values"],
+                max_new_tokens=1024,
+                num_beams=3,
+                early_stopping=False,
+                do_sample=False,
+            )
         generated_text = self._processor.batch_decode(
             generated_ids, skip_special_tokens=False
         )[0]

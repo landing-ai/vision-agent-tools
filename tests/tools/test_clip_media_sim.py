@@ -5,18 +5,11 @@ import torch
 from vision_agent_tools.tools.clip_media_sim import CLIPMediaSim
 
 
-def _generate_test_video():
-    """
-    Generate a test video with 3 frames.
-    """
-    return np.random.randint(0, 255, (3, 300, 300, 3), dtype=np.uint8)
-
-
-def test_successful_clip_similarity_target_image():
+def test_successful_clip_similarity_target_image(random_video_generator):
     """
     This test verifies that CLIPMediaSim returns a valid iresponse when passed a target_text
     """
-    test_video = _generate_test_video()
+    test_video = random_video_generator()
     test_target_image = Image.fromarray(test_video[1])
 
     clip_sim = CLIPMediaSim(device="cuda" if torch.cuda.is_available() else "cpu")
@@ -50,11 +43,11 @@ def test_successful_clip_similarity_target_text():
     assert results[0][0] == 1
 
 
-def test_only_one_target():
+def test_only_one_target(random_video_generator):
     """
     This test verifies that CLIPMediaSim raises a ValueError if both target_image and target_text are provided.
     """
-    test_video = _generate_test_video()
+    test_video = random_video_generator()
     test_target_image = Image.fromarray(test_video[1])
 
     clip_sim = CLIPMediaSim(device="cuda" if torch.cuda.is_available() else "cpu")
