@@ -72,18 +72,18 @@ class InternLMXComposer2(BaseTool):
     @torch.inference_mode()
     def __call__(
         self,
-        image: Optional[Image.Image],
-        video: Optional[VideoNumpy],
         prompt: str,
+        image: Optional[Image.Image] = None,
+        video: Optional[VideoNumpy] = None,
         frames: Optional[Frames] = MAX_NUMBER_OF_FRAMES,
     ) -> str:
         """
         InternLMXComposer2 model answers questions about a video or image.
 
         Args:
+            prompt (str): The prompt with the question to be answered.
             image (Optional[Image.Image]): The image to be analyzed.
             video (Optional[VideoNumpy]): A numpy array containing the different images, representing the video.
-            prompt (str): The prompt with the question to be answered.
             frames (Optional[int]): The number of frames to be used from the video.
 
         Returns:
