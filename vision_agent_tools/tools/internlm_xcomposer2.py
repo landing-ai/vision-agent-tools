@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 from vision_agent_tools.types import VideoNumpy
 from vision_agent_tools.tools.shared_types import BaseTool
-from pydantic import Field
+from pydantic import Field, validate_call
 from typing import Annotated, Optional
 
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
@@ -69,6 +69,7 @@ class InternLMXComposer2(BaseTool):
             self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
         )
 
+    @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
     def __call__(
         self,

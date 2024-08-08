@@ -11,7 +11,7 @@ readme = "README.md"
 "documentation" = "https://github.com/landing-ai/vision-agent-tools"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<4.0"
+python = ">=3.10,<4.0"
 pydantic = "^2.7.4"
 qreader = {version = "^3.14", optional = true}
 numpy = ">=1.17,<2.0"
@@ -26,7 +26,7 @@ einops = {version = "^0.7.0", optional = true}
 loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
 depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main", optional = true }
 controlnet-aux = {version = "^0.0.9", optional = true}
-lmdeploy = {version = "^0.5.2.post1", optional = true}
+lmdeploy = {version = "^0.5.3", optional = true}
 decord = {version = "^0.6.0", optional = true}
 
 
@@ -51,6 +51,7 @@ depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
 florencev2-qa = ["transformers", "scipy", "timm", "einops"]
+clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 
 

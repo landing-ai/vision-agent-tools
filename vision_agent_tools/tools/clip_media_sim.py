@@ -1,5 +1,5 @@
-from annotated_types import Gt, Lt, Ge
-from typing_extensions import Annotated, Sequence
+from annotated_types import Gt, Lt
+from typing_extensions import Annotated
 
 import numpy as np
 import torch
@@ -16,7 +16,15 @@ _HF_MODEL = "openai/clip-vit-large-patch14"
 
 
 class CLIPMediaSim(BaseTool):
+    """
+    A class that receives a video and a target image or text and returns the frames
+    that are most similar to the target.
+    """
+
     def __init__(self, device: str = "cuda"):
+        """
+        Initializes the CLIPMediaSim object with a pre-trained CLIP model.
+        """
         self.model = CLIPModel.from_pretrained(_HF_MODEL).eval().to(device)
         self.processor = CLIPProcessor.from_pretrained(_HF_MODEL)
         self.device = device
@@ -26,11 +34,19 @@ class CLIPMediaSim(BaseTool):
     def __call__(
         self,
         video: VideoNumpy[np.uint8],
-        timestamps: Sequence[Annotated[float, Ge(0)]],
         target_image: Image.Image | None = None,
         target_text: str | None = None,
         thresh: Annotated[float, Gt(0), Lt(1)] = 0.3,
     ) -> list[tuple[float, float]]:
+        """
+        Receives a video and a target image or text and returns the frames that are most similar to the target.
+
+        Args:
+            video (np.ndarray): The input video to be processed.
+            target_image (PIL.Image | None): The target image to compare the video frames with.
+            target_text (str | None): The target text to compare the video frames with.
+            thresh (float): The threshold to filter the results. Defaults to 0.3.
+        """
         if (target_image is None and target_text is None) or (
             target_image is not None and target_text is not None
         ):
@@ -39,7 +55,7 @@ class CLIPMediaSim(BaseTool):
         if target_image is not None:
             target_image = target_image.convert("RGB")
             inputs = self.processor(images=target_image, return_tensors="pt")
-            with torch.no_grad(), torch.autocast(self.device):
+            with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
         else:
@@ -58,10 +74,21 @@ class CLIPMediaSim(BaseTool):
             with torch.autocast(self.device):
                 inputs.to(self.device)
                 outputs = self.model.get_image_features(**inputs)
-            frame_embs.append(outputs.detach())
+            frame_embs.append(outputs.squeeze().detach())
         frame_embs = torch.stack(frame_embs)
-        sims = F.cosine_similarity(frame_embs, target, dim=-1).cpu().numpy()
-        times = np.array(timestamps)
-        output = np.concatenate([times[:, None], sims], axis=1)
+
+        sims = (
+            (
+                F.cosine_similarity(frame_embs, target, dim=-1)
+                * self.model.logit_scale.exp()
+            )
+            .squeeze()
+            .softmax(dim=0)
+            .detach()
+            .cpu()
+            .numpy()
+        )
+        indices = np.array(range(len(sims)))
+        output = np.concatenate([indices[:, None], sims[:, None]], axis=1)
         output = output[output[:, 1] > thresh]
         return output.tolist()
