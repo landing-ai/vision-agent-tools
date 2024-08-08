@@ -1,5 +1,5 @@
-from annotated_types import Gt, Lt, Ge
-from typing_extensions import Annotated, Sequence
+from annotated_types import Gt, Lt
+from typing_extensions import Annotated
 
 import numpy as np
 import torch
@@ -26,7 +26,6 @@ class CLIPMediaSim(BaseTool):
     def __call__(
         self,
         video: VideoNumpy[np.uint8],
-        timestamps: Sequence[Annotated[float, Ge(0)]],
         target_image: Image.Image | None = None,
         target_text: str | None = None,
         thresh: Annotated[float, Gt(0), Lt(1)] = 0.3,
@@ -72,7 +71,7 @@ class CLIPMediaSim(BaseTool):
             .cpu()
             .numpy()
         )
-        times = np.array(timestamps)
-        output = np.concatenate([times[:, None], sims[:, None]], axis=1)
+        indices = np.array(range(len(sims)))
+        output = np.concatenate([indices[:, None], sims[:, None]], axis=1)
         output = output[output[:, 1] > thresh]
         return output.tolist()

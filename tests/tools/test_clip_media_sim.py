@@ -21,16 +21,14 @@ def test_successful_clip_similarity_target_image():
 
     clip_sim = CLIPMediaSim(device="cuda" if torch.cuda.is_available() else "cpu")
 
-    results = clip_sim(
-        video=test_video, timestamps=[0.0, 1.0, 2.0], target_image=test_target_image
-    )
+    results = clip_sim(video=test_video, target_image=test_target_image)
 
     # apparently generating random images generates similar embeddings for all frames
     # so the similarity is high for all frames.
     assert len(results) == 1
     assert all(len(result) == 2 for result in results)
-    # Should match with frame in timestamp 1.0 (index 1)
-    assert results[0][0] == 1.0
+    # Should match with frame in index 1
+    assert results[0][0] == 1
 
 
 def test_successful_clip_similarity_target_text():
@@ -44,14 +42,12 @@ def test_successful_clip_similarity_target_text():
 
     clip_sim = CLIPMediaSim(device="cuda" if torch.cuda.is_available() else "cpu")
 
-    results = clip_sim(
-        video=test_video, timestamps=[0.0, 1.0, 2.0], target_text="tomatoes"
-    )
+    results = clip_sim(video=test_video, target_text="tomatoes")
 
     assert len(results) == 1
     assert all(len(result) == 2 for result in results)
-    # Should match with frame in timestamp 1.0 (index 1) that has the picture of tomatoes
-    assert results[0][0] == 1.0
+    # Should match with frame in ineex 1 that has the picture of tomatoes
+    assert results[0][0] == 1
 
 
 def test_only_one_target():
@@ -65,10 +61,7 @@ def test_only_one_target():
 
     try:
         clip_sim(
-            video=test_video,
-            timestamps=[0.0, 1.0, 2.0],
-            target_image=test_target_image,
-            target_text="random image",
+            video=test_video, target_image=test_target_image, target_text="random image"
         )
     except ValueError:
         pass
