@@ -49,6 +49,7 @@ depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
 florencev2-qa = ["transformers", "scipy", "timm", "einops"]
+clip-media-sim = ["transformers"]
 
 
 [build-system]
