@@ -3,9 +3,15 @@ from PIL import Image
 from vision_agent_tools.types import VideoNumpy
 from vision_agent_tools.tools.shared_types import BaseTool
 from pydantic import Field
+from typing import Annotated, Optional
 
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
 from transformers.dynamic_module_utils import get_class_from_dynamic_module
+
+
+MAX_NUMBER_OF_FRAMES = 32
+
+Frames = Annotated[int, Field(ge=1, le=MAX_NUMBER_OF_FRAMES)]
 
 
 class InternLMXComposer2(BaseTool):
@@ -17,7 +23,7 @@ class InternLMXComposer2(BaseTool):
     """
 
     _HF_MODEL = "internlm/internlm-xcomposer2d5-7b"
-    _MAX_NUMBER_OF_FRAMES = 32
+    _MAX_NUMBER_OF_FRAMES = MAX_NUMBER_OF_FRAMES
     _MAX_IMAGE_SIZE = 1024
 
     def _transform_image(self, image: Image.Image) -> Image.Image:
@@ -66,12 +72,10 @@ class InternLMXComposer2(BaseTool):
     @torch.inference_mode()
     def __call__(
         self,
-        image: Image.Image | None,
-        video: VideoNumpy | None,
+        image: Optional[Image.Image],
+        video: Optional[VideoNumpy],
         prompt: str,
-        frames: int = Field(
-            ge=1, le=_MAX_NUMBER_OF_FRAMES, default=_MAX_NUMBER_OF_FRAMES
-        ),
+        frames: Optional[Frames] = MAX_NUMBER_OF_FRAMES,
     ) -> str:
         """
         InternLMXComposer2 model answers questions about a video or image.
@@ -79,8 +83,8 @@ class InternLMXComposer2(BaseTool):
         Args:
             image (Optional[Image.Image]): The image to be analyzed.
             video (Optional[VideoNumpy]): A numpy array containing the different images, representing the video.
-            prompt (str): The question to be answered.
-            frames (int): The number of frames to be used from the video.
+            prompt (str): The prompt with the question to be answered.
+            frames (Optional[int]): The number of frames to be used from the video.
 
         Returns:
             str: The answer to the prompt.
