@@ -4288,13 +4288,13 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-all = ["controlnet-aux", "depth-anything-v2", "einops", "lmdeploy", "loca", "qreader", "scipy", "timm", "transformers"]
+all = ["controlnet-aux", "decord", "depth-anything-v2", "einops", "lmdeploy", "loca", "qreader", "scipy", "timm", "transformers"]
 clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
 florencev2 = ["einops", "scipy", "timm", "transformers"]
 florencev2-qa = ["einops", "scipy", "timm", "transformers"]
-ixc-25 = ["lmdeploy", "transformers"]
+ixc-25 = ["decord", "lmdeploy", "transformers"]
 loca-model = ["loca"]
 nsfw-classification = ["scipy", "transformers"]
 owlv2 = ["scipy", "transformers"]
@@ -4303,4 +4303,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "08e7cbcab4d923161de9d6276357175c15db7c0cddc61274b11b6fca286c6058"
+content-hash = "dff1cca464898ace5504be0202d7304af6d88a5c7064c3e777125ca8b8de00ad"
