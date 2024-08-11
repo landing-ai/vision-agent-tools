@@ -5,45 +5,22 @@ on:
 
 jobs:
   run-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-gpu-runner
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install poetry
-        run: pipx install poetry
 
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
-          cache: 'poetry'
+          python-version: '3.10'
 
-      - name: qr-reader tests
-        run: |
-          make install-qr-reader
-          make test-qr-reader
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: "1.7.1"
 
-      - name: owlv2 tests
+      - name: tests
         run: |
-          make install-owlv2
-          make test-owlv2
-
-      - name: zeroshot-counting tests
-        run: |
-          make install-zeroshot-counting
-          make test-zeroshot-counting
-
-      - name: depth-anything-v2 tests
-        run: |
-          make install-depth-anything-v2
-          make test-depth-anything-v2
-
-      - name: nsfw-classification tests
-        run: |
-          make install-nsfw-classification
-          make test-nsfw-classification
-
-      - name: controlnet-aux tests
-        run: |
-          make install-controlnet-aux
-          make test-controlnet-aux
+          poetry run pip install wheel
+          make install
+          make test
