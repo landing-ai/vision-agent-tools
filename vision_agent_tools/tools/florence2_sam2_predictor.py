@@ -1,49 +1,59 @@
-from typing import Any, Dict, List, Union
+from annotated_types import Gt, Lt
+from dataclasses import dataclass
+from typing_extensions import Annotated
 
 import torch
-import cv2
 import numpy as np
 from PIL import Image
-from transformers import AutoModelForCausalLM, AutoProcessor
-from vision_agent_tools.tools.shared_types import BaseTool
+from pydantic import validate_call
+
+from vision_agent_tools.shared_types import BaseTool, VideoNumpy, SegmentationMask
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
+# import hydra
+
+# hydra.core.global_hydra.GlobalHydra.instance().clear()
+# hydra.initialize_config_module(
+#     "vision_agent_tools/tools/sam2_configs", version_base="1.2"
+# )
 
 
-def check_valid_image(file_name: str) -> bool:
-    return file_name.endswith((".jpg", ".jpeg", ".png", ".bmp", ".webp"))
+_HF_MODEL = "facebook/sam2-hiera-large"
 
 
-def check_valid_video(file_name: str) -> bool:
-    return file_name.endswith((".mp4", ".avi", ".mov"))
+@dataclass
+class ImageBboxAndMaskLabel:
+    label: str
+    bounding_box: list[
+        Annotated[float, "x_min", Gt(0), Lt(1)],
+        Annotated[float, "y_min", Gt(0), Lt(1)],
+        Annotated[float, "x_max", Gt(0), Lt(1)],
+        Annotated[float, "y_max", Gt(0), Lt(1)],
+    ]
+    mask: SegmentationMask | None
 
 
-def read_frames(video_path: str) -> List[np.ndarray]:
-    frames = []
-    vid_cap = cv2.VideoCapture(video_path)
-    success, frame = vid_cap.read()
-    while success:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frames.append(frame)
-        success, frame = vid_cap.read()
-    return frames
+@dataclass
+class MaskLabel:
+    label: str
+    mask: SegmentationMask
 
 
 class Florence2SAM2(BaseTool):
     def __init__(self):
         self.florence2 = Florencev2()
-        self.video_predictor = SAM2VideoPredictor.from_pretrained("facebook/sam2-hiera-large")
+        self.video_predictor = SAM2VideoPredictor.from_pretrained(_HF_MODEL)
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
     @torch.inference_mode()
     def get_bbox_and_mask(
-        self, image: Image.Image, prompts: List[str], return_mask: bool = True
-    ) -> Dict[int, Dict[str, Any]]:
-        objs = {0: {}}
+        self, image: Image.Image, prompts: list[str], return_mask: bool = True
+    ) -> dict[int, ImageBboxAndMaskLabel]:
+        objs = {}
         self.image_predictor.set_image(np.array(image))
-        ann_id = 0
+        annotation_id = 0
         for prompt in prompts:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
                 bboxes = self.florence2(
@@ -52,54 +62,51 @@ class Florence2SAM2(BaseTool):
             if return_mask:
                 with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                     masks, _, _ = self.image_predictor.predict(
-                        point_coords=None, point_labels=None, box=bboxes, multimask_output=False
+                        point_coords=None,
+                        point_labels=None,
+                        box=bboxes,
+                        multimask_output=False,
                     )
             for i in range(len(bboxes)):
-                objs[0][ann_id] = {
-                    "box": bboxes[i],
-                    "mask": (
+                objs[annotation_id] = ImageBboxAndMaskLabel(
+                    bounding_box=bboxes[i],
+                    mask=(
                         masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :]
-                    ) if return_mask else None,
-                    "label": prompt,
-                }
-                ann_id += 1
+                    )
+                    if return_mask
+                    else None,
+                    label=prompt,
+                )
+                annotation_id += 1
         return objs
 
     @torch.inference_mode()
     def handle_image(
-        self, media: Union[str, Image.Image], prompts: List[str]
-    ) -> Dict[int, Dict[str, Any]]:
+        self, image: Image.Image, prompts: list[str]
+    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
-        if isinstance(media, str) and check_valid_image(media):
-            image = Image.open(media)
-        else:
-            image = media
-
         objs = self.get_bbox_and_mask(image.convert("RGB"), prompts)
-        return objs
+        return {"0": objs}
 
-    def handle_video(self, media: str, prompts: List[str]) -> Dict[int, Dict[str, Any]]:
-        frames = read_frames(media)
-        # cap length at 60s of 30fps
-        if len(frames) > 60 * 30:
-            raise ValueError("Video too long")
+    def handle_video(
+        self, video: VideoNumpy, prompts: list[str]
+    ) -> dict[int, dict[int, MaskLabel]]:
         objs = self.get_bbox_and_mask(
-            Image.fromarray(frames[0]).convert("RGB"), prompts, return_mask=False
+            Image.fromarray(video[0]).convert("RGB"), prompts, return_mask=False
         )
         torch.autocast(device_type="cuda", dtype=torch.bfloat16).__enter__()
-        inference_state = self.video_predictor.init_state(video=frames)
-        for label in objs:
-            for ann_id in objs[0]:
-                _, _, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                    inference_state=inference_state,
-                    frame_idx=0,
-                    obj_id=ann_id,
-                    box=objs[label][ann_id]["box"]
-                )
+        inference_state = self.video_predictor.init_state(video=video)
+        for annotation_id in objs:
+            _, _, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                inference_state=inference_state,
+                frame_idx=0,
+                obj_id=annotation_id,
+                box=objs[annotation_id].bounding_box,
+            )
 
-        obj_id_to_label = {}
-        for ann_id in objs[0]:
-            obj_id_to_label[ann_id] = objs[0][ann_id]["label"]
+        annotation_id_to_label = {}
+        for annotation_id in objs:
+            annotation_id_to_label[annotation_id] = objs[annotation_id].label
 
         video_segments = {}
         for (
@@ -108,17 +115,20 @@ class Florence2SAM2(BaseTool):
             out_mask_logits,
         ) in self.video_predictor.propagate_in_video(inference_state):
             video_segments[out_frame_idx] = {
-                out_obj_id: {
-                    "mask": (out_mask_logits[i] > 0.0).cpu().numpy(),
-                    "label": obj_id_to_label[out_obj_id],
-                }
+                out_obj_id: MaskLabel(
+                    mask=(out_mask_logits[i] > 0.0).cpu().numpy(),
+                    label=annotation_id_to_label[out_obj_id],
+                )
                 for i, out_obj_id in enumerate(out_obj_ids)
             }
         self.video_predictor.reset_state(inference_state)
         return video_segments
 
+    @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
-    def __call__(self, media: Union[str, Image.Image], prompts: List[str]) -> Any:
+    def __call__(
+        self, media: Image.Image | VideoNumpy, prompts: list[str]
+    ) -> dict[int, dict[int, ImageBboxAndMaskLabel | MaskLabel]]:
         """Returns a dictionary where the first key is the frame index then an annotation
         ID, then a dictionary of the mask, label and possibly bbox (for images) for each
         annotation ID. For example:
@@ -131,24 +141,36 @@ class Florence2SAM2(BaseTool):
             1: ...
         }
         """
-        if isinstance(media, Image.Image) or (
-            isinstance(media, str) and check_valid_image(media)
-        ):
+        if isinstance(media, Image.Image):
             return self.handle_image(media, prompts)
-        elif isinstance(media, str) and check_valid_video(media):
+        elif isinstance(media, np.ndarray):
             return self.handle_video(media, prompts)
-        else:
-            raise ValueError(f"Invalid media type")
+        # No need to raise an error here, the validatie_call decorator will take care of it
 
 
 if __name__ == "__main__":
-    model = Florence2SAM2()
-    video = "/home/dillon/segment-anything-2-curr/section1_zoom_clip.mp4"
-    prompts = ["soccer player", "soccer ball"]
-    output = model(video, prompts)
-
     from PIL import Image, ImageDraw, ImageFont
     import matplotlib.pyplot as plt
+    import cv2
+
+    def read_frames(video: str):
+        cap = cv2.VideoCapture(video)
+        frames = []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frames.append(frame)
+        cap.release()
+        return np.array(frames)
+
+    model = Florence2SAM2()
+    video_path = (
+        "/home/camilo-zapata/landing_ai/vision-agent-tools/sample_data/football.mp4"
+    )
+    video = read_frames(video_path)
+    prompts = ["shoe", "hand"]
+    output = model(video, prompts)
 
     def get_text_coords_from_mask(mask, v_gap=10, h_gap=10):
         mask = mask.astype(np.uint8)
@@ -188,12 +210,12 @@ if __name__ == "__main__":
             for obj_id in video_segments[i]:
                 color = list(map(lambda x: int(255 * x), cmap(obj_id)[:3]))
                 np_mask = np.zeros((pil_image.size[1], pil_image.size[0], 4))
-                mask = video_segments[i][obj_id]["mask"][0, :, :]
+                mask = video_segments[i][obj_id].mask[0, :, :]
                 np_mask[mask > 0, :] = color + [int(255 * 0.6)]
                 mask_image = Image.fromarray(np_mask.astype(np.uint8))
                 pil_image = Image.alpha_composite(pil_image, mask_image)
 
-                label = video_segments[i][obj_id]["label"]
+                label = video_segments[i][obj_id].label
                 label = label + f": {obj_id}"
                 draw = ImageDraw.Draw(pil_image)
                 text_box = draw.textbbox((0, 0), text=label, font=font)
@@ -207,9 +229,11 @@ if __name__ == "__main__":
                     draw.rectangle((x, y, text_box[2], text_box[3]), fill=tuple(color))
                     draw.text((x, y), label, fill="black", font=font)
 
-            out.write(cv2.cvtColor(np.array(pil_image.convert("RGB")), cv2.COLOR_BGR2RGB))
+            out.write(
+                cv2.cvtColor(np.array(pil_image.convert("RGB")), cv2.COLOR_BGR2RGB)
+            )
         if out is not None:
             out.release()
 
-    frames = read_frames(video)
+    frames = read_frames(video_path)
     masks_to_video("save.mp4", output, frames)

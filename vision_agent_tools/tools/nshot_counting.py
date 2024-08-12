@@ -9,11 +9,11 @@ import torch
 from PIL import Image
 from loca.loca import LOCA
 from .utils import download, CHECKPOINT_DIR
-from typing import Union, Optional, Any
+from typing import Optional, Any
 from torch import nn
 from torchvision import transforms as T
 from pydantic import BaseModel
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 
 
 class CountingDetection(BaseModel):

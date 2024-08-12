@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from qreader import QReader
 
-from vision_agent_tools.tools.shared_types import BaseTool, Polygon, Point, BoundingBox
+from vision_agent_tools.shared_types import BaseTool, Polygon, Point, BoundingBox
 
 
 class QRCodeDetection(BaseModel):

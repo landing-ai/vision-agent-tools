@@ -4,7 +4,7 @@ from typing import Optional, Any
 from enum import Enum
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"

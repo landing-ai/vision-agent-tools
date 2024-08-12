@@ -3363,8 +3363,8 @@ dev = ["black (==24.2.0)", "ufmt (==2.0.0b2)", "usort (==1.0.2)"]
 [package.source]
 type = "git"
 url = "https://github.com/landing-ai/segment-anything-2.git"
-reference = "HEAD"
-resolved_reference = "086a0cc2669a39838f13c8add6dcb9e2a117232c"
+reference = "main"
+resolved_reference = "b7e6569a8d6c9a508840fbb8c1b486a967fb335e"
 
 [[package]]
 name = "scikit-image"
@@ -4483,4 +4483,4 @@ sam-2-model = ["sam-2"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "68619db0402c1513162fe6a94364e8b99b8e6943dddcc34d2cab630e841a55c9"
+content-hash = "4abb57a64341999bd705abf0bece64034d5631f13e6e6d6372055580ddcc28de"

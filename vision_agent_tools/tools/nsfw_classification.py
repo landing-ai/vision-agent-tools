@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 from pydantic import BaseModel
 from transformers import AutoModelForImageClassification, ViTImageProcessor
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 
 CHECKPOINT = "Falconsai/nsfw_image_detection"
 

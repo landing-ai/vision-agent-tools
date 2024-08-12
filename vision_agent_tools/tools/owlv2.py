@@ -5,7 +5,7 @@ from PIL import Image
 from pydantic import BaseModel
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 
 MODEL_NAME = "google/owlv2-large-patch14-ensemble"
 PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"

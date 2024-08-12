@@ -1,7 +1,6 @@
 import torch
 from PIL import Image
-from vision_agent_tools.types import VideoNumpy
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool, VideoNumpy
 from pydantic import Field, validate_call
 from typing import Annotated, Optional
 
