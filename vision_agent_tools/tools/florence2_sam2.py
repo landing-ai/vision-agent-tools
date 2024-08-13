@@ -35,7 +35,25 @@ class MaskLabel:
 
 
 class Florence2SAM2(BaseTool):
-    def __init__(self):
+    """
+    A class that receives a video or an image plus a list of text prompts and
+    returns the instance segmentation for the text prompts in each frame.
+    """
+
+    def __init__(self, device: str | None = None):
+        """
+        Initializes the Florence2SAM2 object with a pre-trained Florencev2 model
+        and a SAM2 model.
+        """
+        self.device = (
+            device
+            if device in ["cuda", "mps", "cpu"]
+            else "cuda"
+            if torch.cuda.is_available()
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
+        )
         self.florence2 = Florencev2()
         self.video_predictor = SAM2VideoPredictor.from_pretrained(_HF_MODEL)
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
@@ -48,12 +66,12 @@ class Florence2SAM2(BaseTool):
         self.image_predictor.set_image(np.array(image, dtype=np.uint8))
         annotation_id = 0
         for prompt in prompts:
-            with torch.autocast(device_type="cuda", dtype=torch.float16):
+            with torch.autocast(device_type=self.device, dtype=torch.float16):
                 bboxes = self.florence2(
                     image, PromptTask.CAPTION_TO_PHRASE_GROUNDING, prompt
                 )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]["bboxes"]
             if return_mask:
-                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
                     masks, _, _ = self.image_predictor.predict(
                         point_coords=None,
                         point_labels=None,
@@ -89,7 +107,7 @@ class Florence2SAM2(BaseTool):
         objs = self.get_bbox_and_mask(
             Image.fromarray(video[0]).convert("RGB"), prompts, return_mask=False
         )
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
             inference_state = self.video_predictor.init_state(video=video)
             for annotation_id in objs:
                 _, _, out_mask_logits = self.video_predictor.add_new_points_or_box(
@@ -122,23 +140,31 @@ class Florence2SAM2(BaseTool):
     @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
     def __call__(
-        self, media: Image.Image | VideoNumpy, prompts: list[str]
+        self,
+        prompts: list[str],
+        image: Image.Image | None = None,
+        video: VideoNumpy | None = None,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel | MaskLabel]]:
         """Returns a dictionary where the first key is the frame index then an annotation
-        ID, then a dictionary of the mask, label and possibly bbox (for images) for each
+        ID, then an object with the mask, label and possibly bbox (for images) for each
         annotation ID. For example:
         {
             0:
                 {
-                    0: {"mask": np.ndarray, "label": "car"},
-                    1: {"mask", np.ndarray, "label": "person"}
+                    0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
+                    1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
                 },
             1: ...
         }
         """
-        if isinstance(media, Image.Image):
-            return self.handle_image(media, prompts)
-        elif isinstance(media, np.ndarray):
-            assert media.ndim == 4, "Video should have 4 dimensions"
-            return self.handle_video(media, prompts)
+        if image is None and video is None:
+            raise ValueError("Either 'image' or 'video' must be provided.")
+        if image is not None and video is not None:
+            raise ValueError("Only one of 'image' or 'video' can be provided.")
+
+        if image is not None:
+            return self.handle_image(image, prompts)
+        elif video is not None:
+            assert video.ndim == 4, "Video should have 4 dimensions"
+            return self.handle_video(video, prompts)
         # No need to raise an error here, the validatie_call decorator will take care of it

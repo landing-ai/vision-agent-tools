@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy
 from pydantic import Field, validate_call
-from typing import Annotated, Optional
+from typing import Annotated
 
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
 from transformers.dynamic_module_utils import get_class_from_dynamic_module
@@ -73,18 +73,18 @@ class InternLMXComposer2(BaseTool):
     def __call__(
         self,
         prompt: str,
-        image: Optional[Image.Image] = None,
-        video: Optional[VideoNumpy] = None,
-        frames: Optional[Frames] = MAX_NUMBER_OF_FRAMES,
+        image: Image.Image | None = None,
+        video: VideoNumpy | None = None,
+        frames: Frames = MAX_NUMBER_OF_FRAMES,
     ) -> str:
         """
         InternLMXComposer2 model answers questions about a video or image.
 
         Args:
             prompt (str): The prompt with the question to be answered.
-            image (Optional[Image.Image]): The image to be analyzed.
-            video (Optional[VideoNumpy]): A numpy array containing the different images, representing the video.
-            frames (Optional[int]): The number of frames to be used from the video.
+            image (Image.Image | None): The image to be analyzed.
+            video (VideoNumpy | None): A numpy array containing the different images, representing the video.
+            frames (int): The number of frames to be used from the video.
 
         Returns:
             str: The answer to the prompt.

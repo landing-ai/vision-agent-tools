@@ -7,13 +7,13 @@ from vision_agent_tools.tools.florence2_sam2 import Florence2SAM2
 
 def test_successful_florence2_sam2_image():
     """
-    This test verifies that CLIPMediaSim returns a valid iresponse when passed a target_text
+    This test verifies that Florence2SAM2 returns a valid iresponse when passed an image
     """
     test_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
 
     florence2_sam2 = Florence2SAM2()
 
-    results = florence2_sam2(media=test_image, prompts=["tomato"])
+    results = florence2_sam2(image=test_image, prompts=["tomato"])
 
     # The disctionary should have only one key: 0
     assert len(results) == 1
@@ -34,7 +34,7 @@ def test_successful_florence2_sam2_image():
 
 def test_successful_florence2_sam2_video():
     """
-    This test verifies that CLIPMediaSim returns a valid iresponse when passed a target_text
+    This test verifies that Florence2SAM2 returns a valid iresponse when passed a video
     """
     tomatoes_image = np.array(
         Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB"), dtype=np.uint8
@@ -45,7 +45,7 @@ def test_successful_florence2_sam2_video():
 
     florence2_sam2 = Florence2SAM2()
 
-    results = florence2_sam2(media=test_video, prompts=["tomato"])
+    results = florence2_sam2(video=test_video, prompts=["tomato"])
 
     # The disctionary should have 2 keys for the two frames in the video
     assert len(results) == 2
@@ -69,12 +69,15 @@ def test_successful_florence2_sam2_video():
 
 def test_florence2_sam2_invalid_media():
     """
-    This test verifies that CLIPMediaSim raises a ValueError if the media is not a valid type.
+    This test verifies that Florence2SAM2 raises an error if the media is not a valid.
     """
     florence2_sam2 = Florence2SAM2()
 
     with pytest.raises(ValueError):
-        florence2_sam2(media="invalid media", prompts=["tomato"])
+        florence2_sam2(image="invalid media", prompts=["tomato"])
+
+    with pytest.raises(ValueError):
+        florence2_sam2(video="invalid media", prompts=["tomato"])
 
     with pytest.raises(AssertionError):
-        florence2_sam2(media=np.array([1, 2, 3]), prompts=["tomato"])
+        florence2_sam2(video=np.array([1, 2, 3]), prompts=["tomato"])
