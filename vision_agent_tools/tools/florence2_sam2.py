@@ -11,12 +11,6 @@ from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
-# import hydra
-
-# hydra.core.global_hydra.GlobalHydra.instance().clear()
-# hydra.initialize_config_module(
-#     "vision_agent_tools/tools/sam2_configs", version_base="1.2"
-# )
 
 
 _HF_MODEL = "facebook/sam2-hiera-large"
