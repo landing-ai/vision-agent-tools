@@ -54,7 +54,7 @@ controlnet-aux = ["controlnet-aux"]
 florencev2-qa = ["transformers", "scipy", "timm", "einops"]
 clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
-sam-2-model = ["sam-2"]
+florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 
 
 [build-system]
