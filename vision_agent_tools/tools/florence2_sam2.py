@@ -1,4 +1,3 @@
-from annotated_types import Gt, Lt
 from dataclasses import dataclass
 from typing_extensions import Annotated
 
@@ -27,10 +26,10 @@ _HF_MODEL = "facebook/sam2-hiera-large"
 class ImageBboxAndMaskLabel:
     label: str
     bounding_box: list[
-        Annotated[float, "x_min", Gt(0), Lt(1)],
-        Annotated[float, "y_min", Gt(0), Lt(1)],
-        Annotated[float, "x_max", Gt(0), Lt(1)],
-        Annotated[float, "y_max", Gt(0), Lt(1)],
+        Annotated[float, "x_min"],
+        Annotated[float, "y_min"],
+        Annotated[float, "x_max"],
+        Annotated[float, "y_max"],
     ]
     mask: SegmentationMask | None
 
@@ -52,7 +51,7 @@ class Florence2SAM2(BaseTool):
         self, image: Image.Image, prompts: list[str], return_mask: bool = True
     ) -> dict[int, ImageBboxAndMaskLabel]:
         objs = {}
-        self.image_predictor.set_image(np.array(image))
+        self.image_predictor.set_image(np.array(image, dtype=np.uint8))
         annotation_id = 0
         for prompt in prompts:
             with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -86,11 +85,13 @@ class Florence2SAM2(BaseTool):
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
         objs = self.get_bbox_and_mask(image.convert("RGB"), prompts)
-        return {"0": objs}
+        return {0: objs}
 
+    @torch.inference_mode()
     def handle_video(
         self, video: VideoNumpy, prompts: list[str]
     ) -> dict[int, dict[int, MaskLabel]]:
+        self.image_predictor.reset_predictor()
         objs = self.get_bbox_and_mask(
             Image.fromarray(video[0]).convert("RGB"), prompts, return_mask=False
         )
@@ -116,7 +117,7 @@ class Florence2SAM2(BaseTool):
         ) in self.video_predictor.propagate_in_video(inference_state):
             video_segments[out_frame_idx] = {
                 out_obj_id: MaskLabel(
-                    mask=(out_mask_logits[i] > 0.0).cpu().numpy(),
+                    mask=(out_mask_logits[i][0] > 0.0).cpu().numpy(),
                     label=annotation_id_to_label[out_obj_id],
                 )
                 for i, out_obj_id in enumerate(out_obj_ids)
@@ -144,6 +145,7 @@ class Florence2SAM2(BaseTool):
         if isinstance(media, Image.Image):
             return self.handle_image(media, prompts)
         elif isinstance(media, np.ndarray):
+            assert media.ndim == 4, "Video should have 4 dimensions"
             return self.handle_video(media, prompts)
         # No need to raise an error here, the validatie_call decorator will take care of it
 

@@ -13,7 +13,7 @@ DType = TypeVar("DType", bound=np.generic)
 
 VideoNumpy = Annotated[npt.NDArray[DType], Literal["N", "N", "N", 3]]
 
-SegmentationMask = Annotated[npt.NDArray[np.float32], Literal["N", "N"]]
+SegmentationMask = Annotated[npt.NDArray[np.bool_], Literal["N", "N"]]
 
 
 class Point(BaseModel):
