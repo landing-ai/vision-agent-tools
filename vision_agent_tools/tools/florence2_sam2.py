@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from pydantic import validate_call
 
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy, SegmentationMask
+from vision_agent_tools.shared_types import BaseTool, VideoNumpy, SegmentationBitMask
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
@@ -31,13 +31,13 @@ class ImageBboxAndMaskLabel:
         Annotated[float, "x_max"],
         Annotated[float, "y_max"],
     ]
-    mask: SegmentationMask | None
+    mask: SegmentationBitMask | None
 
 
 @dataclass
 class MaskLabel:
     label: str
-    mask: SegmentationMask
+    mask: SegmentationBitMask
 
 
 class Florence2SAM2(BaseTool):
