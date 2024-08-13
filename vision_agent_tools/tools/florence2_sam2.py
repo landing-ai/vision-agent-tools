@@ -89,35 +89,35 @@ class Florence2SAM2(BaseTool):
         objs = self.get_bbox_and_mask(
             Image.fromarray(video[0]).convert("RGB"), prompts, return_mask=False
         )
-        torch.autocast(device_type="cuda", dtype=torch.bfloat16).__enter__()
-        inference_state = self.video_predictor.init_state(video=video)
-        for annotation_id in objs:
-            _, _, out_mask_logits = self.video_predictor.add_new_points_or_box(
-                inference_state=inference_state,
-                frame_idx=0,
-                obj_id=annotation_id,
-                box=objs[annotation_id].bounding_box,
-            )
-
-        annotation_id_to_label = {}
-        for annotation_id in objs:
-            annotation_id_to_label[annotation_id] = objs[annotation_id].label
-
-        video_segments = {}
-        for (
-            out_frame_idx,
-            out_obj_ids,
-            out_mask_logits,
-        ) in self.video_predictor.propagate_in_video(inference_state):
-            video_segments[out_frame_idx] = {
-                out_obj_id: MaskLabel(
-                    mask=(out_mask_logits[i][0] > 0.0).cpu().numpy(),
-                    label=annotation_id_to_label[out_obj_id],
+        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+            inference_state = self.video_predictor.init_state(video=video)
+            for annotation_id in objs:
+                _, _, out_mask_logits = self.video_predictor.add_new_points_or_box(
+                    inference_state=inference_state,
+                    frame_idx=0,
+                    obj_id=annotation_id,
+                    box=objs[annotation_id].bounding_box,
                 )
-                for i, out_obj_id in enumerate(out_obj_ids)
-            }
-        self.video_predictor.reset_state(inference_state)
-        return video_segments
+
+            annotation_id_to_label = {}
+            for annotation_id in objs:
+                annotation_id_to_label[annotation_id] = objs[annotation_id].label
+
+            video_segments = {}
+            for (
+                out_frame_idx,
+                out_obj_ids,
+                out_mask_logits,
+            ) in self.video_predictor.propagate_in_video(inference_state):
+                video_segments[out_frame_idx] = {
+                    out_obj_id: MaskLabel(
+                        mask=(out_mask_logits[i][0] > 0.0).cpu().numpy(),
+                        label=annotation_id_to_label[out_obj_id],
+                    )
+                    for i, out_obj_id in enumerate(out_obj_ids)
+                }
+            self.video_predictor.reset_state(inference_state)
+            return video_segments
 
     @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
