@@ -236,6 +236,26 @@
   
   
     <li class="md-nav__item">
+      <a href="../florence2-sam2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Florence2Sam2
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../florencev2-qa/" class="md-nav__link">
         
   
@@ -592,7 +612,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="vision_agent_tools.tools.shared_types.BaseTool">BaseTool</span></code></p>
+              Bases: <code><span title="vision_agent_tools.shared_types.BaseTool">BaseTool</span></code></p>
 
 
       <p><a href="https://huggingface.co/internlm/internlm-xcomposer2d5-7b-4bit">InternLM-XComposer-2.5</a> is a tool that excels in various text-image
@@ -654,7 +674,7 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
           <tr class="doc-section-item">
             <td><code>image</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="PIL.Image.Image">Image</span>]</code>
+                  <code><span title="PIL.Image.Image">Image</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -668,7 +688,7 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
           <tr class="doc-section-item">
             <td><code>video</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="vision_agent_tools.types.VideoNumpy">VideoNumpy</span>]</code>
+                  <code><span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -682,7 +702,7 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
           <tr class="doc-section-item">
             <td><code>frames</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[int]</code>
+                  <code>int</code>
             </td>
             <td>
               <div class="doc-md-description">
