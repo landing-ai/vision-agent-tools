@@ -1,10 +1,9 @@
 from PIL import Image
-from typing import Dict
 import torch
 
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 
 
 class FlorenceQA(BaseTool):

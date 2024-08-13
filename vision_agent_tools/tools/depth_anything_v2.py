@@ -3,7 +3,6 @@ import os
 # Run this line before loading torch
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-import cv2
 import numpy as np
 import os.path as osp
 import torch
@@ -11,7 +10,7 @@ import torch
 from PIL import Image
 from .utils import download, CHECKPOINT_DIR
 from typing import Union, Any
-from vision_agent_tools.tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool
 from depth_anything_v2.dpt import DepthAnythingV2 as DepthAnythingV2Model
 from pydantic import BaseModel
 

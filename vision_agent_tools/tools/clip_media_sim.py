@@ -8,8 +8,7 @@ from PIL import Image
 from pydantic import validate_call
 from transformers import CLIPModel, CLIPProcessor
 
-from vision_agent_tools.tools.shared_types import BaseTool
-from vision_agent_tools.types import VideoNumpy
+from vision_agent_tools.shared_types import BaseTool, VideoNumpy
 
 
 _HF_MODEL = "openai/clip-vit-large-patch14"
