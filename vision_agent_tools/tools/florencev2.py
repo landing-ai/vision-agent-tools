@@ -64,7 +64,7 @@ class Florencev2(BaseTool):
         model_snapshot = snapshot_download(
             MODEL_NAME,
             cache_dir=cache_dir,
-            local_files_only=True,
+            local_files_only= True if cache_dir is None else False,
         )
         # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/snap_id_6bf179230dxxx
         print("model_saved_on: ", model_snapshot)
