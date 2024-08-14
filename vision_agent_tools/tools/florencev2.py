@@ -10,8 +10,6 @@ from vision_agent_tools.shared_types import BaseTool
 from pathlib import Path
 from huggingface_hub import snapshot_download
 
-MODEL_NAME = "microsoft/Florence-2-large"
-
 
 class PromptTask(str, Enum):
     """
@@ -57,29 +55,32 @@ class Florencev2(BaseTool):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
+    _MODEL_NAME = "microsoft/Florence-2-large"
+
     def __init__(self, cache_dir: str | Path | None = None):
         """
         Initializes the Florence-2 model.
         """
-        cached_folder = os.path.join(
-            cache_dir,
-            f"models--{os.path.dirname(MODEL_NAME)}--{os.path.basename(MODEL_NAME)}",
-        ) if cache_dir is not None else ""
-        model_snapshot = snapshot_download(
-            MODEL_NAME,
-            cache_dir=cache_dir,
-            local_files_only= True if os.path.exists(cached_folder) else False,
+        cached_folder = (
+            os.path.join(
+                cache_dir,
+                f"models--{os.path.dirname(self._MODEL_NAME)}--{os.path.basename(self._MODEL_NAME)}",
+            )
+            if cache_dir is not None
+            else ""
         )
-        # If no cache_dir then the default store path is:
-        # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/snap_id_6bf179230dxxx
-        print("model_saved_on: ", model_snapshot)
-        snapshot_folder = os.path.dirname(os.path.dirname(model_snapshot))
-        print("snapshot_folder: ", snapshot_folder)
+        model_snapshot = snapshot_download(
+            self._MODEL_NAME,
+            cache_dir=cache_dir,
+            local_files_only=True if os.path.exists(cached_folder) else False,
+        )
+        # If there is no cache_dir provided then, the default store path is:
+        # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/6bf179230dxxx
         self._model = AutoModelForCausalLM.from_pretrained(
-            model_snapshot, trust_remote_code=True, local_files_only=True, cache_dir=snapshot_folder
+            model_snapshot, trust_remote_code=True, local_files_only=True
         )
         self._processor = AutoProcessor.from_pretrained(
-            model_snapshot, trust_remote_code=True, local_files_only=True, cache_dir=snapshot_folder
+            model_snapshot, trust_remote_code=True, local_files_only=True
         )
 
         self.device = (
