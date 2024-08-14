@@ -56,16 +56,14 @@ class Florencev2(BaseTool):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
-    def __init__(self, cache_dir: str | Path | None):
+    def __init__(self, cache_dir: str | Path | None = None):
         """
         Initializes the Florence-2 model.
         """
-        HOME_DIR = Path.home()
         model_snapshot = snapshot_download(
             MODEL_NAME,
             cache_dir=cache_dir,
             local_files_only=True,
-            local_dir= HOME_DIR if cache_dir is None else None
         )
 
         self._model = AutoModelForCausalLM.from_pretrained(
