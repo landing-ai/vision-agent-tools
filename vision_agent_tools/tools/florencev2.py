@@ -65,7 +65,7 @@ class Florencev2(BaseTool):
             cache_dir=cache_dir,
             local_files_only=True,
         )
-
+        print("model_saved_on: ", model_snapshot)
         self._model = AutoModelForCausalLM.from_pretrained(
             model_snapshot, trust_remote_code=True, local_files_only=True
         )
