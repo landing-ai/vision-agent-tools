@@ -1,13 +1,15 @@
+import os
 import torch
 
 from typing import Optional, Any
 from enum import Enum
 from PIL import Image
+from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoProcessor
 from vision_agent_tools.shared_types import BaseTool
+from huggingface_hub import snapshot_download
 
 MODEL_NAME = "microsoft/Florence-2-large"
-PROCESSOR_NAME = "microsoft/Florence-2-large"
 
 
 class PromptTask(str, Enum):
@@ -54,15 +56,21 @@ class Florencev2(BaseTool):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
-    def __init__(self):
+    def __init__(self, cache_dir: str | Path | None):
         """
         Initializes the Florence-2 model.
         """
+        model_snapshot = snapshot_download(
+            MODEL_NAME,
+            cache_dir=cache_dir,
+            local_files_only=True,
+        )
+
         self._model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME, trust_remote_code=True
+            model_snapshot, trust_remote_code=True, local_files_only=True
         )
         self._processor = AutoProcessor.from_pretrained(
-            PROCESSOR_NAME, trust_remote_code=True
+            model_snapshot, trust_remote_code=True, local_files_only=True
         )
 
         self.device = (
