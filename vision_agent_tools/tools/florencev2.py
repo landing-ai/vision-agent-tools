@@ -71,10 +71,10 @@ class Florencev2(BaseTool):
         snapshot_folder = os.path.dirname(os.path.dirname(model_snapshot))
         print("snapshot_folder: ", snapshot_folder)
         self._model = AutoModelForCausalLM.from_pretrained(
-            snapshot_folder, trust_remote_code=True, local_files_only=True
+            model_snapshot, trust_remote_code=True, local_files_only=True, cache_dir=snapshot_folder
         )
         self._processor = AutoProcessor.from_pretrained(
-            snapshot_folder, trust_remote_code=True, local_files_only=True
+            model_snapshot, trust_remote_code=True, local_files_only=True, cache_dir=snapshot_folder
         )
 
         self.device = (
