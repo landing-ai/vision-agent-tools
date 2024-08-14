@@ -1,4 +1,3 @@
-import os
 import torch
 
 from typing import Optional, Any
@@ -7,6 +6,7 @@ from PIL import Image
 from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoProcessor
 from vision_agent_tools.shared_types import BaseTool
+from pathlib import Path
 from huggingface_hub import snapshot_download
 
 MODEL_NAME = "microsoft/Florence-2-large"
@@ -60,10 +60,12 @@ class Florencev2(BaseTool):
         """
         Initializes the Florence-2 model.
         """
+        HOME_DIR = Path.home()
         model_snapshot = snapshot_download(
             MODEL_NAME,
             cache_dir=cache_dir,
             local_files_only=True,
+            local_dir= HOME_DIR if cache_dir is None else None
         )
 
         self._model = AutoModelForCausalLM.from_pretrained(
