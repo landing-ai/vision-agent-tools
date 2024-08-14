@@ -61,11 +61,16 @@ class Florencev2(BaseTool):
         """
         Initializes the Florence-2 model.
         """
+        cached_folder = os.path.join(
+            cache_dir,
+            f"models--{os.path.dirname(MODEL_NAME)}--{os.path.basename(MODEL_NAME)}",
+        ) if cache_dir is not None else ""
         model_snapshot = snapshot_download(
             MODEL_NAME,
             cache_dir=cache_dir,
-            local_files_only= True if cache_dir is None else False,
+            local_files_only= True if os.path.exists(cached_folder) else False,
         )
+        # If no cache_dir then the default store path is:
         # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/snap_id_6bf179230dxxx
         print("model_saved_on: ", model_snapshot)
         snapshot_folder = os.path.dirname(os.path.dirname(model_snapshot))
