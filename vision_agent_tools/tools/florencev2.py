@@ -1,3 +1,4 @@
+import os
 import torch
 
 from typing import Optional, Any
@@ -65,12 +66,15 @@ class Florencev2(BaseTool):
             cache_dir=cache_dir,
             local_files_only=True,
         )
+        # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/snap_id_6bf179230dxxx
         print("model_saved_on: ", model_snapshot)
+        snapshot_folder = os.path.dirname(os.path.dirname(model_snapshot))
+        print("snapshot_folder: ", snapshot_folder)
         self._model = AutoModelForCausalLM.from_pretrained(
-            model_snapshot, trust_remote_code=True, local_files_only=True
+            snapshot_folder, trust_remote_code=True, local_files_only=True
         )
         self._processor = AutoProcessor.from_pretrained(
-            model_snapshot, trust_remote_code=True, local_files_only=True
+            snapshot_folder, trust_remote_code=True, local_files_only=True
         )
 
         self.device = (
