@@ -76,7 +76,9 @@ class Florencev2(BaseTool):
         is_default_cached_folder = (
             True if os.path.exists(default_cache_model_dir) else False
         )
-        is_model_cached = is_user_cached_folder or is_default_cached_folder
+        is_model_cached = (cache_dir is not None and is_user_cached_folder) or (
+            cache_dir is None and is_default_cached_folder
+        )
         print("Is the model cached?:  ", is_model_cached)
         print(
             "Using cache folder: ",
