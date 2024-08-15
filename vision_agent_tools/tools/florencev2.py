@@ -8,6 +8,7 @@ from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoProcessor
 from vision_agent_tools.shared_types import BaseTool
 from pathlib import Path
+from vision_agent_tools.shared_types import DEFAULT_HF_CHACHE_DIR
 from huggingface_hub import snapshot_download
 
 
@@ -61,19 +62,25 @@ class Florencev2(BaseTool):
         """
         Initializes the Florence-2 model.
         """
+        model_dir = f"models--{os.path.dirname(self._MODEL_NAME)}--{os.path.basename(self._MODEL_NAME)}",
+
         cached_folder = (
-            os.path.join(
-                cache_dir,
-                f"models--{os.path.dirname(self._MODEL_NAME)}--{os.path.basename(self._MODEL_NAME)}",
-            )
+            os.path.join(cache_dir, model_dir)
             if cache_dir is not None
             else ""
         )
+
+        is_user_cached_folder= True if os.path.exists(cached_folder) else False
+        is_default_cached_folder = True if os.path.exists(os.path.join(DEFAULT_HF_CHACHE_DIR, model_dir)) else False
+        is_model_cached = is_user_cached_folder or is_default_cached_folder
+        print("Is the model cached?:  ", is_model_cached)
+        print("Using cache folder: ",is_user_cached_folder if is_user_cached_folder else is_default_cached_folder)
         model_snapshot = snapshot_download(
             self._MODEL_NAME,
             cache_dir=cache_dir,
-            local_files_only=True if os.path.exists(cached_folder) else False,
+            local_files_only=is_model_cached,
         )
+        print("Model_snapshot_path: ", model_snapshot)
         # If there is no cache_dir provided then, the default store path is:
         # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/6bf179230dxxx
         self._model = AutoModelForCausalLM.from_pretrained(

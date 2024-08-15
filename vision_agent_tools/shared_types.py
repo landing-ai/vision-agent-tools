@@ -34,3 +34,6 @@ class BoundingBox(BaseModel):
     y_min: float
     x_max: float
     y_max: float
+
+
+DEFAULT_HF_CHACHE_DIR = "root/.cache/huggingface/hub/"
