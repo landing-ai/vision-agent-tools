@@ -36,4 +36,4 @@ class BoundingBox(BaseModel):
     y_max: float
 
 
-DEFAULT_HF_CHACHE_DIR = "root/.cache/huggingface/hub/"
+DEFAULT_HF_CHACHE_DIR = "root/.cache/huggingface/hub"
