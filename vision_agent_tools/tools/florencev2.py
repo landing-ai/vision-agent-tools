@@ -62,19 +62,29 @@ class Florencev2(BaseTool):
         """
         Initializes the Florence-2 model.
         """
-        model_dir = f"models--{os.path.dirname(self._MODEL_NAME)}--{os.path.basename(self._MODEL_NAME)}",
-
-        cached_folder = (
-            os.path.join(cache_dir, model_dir)
-            if cache_dir is not None
-            else ""
+        model_dir = (
+            f"models--{os.path.dirname(self._MODEL_NAME)}"
+            + f"--{os.path.basename(self._MODEL_NAME)}"
         )
 
-        is_user_cached_folder= True if os.path.exists(cached_folder) else False
-        is_default_cached_folder = True if os.path.exists(os.path.join(DEFAULT_HF_CHACHE_DIR, model_dir)) else False
+        cached_folder = (
+            os.path.join(cache_dir, model_dir) if cache_dir is not None else ""
+        )
+
+        is_user_cached_folder = True if os.path.exists(cached_folder) else False
+        is_default_cached_folder = (
+            True
+            if os.path.exists(os.path.join(DEFAULT_HF_CHACHE_DIR, model_dir))
+            else False
+        )
         is_model_cached = is_user_cached_folder or is_default_cached_folder
         print("Is the model cached?:  ", is_model_cached)
-        print("Using cache folder: ",is_user_cached_folder if is_user_cached_folder else is_default_cached_folder)
+        print(
+            "Using cache folder: ",
+            is_user_cached_folder
+            if is_user_cached_folder
+            else is_default_cached_folder,
+        )
         model_snapshot = snapshot_download(
             self._MODEL_NAME,
             cache_dir=cache_dir,
