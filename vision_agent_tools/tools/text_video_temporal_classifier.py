@@ -17,7 +17,7 @@ class TextVideoTemporalClassifier(BaseTool):
 
         self.model = InternLMXComposer2()
 
-    def __call__(self, prompt: str, video: VideoNumpy, chunk_size: int = 5) -> list[int]:
+    def __call__(self, prompt: str, video: VideoNumpy, chunk_size: int = 1) -> list[int]:
         """
         Takes in a prompt, video and a chunk size and identifies which 'chunks' of the
         video contain that prompt. Returns a binary string indicating for each 'chunk'
