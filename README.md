@@ -1,9 +1,34 @@
-# Vision tools
+<img alt="vision_agent" src="https://landing.ai/wp-content/uploads/2024/06/LightLogo.svg" />
 
-This repository contains tools to solve your vision problems. These tools can be used
-in conjunction with the [vision-agent](https://github.com/landing-ai/vision-agent).
+# Vision Agent Tools
 
-# Getting started
+
+<div align="center">
+    <img alt="vision_agent" height="200px" src="https://github.com/landing-ai/vision-agent/blob/main/assets/logo.jpg?raw=true">
+
+# 🔍🤖 Vision Agent Tools
+[![](https://dcbadge.vercel.app/api/server/wPdN8RCYew?compact=true&style=flat)](https://discord.gg/wPdN8RCYew)
+![ci_status](https://github.com/landing-ai/vision-agent-tools/actions/workflows/publish_docs.yml/badge.svg)
+</div>
+
+## Unleash the Power of Computer Vision!
+
+This repository provides a suite of tools designed to tackle your image and video-based computer vision challenges. Whether you're working on object detection, image classification, QR reading, counting items, or other visual tasks, these tools can streamline your development process.
+
+### Key Features:
+
+- Image & Video Support.
+- Detailed Documentation: Get started quickly and explore advanced features with our documentation: https://landing-ai.github.io/vision-agent-tools/.
+- Seamless Integration: These tools are designed to work in conjunction with the powerful [Vision Agent](https://github.com/landing-ai/vision-agent).
+
+# Ready to Get Started?
+
+For a quick and easy introduction to the core functionalities, head over to the Vision Agent web app: https://va.landing.ai/tool. This is a great starting point to get familiar with the capabilities and potential of the tools before diving deeper into the code.
+
+Let's Build Something Amazing!
+
+We encourage you to explore the tools, leverage the documentation, and contribute to the project.
+
 
 ## Installation
 You can install by running `poetry install --extras "all"` to install all tools, or with
