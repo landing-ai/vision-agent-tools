@@ -2,9 +2,13 @@ name: Unit Tests
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
-  run-tests:
+  unit-tests:
+    name: unit tests
     runs-on: ubuntu-gpu-runner
     steps:
       - uses: actions/checkout@v4
@@ -12,7 +16,7 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Run image
         uses: abatilo/actions-poetry@v2
@@ -24,3 +28,36 @@ jobs:
           poetry run pip install wheel
           make install
           make test
+  release:
+    name: release
+    needs: unit-tests
+    if: !contains(github.event.head_commit.message, 'chore(release):') && !contains(github.event.head_commit.message, '[skip release]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Python Poetry
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: "1.7.1"
+      - name: Configure poetry
+        shell: bash
+        run: poetry config virtualenvs.in-project true
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: setup git config
+        run: |
+          git config user.name "LandingAI Bot"
+          git config user.email "dev@landing.ai"
+      - name: Bump up version
+        run: |
+          poetry version patch
+          git add pyproject.toml
+          new_version=`poetry version`
+          git commit -m "[skip ci] chore(release): ${new_version}"
+          git push -f
+      - name: Publish to PyPI
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.LANDINGAI_PYPI_TOKEN }}
+          poetry publish --build -vvv
