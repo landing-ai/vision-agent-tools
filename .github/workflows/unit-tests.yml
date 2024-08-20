@@ -56,7 +56,7 @@ jobs:
           git add pyproject.toml
           new_version=`poetry version`
           git commit -m "[skip ci] chore(release): ${new_version}"
-          git push -f
+          git push origin main -f
       - name: Publish to PyPI
         run: |
           poetry config pypi-token.pypi ${{ secrets.LANDINGAI_PYPI_TOKEN }}
