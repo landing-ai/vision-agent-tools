@@ -46,6 +46,8 @@ jobs:
         run: poetry config virtualenvs.in-project true
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PUBLISH_GH_TOKEN }}
       - name: setup git config
         run: |
           git config --global user.name "LandingAI Bot"
