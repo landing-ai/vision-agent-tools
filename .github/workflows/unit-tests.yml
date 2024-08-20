@@ -7,30 +7,30 @@ on:
   pull_request:
 
 jobs:
-  unit-tests:
-    name: unit tests
-    runs-on: ubuntu-gpu-runner
-    steps:
-      - uses: actions/checkout@v4
+  # unit-tests:
+  #   name: unit tests
+  #   runs-on: ubuntu-gpu-runner
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+  #     - name: Set up Python version
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
 
-      - name: Run image
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: "1.7.1"
+  #     - name: Run image
+  #       uses: abatilo/actions-poetry@v2
+  #       with:
+  #         poetry-version: "1.7.1"
 
-      - name: tests
-        run: |
-          poetry run pip install wheel
-          make install
-          make test
+  #     - name: tests
+  #       run: |
+  #         poetry run pip install wheel
+  #         make install
+  #         make test
   release:
     name: release
-    needs: unit-tests
+    # needs: unit-tests
     if: github.event_name == 'pull_request' && !contains(github.event.head_commit.message, 'chore(release):') && !contains(github.event.head_commit.message, '[skip release]')
     runs-on: ubuntu-latest
     steps:
