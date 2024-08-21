@@ -1,5 +1,5 @@
 from typing import Annotated, Literal, TypeVar
-
+from pathlib import Path
 from pydantic import BaseModel
 import numpy as np
 import numpy.typing as npt
@@ -14,6 +14,8 @@ DType = TypeVar("DType", bound=np.generic)
 VideoNumpy = Annotated[npt.NDArray[DType], Literal["N", "N", "N", 3]]
 
 SegmentationBitMask = Annotated[npt.NDArray[np.bool_], Literal["N", "N"]]
+
+CachePath = str | Path | None
 
 
 class Point(BaseModel):
@@ -34,6 +36,3 @@ class BoundingBox(BaseModel):
     y_min: float
     x_max: float
     y_max: float
-
-
-DEFAULT_HF_CHACHE_DIR = "/root/.cache/huggingface/hub"

@@ -5,11 +5,8 @@ from PIL import Image
 from pydantic import BaseModel
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
-from vision_agent_tools.shared_types import BaseTool
-
-MODEL_NAME = "google/owlv2-large-patch14-ensemble"
-PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
-DEFAULT_CONFIDENCE = 0.1
+from vision_agent_tools.shared_types import BaseTool, CachePath
+from vision_agent_tools.tools.utils import manage_hf_model_cache
 
 
 class Owlv2InferenceData(BaseModel):
@@ -20,7 +17,7 @@ class Owlv2InferenceData(BaseModel):
         label (str): The predicted label for the detected object.
         score (float): The confidence score associated with the prediction (between 0 and 1).
         bbox (list[float]): A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax)
-                          of the detected object in the image.
+                        of the detected object in the image.
     """
 
     label: str
@@ -38,14 +35,23 @@ class Owlv2(BaseTool):
     and bounding boxes for detected objects with confidence exceeding a threshold.
     """
 
-    def __init__(self):
+    _MODEL_NAME = "google/owlv2-large-patch14-ensemble"
+    _DEFAULT_CONFIDENCE = 0.1
+
+    def __init__(self, cache_dir: CachePath = None):
         """
         Initializes the Owlv2 object detection tool.
 
         Loads the pre-trained Owlv2 processor and model from Transformers.
         """
-        self._processor = Owlv2Processor.from_pretrained(PROCESSOR_NAME)
-        self._model = Owlv2ForObjectDetection.from_pretrained(MODEL_NAME)
+        model_snapshot = manage_hf_model_cache(self._MODEL_NAME, cache_dir)
+
+        self._processor = Owlv2Processor.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
+        self._model = Owlv2ForObjectDetection.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
 
         self.device = (
             "cuda"
@@ -63,7 +69,7 @@ class Owlv2(BaseTool):
         self,
         image: Image.Image,
         prompts: list[str],
-        confidence: Optional[float] = DEFAULT_CONFIDENCE,
+        confidence: Optional[float] = _DEFAULT_CONFIDENCE,
     ) -> Optional[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
@@ -71,15 +77,15 @@ class Owlv2(BaseTool):
         Args:
             image (Image.Image): The input image for object detection.
             prompts (list[str]): A list of prompts to be used during inference.
-                                  Currently, only one prompt is supported (list length of 1).
+                                Currently, only one prompt is supported (list length of 1).
             confidence (Optional[float], defaults=DEFAULT_CONFIDENCE): The minimum confidence threshold for
-                                                                          including a detection in the results.
+                                                                        including a detection in the results.
 
         Returns:
             Optional[list[Owlv2InferenceData]]: A list of `Owlv2InferenceData` objects containing the predicted
-                                               labels, confidence scores, and bounding boxes for detected objects
-                                               with confidence exceeding the threshold. Returns None if no objects
-                                               are detected above the confidence threshold.
+                                            labels, confidence scores, and bounding boxes for detected objects
+                                            with confidence exceeding the threshold. Returns None if no objects
+                                            are detected above the confidence threshold.
         """
         image = image.convert("RGB")
         texts = [prompts]

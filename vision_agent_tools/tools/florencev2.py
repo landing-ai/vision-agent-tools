@@ -4,12 +4,9 @@ import torch
 from typing import Optional, Any
 from enum import Enum
 from PIL import Image
-from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoProcessor
-from vision_agent_tools.shared_types import BaseTool
-from pathlib import Path
-from vision_agent_tools.shared_types import DEFAULT_HF_CHACHE_DIR
-from huggingface_hub import snapshot_download
+from vision_agent_tools.shared_types import BaseTool, CachePath
+from vision_agent_tools.tools.utils import manage_hf_model_cache
 
 
 class PromptTask(str, Enum):
@@ -58,40 +55,15 @@ class Florencev2(BaseTool):
 
     _MODEL_NAME = "microsoft/Florence-2-large"
 
-    def __init__(self, cache_dir: str | Path | None = None):
+    def __init__(self, cache_dir: CachePath = None):
         """
         Initializes the Florence-2 model.
         """
-        model_dir = (
-            f"models--{os.path.dirname(self._MODEL_NAME)}"
-            + f"--{os.path.basename(self._MODEL_NAME)}"
-        )
-        default_cache_model_dir = os.path.join(DEFAULT_HF_CHACHE_DIR, model_dir)
 
-        user_cached_folder = (
-            os.path.join(cache_dir, model_dir) if cache_dir is not None else ""
-        )
-
-        is_user_cached_folder = True if os.path.exists(user_cached_folder) else False
-        is_default_cached_folder = (
-            True if os.path.exists(default_cache_model_dir) else False
-        )
-        is_model_cached = (cache_dir is not None and is_user_cached_folder) or (
-            cache_dir is None and is_default_cached_folder
-        )
-        print("Is the model cached?:  ", is_model_cached)
-        print(
-            "Using cache folder: ",
-            user_cached_folder if is_user_cached_folder else default_cache_model_dir,
-        )
-        model_snapshot = snapshot_download(
-            self._MODEL_NAME,
-            cache_dir=cache_dir,
-            local_files_only=is_model_cached,
-        )
-        print("Model_snapshot_path: ", model_snapshot)
         # If there is no cache_dir provided then, the default store path is:
         # /root/.cache/huggingface/hub/models--microsoft--Florence-2-large/snapshots/6bf179230dxxx
+        model_snapshot = manage_hf_model_cache(self._MODEL_NAME, cache_dir)
+
         self._model = AutoModelForCausalLM.from_pretrained(
             model_snapshot, trust_remote_code=True, local_files_only=True
         )
