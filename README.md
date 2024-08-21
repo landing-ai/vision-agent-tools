@@ -1,10 +1,8 @@
 <img alt="vision_agent" src="https://landing.ai/wp-content/uploads/2024/06/LightLogo.svg" />
 
-# Vision Agent Tools
-
 
 <div align="center">
-    <img alt="vision_agent" height="200px" src="https://github.com/landing-ai/vision-agent/blob/main/assets/logo.jpg?raw=true">
+    <img alt="vision_agent" height="200px" src="https://github.com/landing-ai/vision-agent-tools/blob/main/assets/vat.png?raw=true">
 
 # 🔍🤖 Vision Agent Tools
 [![](https://dcbadge.vercel.app/api/server/wPdN8RCYew?compact=true&style=flat)](https://discord.gg/wPdN8RCYew)
