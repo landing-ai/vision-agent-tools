@@ -8,7 +8,8 @@
 
 # 🔍🤖 Vision Agent Tools
 [![](https://dcbadge.vercel.app/api/server/wPdN8RCYew?compact=true&style=flat)](https://discord.gg/wPdN8RCYew)
-![ci_status](https://github.com/landing-ai/vision-agent-tools/actions/workflows/publish_docs.yml/badge.svg)
+![docs_status](https://github.com/landing-ai/vision-agent-tools/actions/workflows/publish_docs.yml/badge.svg)
+![tests_status](https://github.com/landing-ai/vision-agent-tools/actions/workflows/unit-tests.yml/badge.svg)
 </div>
 
 ## Unleash the Power of Computer Vision!
