@@ -1,7 +1,6 @@
 import torch
 from PIL import Image
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy, CachePath
-from vision_agent_tools.tools.utils import manage_hf_model_cache
 from pydantic import Field, validate_call
 from typing import Annotated
 
@@ -63,12 +62,15 @@ class InternLMXComposer2(BaseTool):
         )
         self._gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         engine_config = TurbomindEngineConfig(
-            model_format="awq", cache_max_entry_count=0.2
+            model_format="awq",
+            cache_max_entry_count=0.2,
+            download_dir=cache_dir,
         )
-        model_snapshot = manage_hf_model_cache(self._HF_MODEL + "-4bit", cache_dir)
 
         self._pipe = pipeline(
-            model_snapshot , backend_config=engine_config, device=self.device
+            self._HF_MODEL + "-4bit",
+            backend_config=engine_config,
+            device=self.device,
         )
 
     @validate_call(config={"arbitrary_types_allowed": True})

@@ -1,11 +1,9 @@
 import torch
 
-from transformers import pipeline
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 from pydantic import BaseModel
-from vision_agent_tools.shared_types import BaseTool
-
-MODEL_NAME = "deepset/roberta-base-squad2"
-PROCESSOR_NAME = "deepset/roberta-base-squad2"
+from vision_agent_tools.shared_types import BaseTool, CachePath
+from vision_agent_tools.tools.utils import manage_hf_model_cache
 
 
 class RobertaQAInferenceData(BaseModel):
@@ -29,7 +27,9 @@ class RobertaQA(BaseTool):
 
     """
 
-    def __init__(self):
+    _MODEL_NAME = "deepset/roberta-base-squad2"
+
+    def __init__(self, cache_dir: CachePath = None):
         """
         Initializes the Roberta QA model.
         """
@@ -40,10 +40,18 @@ class RobertaQA(BaseTool):
             if torch.backends.mps.is_available()
             else "cpu"
         )
-        self._model = pipeline(
+        model_snapshot = manage_hf_model_cache(self._MODEL_NAME, cache_dir)
+        self._model = AutoModelForQuestionAnswering.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
+        self._processor = AutoTokenizer.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
+
+        self._pipeline = pipeline(
             "question-answering",
-            model=MODEL_NAME,
-            tokenizer=PROCESSOR_NAME,
+            model=self._model,
+            tokenizer=self._processor,
             device=self.device,
         )
 
@@ -63,7 +71,7 @@ class RobertaQA(BaseTool):
         """
 
         with torch.autocast(self.device):
-            data = self._model({"context": context, "question": question})
+            data = self._pipeline({"context": context, "question": question})
         inference = RobertaQAInferenceData(answer=data["answer"], score=data["score"])
 
         return inference

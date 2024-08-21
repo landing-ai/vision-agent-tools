@@ -3,7 +3,7 @@ import torch
 
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseTool, CachePath
 
 
 class FlorenceQA(BaseTool):
@@ -14,12 +14,12 @@ class FlorenceQA(BaseTool):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, cache_dir: CachePath = None) -> None:
         """
         Initializes the FlorenceQA model.
         """
-        self._florence = Florencev2()
-        self._roberta_qa = RobertaQA()
+        self._florence = Florencev2(cache_dir=cache_dir)
+        self._roberta_qa = RobertaQA(cache_dir=cache_dir)
 
     @torch.inference_mode()
     def __call__(self, image: Image.Image, question: str) -> str:
