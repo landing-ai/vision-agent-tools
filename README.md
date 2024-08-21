@@ -2,7 +2,7 @@
 
 
 <div align="center">
-    <img alt="vision_agent" height="200px" src="./assets/playground.png">
+    <img alt="vision_agent" height="200px" src="https://github.com/landing-ai/vision-agent-tools/blob/main/assets/vat.png?raw=true">
 
 # 🔍🤖 Vision Agent Tools
 [![](https://dcbadge.vercel.app/api/server/wPdN8RCYew?compact=true&style=flat)](https://discord.gg/wPdN8RCYew)
