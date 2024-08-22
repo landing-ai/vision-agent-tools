@@ -94,7 +94,7 @@ class Owlv2(BaseTool):
             self.device
         )
         # Forward pass
-        with torch.autocast(self.device):
+        with torch.autocast(device_type=self.device, dtype=torch.float32):
             outputs = self._model(**inputs)
 
         target_sizes = torch.Tensor([image.size[::-1]])

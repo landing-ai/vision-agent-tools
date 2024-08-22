@@ -3,9 +3,8 @@ import torch
 from PIL import Image
 from pydantic import BaseModel
 from transformers import AutoModelForImageClassification, ViTImageProcessor
-from vision_agent_tools.shared_types import BaseTool
-
-CHECKPOINT = "Falconsai/nsfw_image_detection"
+from vision_agent_tools.shared_types import BaseTool, CachePath
+from vision_agent_tools.tools.utils import manage_hf_model_cache
 
 
 class NSFWInferenceData(BaseModel):
@@ -28,12 +27,19 @@ class NSFWClassification(BaseTool):
 
     """
 
-    def __init__(self):
+    _MODEL_NAME = "Falconsai/nsfw_image_detection"
+
+    def __init__(self, cache_dir: CachePath = None):
         """
         Initializes the NSFW (Not Safe for Work) classification tool.
         """
-        self._model = AutoModelForImageClassification.from_pretrained(CHECKPOINT)
-        self._processor = ViTImageProcessor.from_pretrained(CHECKPOINT)
+        model_snapshot = manage_hf_model_cache(self._MODEL_NAME, cache_dir)
+        self._model = AutoModelForImageClassification.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
+        self._processor = ViTImageProcessor.from_pretrained(
+            model_snapshot, trust_remote_code=True, local_files_only=True
+        )
 
         self.device = (
             "cuda"

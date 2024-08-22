@@ -57,7 +57,9 @@ def manage_hf_model_cache(hf_model_name: str, cache_dir: CachePath) -> str:
     print("Is the model cached?:  ", is_model_cached)
     print(
         "Using cache folder: ",
-        user_cached_folder if is_user_cached_folder else default_cache_model_dir,
+        default_cache_model_dir
+        if is_default_cached_folder
+        else user_cached_folder or cache_dir,
     )
     model_snapshot = snapshot_download(
         hf_model_name,

@@ -6,14 +6,17 @@ import numpy as np
 from PIL import Image
 from pydantic import validate_call
 
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy, SegmentationBitMask
+from vision_agent_tools.shared_types import (
+    BaseTool,
+    VideoNumpy,
+    SegmentationBitMask,
+    CachePath,
+)
 from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.tools.utils import manage_hf_model_cache
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
-
-
-_HF_MODEL = "facebook/sam2-hiera-large"
 
 
 @dataclass
@@ -40,7 +43,9 @@ class Florence2SAM2(BaseTool):
     returns the instance segmentation for the text prompts in each frame.
     """
 
-    def __init__(self, device: str | None = None):
+    _MODEL_NAME = "facebook/sam2-hiera-large"
+
+    def __init__(self, device: str | None = None, cache_dir: CachePath = None):
         """
         Initializes the Florence2SAM2 object with a pre-trained Florencev2 model
         and a SAM2 model.
@@ -54,8 +59,12 @@ class Florence2SAM2(BaseTool):
             if torch.backends.mps.is_available()
             else "cpu"
         )
-        self.florence2 = Florencev2()
-        self.video_predictor = SAM2VideoPredictor.from_pretrained(_HF_MODEL)
+        sam_model_snapshot = manage_hf_model_cache(self._MODEL_NAME, cache_dir)
+
+        self.florence2 = Florencev2(cache_dir=cache_dir)
+        self.video_predictor = SAM2VideoPredictor.from_pretrained(
+            self._MODEL_NAME, ckpt_path=sam_model_snapshot
+        )
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
     @torch.inference_mode()
