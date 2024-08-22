@@ -1,12 +1,12 @@
 from PIL import Image
 import torch
 
-from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseMLModel
 
 
-class FlorenceQA(BaseTool):
+class FlorenceQA(BaseMLModel):
     """
     FlorenceQA is a tool that combines the Florence-2 and Roberta QA models
     to answer questions about images.

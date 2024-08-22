@@ -1,6 +1,6 @@
 import torch
 from PIL import Image
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy
+from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy
 from pydantic import Field, validate_call
 from typing import Annotated
 
@@ -13,7 +13,7 @@ MAX_NUMBER_OF_FRAMES = 32
 Frames = Annotated[int, Field(ge=1, le=MAX_NUMBER_OF_FRAMES)]
 
 
-class InternLMXComposer2(BaseTool):
+class InternLMXComposer2(BaseMLModel):
     """
     [InternLM-XComposer-2.5](https://huggingface.co/internlm/internlm-xcomposer2d5-7b-4bit) is a tool that excels in various text-image
     comprehension and composition applications, achieving GPT-4V level capabilities.

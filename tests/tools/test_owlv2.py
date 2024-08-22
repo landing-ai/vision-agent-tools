@@ -1,6 +1,6 @@
 from PIL import Image
 
-from vision_agent_tools.tools.owlv2 import Owlv2
+from vision_agent_tools.models.owlv2 import Owlv2
 
 
 def test_successful_owlv2_detection():

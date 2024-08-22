@@ -6,8 +6,8 @@ import numpy as np
 from PIL import Image
 from pydantic import validate_call
 
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy, SegmentationBitMask
-from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy, SegmentationBitMask
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
@@ -34,7 +34,7 @@ class MaskLabel:
     mask: SegmentationBitMask
 
 
-class Florence2SAM2(BaseTool):
+class Florence2SAM2(BaseMLModel):
     """
     A class that receives a video or an image plus a list of text prompts and
     returns the instance segmentation for the text prompts in each frame.

@@ -3,7 +3,7 @@
 This tool uses FlorenceV2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
 
 ```python
-from vision_agent_tools.tools.florence2_sam2 import Florence2SAM2
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
 from decord import VideoReader
 from decord import cpu
 
@@ -46,4 +46,4 @@ You can also run similarity against an image and get additionally bounding boxes
 results = florence2_sam2(image=image, prompts=["ball"])
 ```
 
-::: vision_agent_tools.tools.florence2_sam2
+::: vision_agent_tools.models.florence2_sam2

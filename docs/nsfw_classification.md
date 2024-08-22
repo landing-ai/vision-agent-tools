@@ -4,7 +4,7 @@ This example demonstrates using the Not Safe for Work classification tool.
 
 
 ```python
-from vision_agent_tools.tools.nsfw_classification import NSFWClassification
+from vision_agent_tools.models.nsfw_classification import NSFWClassification
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -21,4 +21,4 @@ results = nsfw_classification(image)
 print(results.label)
 ```
 
-::: vision_agent_tools.tools.nsfw_classification
+::: vision_agent_tools.models.nsfw_classification

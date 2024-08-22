@@ -4,7 +4,7 @@
 
 ```python
 from PIL import Image
-from vision_agent_tools.tools.controlnet_aux import Image2Pose
+from vision_agent_tools.models.controlnet_aux import Image2Pose
 
 # Path to your test image
 test_image_path = "path/to/your/image.jpg"
@@ -30,4 +30,4 @@ print("Pose detection complete!")
 </figure>
 
 
-::: vision_agent_tools.tools.controlnet_aux
+::: vision_agent_tools.models.controlnet_aux

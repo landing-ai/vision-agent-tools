@@ -5,7 +5,7 @@ This example demonstrates using the Florence2-QA tool to   to answer questions a
 __NOTE__: The FlorenceQA model can only be used in GPU environments.
 
 ```python
-from vision_agent_tools.tools.florencev2_qa import FlorenceQA
+from vision_agent_tools.models.florencev2_qa import FlorenceQA
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -21,4 +21,4 @@ answer = run_florence_qa(image, question="Is there a dog in the image?")
 print(answer)
 ```
 
-::: vision_agent_tools.tools.florencev2_qa
+::: vision_agent_tools.models.florencev2_qa

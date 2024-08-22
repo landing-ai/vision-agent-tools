@@ -13,7 +13,7 @@ from typing import Optional, Any
 from torch import nn
 from torchvision import transforms as T
 from pydantic import BaseModel
-from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseMLModel
 
 
 class CountingDetection(BaseModel):
@@ -30,7 +30,7 @@ class CountingDetection(BaseModel):
     heat_map: Any
 
 
-class NShotCounting(BaseTool):
+class NShotCounting(BaseMLModel):
     """
     Tool for object counting using the zeroshot and n-shot versions of the LOCA model from the paper
     [A Low-Shot Object Counting Network With Iterative Prototype Adaptation ](https://github.com/djukicn/loca).
