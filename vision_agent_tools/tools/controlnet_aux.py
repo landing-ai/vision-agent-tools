@@ -2,7 +2,7 @@ import torch
 from controlnet_aux import OpenposeDetector
 from PIL import Image
 
-from vision_agent_tools.tools.shared_types import Device
+from vision_agent_tools.shared_types import Device
 
 
 class Image2Pose:

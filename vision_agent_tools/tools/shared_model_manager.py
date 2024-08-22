@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable, Dict, Optional
 
-from vision_agent_tools.tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseTool, Device
 
 
 class SharedModelManager:

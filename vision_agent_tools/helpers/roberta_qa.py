@@ -2,7 +2,7 @@ import torch
 from pydantic import BaseModel
 from transformers import pipeline
 
-from vision_agent_tools.tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseTool, Device
 
 MODEL_NAME = "deepset/roberta-base-squad2"
 PROCESSOR_NAME = "deepset/roberta-base-squad2"
