@@ -1,5 +1,8 @@
 from enum import Enum
+from typing import Annotated, Literal, TypeVar
 
+import numpy as np
+import numpy.typing as npt
 from pydantic import BaseModel
 
 
@@ -12,6 +15,13 @@ class Device(str, Enum):
 class BaseTool:
     def to(self, device: Device):
         raise NotImplementedError("Subclass must implement abstract method")
+
+
+DType = TypeVar("DType", bound=np.generic)
+
+VideoNumpy = Annotated[npt.NDArray[DType], Literal["N", "N", "N", 3]]
+
+SegmentationBitMask = Annotated[npt.NDArray[np.bool_], Literal["N", "N"]]
 
 
 class Point(BaseModel):

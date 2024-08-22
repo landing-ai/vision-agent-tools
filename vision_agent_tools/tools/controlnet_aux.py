@@ -1,3 +1,4 @@
+import torch
 from controlnet_aux import OpenposeDetector
 from PIL import Image
 
@@ -26,6 +27,7 @@ class Image2Pose:
         """
         self.detector = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
 
+    @torch.inference_mode()
     def __call__(self, image: Image.Image) -> Image.Image:
         """
         Performs pose detection on a PIL image and returns the results.
@@ -42,6 +44,7 @@ class Image2Pose:
                       depending on the specific OpenposeDetector implementation).
         """
 
+        image = image.convert("RGB")
         original_size = image.size
         pose = self.detector(image)
         pose = pose.resize(original_size)

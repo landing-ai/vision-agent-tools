@@ -3,8 +3,33 @@ site_name: Vision Agent Tools
 
 theme:
   name: "material"
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
   features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - navigation.indexes
+    - content.tooltips
+    - navigation.path
+    - content.code.annotate
     - content.code.copy
+    - content.code.select
+  icon:
+    repo: fontawesome/brands/github-alt
 
 markdown_extensions:
   - admonition
@@ -23,6 +48,7 @@ markdown_extensions:
       permalink: "#"
 
 plugins:
+- search: null
 - mkdocstrings:
     default_handler: python
     handlers:

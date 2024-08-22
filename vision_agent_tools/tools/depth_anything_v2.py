@@ -6,14 +6,13 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 import os.path as osp
 from typing import Any, Union
 
-import cv2
 import numpy as np
 import torch
 from depth_anything_v2.dpt import DepthAnythingV2 as DepthAnythingV2Model
 from PIL import Image
 from pydantic import BaseModel
 
-from vision_agent_tools.tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseTool, Device
 
 from .utils import CHECKPOINT_DIR, download
 
@@ -71,7 +70,7 @@ class DepthAnythingV2(BaseTool):
         self._model.to(self.device)
         self._model.eval()
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def __call__(self, image: Union[str, Image.Image]) -> DepthMap:
         """
         Depth-Anything-V2 is a highly practical solution for robust monocular depth estimation.
@@ -83,9 +82,9 @@ class DepthAnythingV2(BaseTool):
             DepthMap: An object type containing a numpy array with the HxW depth map of the image.
         """
         if isinstance(image, str):
-            image = cv2.imread(image)
+            image = np.array(Image.open(image).convert("RGB"))
         elif isinstance(image, Image.Image):
-            image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            image = np.array(image.convert("RGB"))
 
         depth = self._model.infer_image(image)  # HxW raw depth map
 

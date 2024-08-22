@@ -4,7 +4,7 @@ import os
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 import os.path as osp
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import torch
 from loca.loca import LOCA
@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from torch import nn
 from torchvision import transforms as T
 
-from vision_agent_tools.tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseTool, Device
 
 from .utils import CHECKPOINT_DIR, download
 
@@ -110,10 +110,10 @@ class NShotCounting(BaseTool):
         self._model.eval()
         self.img_size = img_size
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def __call__(
         self,
-        image: Union[str, Image.Image],
+        image: Image.Image,
         bbox: Optional[list[int]] = None,
     ) -> CountingDetection:
         """
@@ -134,6 +134,7 @@ class NShotCounting(BaseTool):
         """
         if bbox:
             assert len(bbox) == 4, "Bounding box should be in format [x1, y1, x2, y2]"
+        image = image.convert("RGB")
         w, h = image.size
         img_t = T.Compose(
             [

@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from vision_agent_tools.shared_types import BaseTool, Device
 from vision_agent_tools.tools.shared_model_manager import SharedModelManager
-from vision_agent_tools.tools.shared_types import BaseTool, Device
 
 
 @pytest.fixture

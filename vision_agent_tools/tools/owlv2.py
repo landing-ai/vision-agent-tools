@@ -5,7 +5,7 @@ from PIL import Image
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
-from vision_agent_tools.tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseTool, Device
 
 MODEL_NAME = "google/owlv2-large-patch14-ensemble"
 PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
@@ -56,6 +56,7 @@ class Owlv2(BaseTool):
         self._model.to(self.device)
         self._model.eval()
 
+    @torch.inference_mode()
     def __call__(
         self,
         image: Image.Image,
@@ -78,13 +79,14 @@ class Owlv2(BaseTool):
                                                with confidence exceeding the threshold. Returns None if no objects
                                                are detected above the confidence threshold.
         """
+        image = image.convert("RGB")
         texts = [prompts]
         # Run model inference here
         inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
             self.device
         )
         # Forward pass
-        with torch.no_grad():
+        with torch.autocast(self.device):
             outputs = self._model(**inputs)
 
         target_sizes = torch.Tensor([image.size[::-1]])

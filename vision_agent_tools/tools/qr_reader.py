@@ -1,15 +1,14 @@
 import numpy as np
 from PIL import Image
 from pydantic import BaseModel, Field
-
 from qreader import QReader
 
-from vision_agent_tools.tools.shared_types import (
+from vision_agent_tools.shared_types import (
     BaseTool,
-    Device,
-    Polygon,
-    Point,
     BoundingBox,
+    Device,
+    Point,
+    Polygon,
 )
 
 
@@ -26,7 +25,7 @@ class QRCodeDetection(BaseModel):
         description="A `Polygon` object representing the detected QR code's corner points"
     )
     bounding_box: BoundingBox = Field(
-        description="A `BoundingBox` object representing the bounding box coordinates of the detected QR code"
+        description="A `BoundingBox` object representing the axis-aligned bounding box coordinates of the detected QR code"
     )
     center: Point = Field(
         description="A `Point` object representing the center coordinates of the detected QR code"
@@ -72,9 +71,7 @@ class QRReader(BaseTool):
                 confidence=meta["confidence"],
                 text=text,
                 polygon=Polygon(
-                    points=[
-                        Point(x=point[0], y=point[1]) for point in meta["polygon_xy"]
-                    ]
+                    points=[Point(x=point[0], y=point[1]) for point in meta["quad_xy"]]
                 ),
                 bounding_box=BoundingBox(
                     x_min=meta["bbox_xyxy"][0],
