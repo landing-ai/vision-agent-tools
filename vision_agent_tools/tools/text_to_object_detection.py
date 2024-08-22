@@ -2,7 +2,8 @@ from typing import List, Any
 from PIL import Image
 from pydantic import BaseModel
 from vision_agent_tools.shared_types import BaseTool
-from vision_agent_tools.models.model_registry import get_model
+from vision_agent_tools.models.model_registry import get_model_class
+from vision_agent_tools.models.model_registry import TextToObjectDetectionModel
 
 
 class TextToObjectDetectionOutput(BaseModel):
@@ -16,7 +17,8 @@ class TextToObjectDetection(BaseTool):
 
     def __init__(self, model: str):
         self.model_name = model
-        model_instance = get_model(model)
+        model_class = get_model_class(model_name=model, task=TextToObjectDetectionModel)
+        model_instance = model_class()
         super().__init__(model=model_instance)
 
     def __call__(
