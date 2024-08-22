@@ -5,7 +5,7 @@ Tool for detecting QR codes in images.
 ```python
 from PIL import Image, ImageDraw
 
-from vision_agent_tools.tools.qr_reader import QRReader
+from vision_agent_tools.models.qr_reader import QRReader
 
 # Open the image containing the QR code
 image = Image.open("sample_qr_image.jpeg")
@@ -47,4 +47,4 @@ else:
 </figure>
 
 
-::: vision_agent_tools.tools.qr_reader
+::: vision_agent_tools.models.qr_reader

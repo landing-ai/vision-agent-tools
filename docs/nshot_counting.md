@@ -4,7 +4,7 @@ This example demonstrates how to use the NShot LOCA tool for object counting in 
 
 
 ```python
-from vision_agent_tools.tools.nshot_counting import NShotCounting
+from vision_agent_tools.models.nshot_counting import NShotCounting
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -21,4 +21,4 @@ results = ObjectCounting(image, bbox=[12, 34, 56, 78])
 print("Found a total count of {results.count} objects on the image!")
 ```
 
-::: vision_agent_tools.tools.nshot_counting
+::: vision_agent_tools.models.nshot_counting

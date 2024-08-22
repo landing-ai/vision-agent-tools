@@ -1,6 +1,6 @@
 from PIL import Image
 
-from vision_agent_tools.tools.depth_anything_v2 import DepthAnythingV2
+from vision_agent_tools.models.depth_anything_v2 import DepthAnythingV2
 
 
 def test_successful_depth_estimation():

@@ -5,7 +5,7 @@ This example demonstrates using the Depth-Anything-V2 tool for depth estimation 
 
 
 ```python
-from vision_agent_tools.tools.depth_anything_v2 import DepthAnythingV2
+from vision_agent_tools.models.depth_anything_v2 import DepthAnythingV2
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -22,4 +22,4 @@ results = depth_estimate(image)
 print(results.map)
 ```
 
-::: vision_agent_tools.tools.depth_anything_v2
+::: vision_agent_tools.models.depth_anything_v2

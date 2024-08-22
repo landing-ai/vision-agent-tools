@@ -1,6 +1,6 @@
 from PIL import Image
 
-from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
 
 def test_successful_florencev2_detection():

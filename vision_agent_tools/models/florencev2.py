@@ -4,7 +4,7 @@ from typing import Optional, Any
 from enum import Enum
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
-from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseMLModel
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"
@@ -46,7 +46,7 @@ class PromptTask(str, Enum):
     """"""
 
 
-class Florencev2(BaseTool):
+class Florencev2(BaseMLModel):
     """
     [Florence-2](https://huggingface.co/microsoft/Florence-2-base) can interpret simple
     text prompts to perform tasks like captioning, object detection, and segmentation.

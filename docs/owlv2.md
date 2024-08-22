@@ -5,7 +5,7 @@ This example demonstrates using the Owlv2 tool for object detection in images ba
 
 
 ```python
-from vision_agent_tools.tools.owlv2 import Owlv2
+from vision_agent_tools.models.owlv2 import Owlv2
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -29,4 +29,4 @@ else:
     print("Hmm, Owlv2 couldn't find anything this time. Maybe try a different prompt?")
 ```
 
-::: vision_agent_tools.tools.owlv2
+::: vision_agent_tools.models.owlv2

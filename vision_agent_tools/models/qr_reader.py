@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from qreader import QReader
 
-from vision_agent_tools.shared_types import BaseTool, Polygon, Point, BoundingBox
+from vision_agent_tools.shared_types import BaseMLModel, Polygon, Point, BoundingBox
 
 
 class QRCodeDetection(BaseModel):
@@ -27,7 +27,7 @@ class QRCodeDetection(BaseModel):
     )
 
 
-class QRReader(BaseTool):
+class QRReader(BaseMLModel):
     """
     This tool utilizes the `qreader` library to detect QR codes within an input image.
     It returns a list of `QRCodeDetection` objects for each detected QR code, containing
