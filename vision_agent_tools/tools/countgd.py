@@ -2,27 +2,28 @@ import os
 import os.path as osp
 import torch
 
+from typing import Union, List
 from PIL import Image
-from .utils import download, CHECKPOINT_DIR
-from typing import Optional, Any
-from torch import nn
 from pydantic import BaseModel
 from vision_agent_tools.shared_types import BaseTool
+from transformers.models.bert import BertConfig, BertModel
+from transformers import AutoTokenizer
 
+from .utils import download, CHECKPOINT_DIR
 from countgd.datasets_inference import transforms as cgd_transforms
 from countgd.util.slconfig import SLConfig
 from countgd.util.misc import nested_tensor_from_tensor_list
-from count_gd.groundingdino.util.box_ops import box_cxcywh_to_xyxy
+from countgd.groundingdino.util.box_ops import box_cxcywh_to_xyxy
 
 
-TEXT_MODEL_NAME = "bert-base-uncased"
-CONFIG_NAME = "../helpers/cfg_countgd.py"
 DEFAULT_CONFIDENCE = 0.23
+CURRENT_DIR = osp.dirname(osp.abspath(__file__))
+CFG_FILE = "../helpers/cfg_countgd.py"
 
 
-class CountGDInferenceData(BaseModel):
+class CountInferenceData(BaseModel):
     """
-    Represents an inference result from the CountGD model.
+    Represents an inference result from the counting model.
 
     Attributes:
         label (str): The predicted label for the detected object.
@@ -36,30 +37,21 @@ class CountGDInferenceData(BaseModel):
     bbox: list[float]
 
 
-class CountGDCounting:
+class CountGDCounting(BaseTool):
     def __init__(self, device) -> None:
         CHECKPOINT = (
             "https://drive.google.com/file/d/1JpfsZtcGLUM0j05CpTN4kCOrmrLf_vLz/view?usp=sharing",
-            "count_gd.pt",
+            os.path.join(CHECKPOINT_DIR, "counting.pth"),
         )
         BERT_CHECKPOINT = (
             "bert-base-uncased",
-            os.path.join(MODEL_ZOO, "bert-base-uncased"),
-        )
-        _SEED = 49
-        CFG_FILE = self.config_file = osp.join(
-            CURRENT_DIR,
-            "configs",
-            "cfg_fsc147_test.py",
+            os.path.join(CHECKPOINT_DIR, "bert-base-uncased"),
         )
 
         # download required checkpoints
-        self.model_checkpoint_path = download(
-            url=CHECKPOINT[0],
-            path=os.path.join(MODEL_ZOO, CHECKPOINT[1]),
-        )
+        self.model_checkpoint_path = download(CHECKPOINT[0], CHECKPOINT[1])
 
-        if not os.path.exists(os.path.join(MODEL_ZOO, BERT_CHECKPOINT[1])):
+        if not os.path.exists(BERT_CHECKPOINT[1]):
             config = BertConfig.from_pretrained(BERT_CHECKPOINT[0])
             model = BertModel.from_pretrained(
                 BERT_CHECKPOINT[0], add_pooling_layer=False, config=config
@@ -70,9 +62,7 @@ class CountGDCounting:
             model.save_pretrained(BERT_CHECKPOINT[1])
             tokenizer.save_pretrained(BERT_CHECKPOINT[1])
 
-        # setup seed and device
-        torch.manual_seed(_SEED)
-        np.random.seed(_SEED)
+        # setup device
         self.device = device
 
         # build model
@@ -100,14 +90,14 @@ class CountGDCounting:
 
     def build_model_main(self, cfg, text_encoder):
         # we use register to maintain models from catdet6 on.
-        from .count_gd.models_inference.registry import MODULE_BUILD_FUNCS
+        from models_inference.registry import MODULE_BUILD_FUNCS
 
         assert cfg.modelname in MODULE_BUILD_FUNCS._module_dict
         # Add required args to cfg
         cfg.device = self.device
         cfg.text_encoder_type = text_encoder
         build_func = MODULE_BUILD_FUNCS.get(cfg.modelname)
-        model, criterion, postprocessors = build_func(cfg)
+        model, _, _ = build_func(cfg)
         return model
 
     @torch.no_grad()
@@ -116,7 +106,7 @@ class CountGDCounting:
         image: Union[str, Image.Image],
         text: str,
         visual_prompts: List[List[float]],
-        threshold: float,
+        threshold: float = DEFAULT_CONFIDENCE,
     ):
         assert text != "" or len(
             visual_prompts
@@ -169,11 +159,13 @@ class CountGDCounting:
                         lbl = labels[i]
                         break
             result.append(
-                {
-                    "bbox": boxes[i].tolist(),
-                    "score": float(logits[i].max()),
-                    "label": lbl,
-                }
+                CountInferenceData(
+                    **{
+                        "bbox": boxes[i].tolist(),
+                        "score": float(logits[i].max()),
+                        "label": lbl,
+                    }
+                )
             )
 
         out_label = "Detected instances predicted with"
@@ -196,132 +188,4 @@ class CountGDCounting:
             out_label = "Nothing specified to detect."
 
         print(out_label)
-        # save viz
-        # output_img = overlay_bounding_boxes(np.array(image), result)
-        # output_img = Image.fromarray(output_img)
         return result
-
-
-class NShotCounting(BaseTool):
-    """
-    Tool for object counting using the zeroshot and n-shot versions of the LOCA model from the paper
-    [A Low-Shot Object Counting Network With Iterative Prototype Adaptation ](https://github.com/djukicn/loca).
-
-    """
-
-    _CHECKPOINT_DIR = CHECKPOINT_DIR
-
-    def __init__(self, zero_shot=True, img_size=512) -> None:
-        """
-        Initializes the LOCA model.
-
-        Args:
-            img_size (int): Size of the input image.
-
-        """
-        if not osp.exists(self._CHECKPOINT_DIR):
-            os.makedirs(self._CHECKPOINT_DIR)
-
-        ZSHOT_CHECKPOINT = (
-            "https://drive.google.com/file/d/11-gkybBmBhQF2KZyo-c2-4IGUmor_JMu/view?usp=sharing",
-            "count_zero_shot.pt",
-        )
-        FSHOT_CHECKPOINT = (
-            "https://drive.google.com/file/d/1rTG7AjGmasfOYFm-ZzSbVQH9daYgOoIS/view?usp=sharing",
-            "count_few_shot.pt",
-        )
-
-        # init model
-        self._model = LOCA(
-            image_size=img_size,
-            num_encoder_layers=3,
-            num_ope_iterative_steps=3,
-            num_objects=3 if zero_shot else 1,
-            zero_shot=zero_shot,
-            emb_dim=256,
-            num_heads=8,
-            kernel_dim=3,
-            backbone_name="resnet50",
-            swav_backbone=True,
-            train_backbone=False,
-            reduction=8,
-            dropout=0.1,
-            layer_norm_eps=1e-5,
-            mlp_factor=8,
-            norm_first=True,
-            activation=nn.GELU,
-            norm=True,
-        )
-
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
-        )
-
-        if zero_shot:
-            self.model_checkpoint_path = download(
-                url=ZSHOT_CHECKPOINT[0],
-                path=os.path.join(self._CHECKPOINT_DIR, ZSHOT_CHECKPOINT[1]),
-            )
-        else:
-            self.model_checkpoint_path = download(
-                url=FSHOT_CHECKPOINT[0],
-                path=os.path.join(self._CHECKPOINT_DIR, FSHOT_CHECKPOINT[1]),
-            )
-
-        state_dict = torch.load(
-            self.model_checkpoint_path, map_location=torch.device(self.device)
-        )["model"]
-        self._model.load_state_dict(state_dict)
-        self._model.to(self.device)
-        self._model.eval()
-        self.img_size = img_size
-
-    @torch.inference_mode()
-    def __call__(
-        self,
-        image: Image.Image,
-        bbox: Optional[list[int]] = None,
-    ) -> CountingDetection:
-        """
-        LOCA injects shape and appearance information into object queries
-        to precisely count objects of various sizes in densely and sparsely populated scenarios.
-        It also extends to a zeroshot scenario and achieves excellent localization and count errors
-        across the entire low-shot spectrum.
-
-        Args:
-            image (Image.Image): The input image for object detection.
-            bbox (list[int]): A list of four ints representing the bounding box coordinates (xmin, ymin, xmax, ymax)
-                        of the detected query in the image.
-
-        Returns:
-            CountingDetection: An object type containing:
-                - The count of the objects found similar to the bbox query.
-                - A list of numpy arrays representing the masks of the objects found.
-        """
-        if bbox:
-            assert len(bbox) == 4, "Bounding box should be in format [x1, y1, x2, y2]"
-        image = image.convert("RGB")
-        w, h = image.size
-        img_t = T.Compose(
-            [
-                T.ToTensor(),
-                T.Resize((self.img_size, self.img_size)),
-                T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ]
-        )(image).to(self.device)
-        if bbox:
-            bbox = (torch.tensor(bbox) / torch.tensor([w, h, w, h]) * self.img_size).to(
-                self.device
-            )
-        else:
-            bbox = torch.ones(2, device=self.device)
-
-        out, _ = self._model(img_t[None], bbox[None].unsqueeze(0))
-
-        n_objects = out.flatten(1).sum(dim=1).cpu().numpy().item()
-
-        dmap = (out - torch.min(out)) / (torch.max(out) - torch.min(out)) * 255
-        density_map = dmap.squeeze().cpu().numpy().astype("uint8")
-        return CountingDetection(count=round(n_objects), heat_map=[density_map])
