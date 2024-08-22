@@ -3,7 +3,7 @@
 ## Video similarity
 
 ```python
-from vision_agent_tools.tools.clip_media_sim import CLIPMediaSim
+from vision_agent_tools.models.clip_media_sim import CLIPMediaSim
 from decord import VideoReader
 from decord import cpu
 from PIL import Image
@@ -52,4 +52,4 @@ You can also run similarity against a target text doing the following:
 results = clip_media_sim(video=frames, target_text="a turtle holding the earth")
 ```
 
-::: vision_agent_tools.tools.clip_media_sim
+::: vision_agent_tools.models.clip_media_sim

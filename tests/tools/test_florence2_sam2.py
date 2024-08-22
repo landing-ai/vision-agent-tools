@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from vision_agent_tools.tools.florence2_sam2 import Florence2SAM2
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
 
 
 def test_successful_florence2_sam2_image():

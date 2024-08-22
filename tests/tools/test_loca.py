@@ -1,6 +1,6 @@
 from PIL import Image
 
-from vision_agent_tools.tools.nshot_counting import NShotCounting
+from vision_agent_tools.models.nshot_counting import NShotCounting
 
 
 def test_successful_zeroshot_counting():

@@ -1,6 +1,6 @@
 from PIL import Image
 
-from vision_agent_tools.tools.florencev2_qa import FlorenceQA
+from vision_agent_tools.models.florencev2_qa import FlorenceQA
 
 
 def test_successful_florencev2_qa():

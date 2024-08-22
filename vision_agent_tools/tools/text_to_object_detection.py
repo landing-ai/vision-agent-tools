@@ -1,53 +1,42 @@
-from pydantic import BaseModel
-from typing import List
+from typing import List, Any
 from PIL import Image
-from vision_agent_tools.tools.base_tool import Tool
-from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.shared_types import BaseMLModel
-
-
-class BoundingBox(BaseModel):
-    label: str
-    x_min: float
-    y_min: float
-    x_max: float
-    y_max: float
+from pydantic import BaseModel
+from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.models.model_registry import get_model
 
 
 class TextToObjectDetectionOutput(BaseModel):
-    tasks: str
-    bboxes: List[BoundingBox]
+    output: Any
 
 
-class TextToObjectDetection(Tool):
+class TextToObjectDetection(BaseTool):
     """
-    Perform object detection from text tasks
+    Tool to perform object detection based on text prompts using a specified ML model
     """
 
     def __init__(self, model: str):
-        model_class = get_model_class(model)
-        self.model: BaseMLModel = model_class()
+        self.model_name = model
+        model_instance = get_model(model)
+        super().__init__(model=model_instance)
 
-    def run(
-        self, image: Image.Image, tasks: List[str]
+    def __call__(
+        self, image: Image.Image, prompts: List[str]
     ) -> List[TextToObjectDetectionOutput]:
         """
-        Run object detection on the image based on text tasks
+        Run object detection on the image based on text prompts.
 
         Args:
             image (Image.Image): The input image for object detection.
-            task (PromptTask): The task to be performed on the image.
+            prompts (List[str]): List of text prompts for object detection.
+
+        Returns:
+            List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
         results = []
 
-        for tasks in tasks:
-            prediction = self.model.predict(
-                image=image, task="object_detection", tasks=tasks
-            )
-            output = TextToObjectDetectionOutput(
-                tasks=tasks,
-                bboxes=[BoundingBox(**bbox) for bbox in prediction["bboxes"]],
-            )
+        for prompt in prompts:
+            prediction = self.model(image=image, task=prompt)
+            output = TextToObjectDetectionOutput(output=prediction)
             results.append(output)
 
         return results

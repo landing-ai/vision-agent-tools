@@ -1,5 +1,5 @@
 from PIL import Image
-from vision_agent_tools.tools.internlm_xcomposer2 import InternLMXComposer2
+from vision_agent_tools.models.internlm_xcomposer2 import InternLMXComposer2
 
 
 def test_successful_internlm_xcomposer2_for_video(random_video_generator):

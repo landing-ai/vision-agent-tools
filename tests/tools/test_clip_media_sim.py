@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 import torch
 
-from vision_agent_tools.tools.clip_media_sim import CLIPMediaSim
+from vision_agent_tools.models.clip_media_sim import CLIPMediaSim
 
 
 def test_successful_clip_similarity_target_image(random_video_generator):

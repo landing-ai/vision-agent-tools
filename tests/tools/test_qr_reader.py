@@ -1,7 +1,7 @@
 import pytest
 from PIL import Image
 
-from vision_agent_tools.tools.qr_reader import QRReader
+from vision_agent_tools.models.qr_reader import QRReader
 
 
 @pytest.mark.parametrize("expected_text", ["This is a tes"])

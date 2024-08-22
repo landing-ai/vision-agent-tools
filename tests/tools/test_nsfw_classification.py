@@ -1,5 +1,5 @@
 from PIL import Image
-from vision_agent_tools.tools.nsfw_classification import NSFWClassification
+from vision_agent_tools.models.nsfw_classification import NSFWClassification
 
 
 def test_successful_nsfw_classification():

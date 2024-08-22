@@ -5,7 +5,7 @@ This example demonstrates using the Florence2 tool to interpret simple text prom
 __NOTE__: The Florence-2 model can only be used in GPU environments.
 
 ```python
-from vision_agent_tools.tools.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
 # (replace this path with your own!)
 test_image = "path/to/your/image.jpg"
@@ -24,4 +24,4 @@ results = run_florence(image, task=task_prompt)
 print(f"The image contains: {results[task_prompt]}")
 ```
 
-::: vision_agent_tools.tools.florencev2
+::: vision_agent_tools.models.florencev2
