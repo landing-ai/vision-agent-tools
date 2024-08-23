@@ -43,7 +43,7 @@ opencv-stubs = "^0.0.10"
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = {extras = ["python"], version = "^0.25.1"}
 mkdocs-material = "^9.5.28"
-griffe-fieldz = "^0.1.2"
+griffe-fieldz = "^0.2.0"
 
 [tool.poetry.extras]
 all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2", "timm", "einops", "controlnet-aux", "lmdeploy", "decord", "sam-2"]
