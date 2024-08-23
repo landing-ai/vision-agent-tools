@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -477,7 +477,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2" class="md-nav__link">
     <span class="md-ellipsis">
       owlv2
     </span>
@@ -486,7 +486,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2
     </span>
@@ -496,7 +496,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -505,7 +505,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -519,7 +519,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2InferenceData" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2InferenceData
     </span>
@@ -555,6 +555,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared_model_manager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared Model Manager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -582,7 +602,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2" class="md-nav__link">
     <span class="md-ellipsis">
       owlv2
     </span>
@@ -591,7 +611,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2
     </span>
@@ -601,7 +621,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -610,7 +630,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -624,7 +644,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.owlv2.Owlv2InferenceData" class="md-nav__link">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2InferenceData
     </span>
@@ -649,7 +669,7 @@
 
 <h1 id="owlv2-open-world-localization">OWLv2 Open-World Localization<a class="headerlink" href="#owlv2-open-world-localization" title="Permanent link">#</a></h1>
 <p>This example demonstrates using the Owlv2 tool for object detection in images based on text prompts.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.tools.owlv2</span> <span class="kn">import</span> <span class="n">Owlv2</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.owlv2</span> <span class="kn">import</span> <span class="n">Owlv2</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># (replace this path with your own!)</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">test_image</span> <span class="o">=</span> <span class="s2">&quot;path/to/your/image.jpg&quot;</span>
@@ -678,7 +698,7 @@
 
 
 
-<a id="vision_agent_tools.tools.owlv2"></a>
+<a id="vision_agent_tools.models.owlv2"></a>
     <div class="doc doc-contents first">
 
 
@@ -696,16 +716,16 @@
 
 
 
-<h2 id="vision_agent_tools.tools.owlv2.Owlv2" class="doc doc-heading">
+<h2 id="vision_agent_tools.models.owlv2.Owlv2" class="doc doc-heading">
             <code>Owlv2</code>
 
 
-<a href="#vision_agent_tools.tools.owlv2.Owlv2" class="headerlink" title="Permanent link">#</a></h2>
+<a href="#vision_agent_tools.models.owlv2.Owlv2" class="headerlink" title="Permanent link">#</a></h2>
 
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="vision_agent_tools.shared_types.BaseTool">BaseTool</span></code></p>
+              Bases: <code><span title="vision_agent_tools.shared_types.BaseMLModel">BaseMLModel</span></code></p>
 
 
       <p>Tool for object detection using the pre-trained Owlv2 model from
@@ -730,10 +750,10 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.owlv2.Owlv2.__call__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.owlv2.Owlv2.__call__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">DEFAULT_CONFIDENCE</span><span class="p">)</span></code>
 
-<a href="#vision_agent_tools.tools.owlv2.Owlv2.__call__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.owlv2.Owlv2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -793,7 +813,7 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
               </div>
             </td>
             <td>
-                  <code><span title="vision_agent_tools.tools.owlv2.DEFAULT_CONFIDENCE">DEFAULT_CONFIDENCE</span></code>
+                  <code><span title="vision_agent_tools.models.owlv2.DEFAULT_CONFIDENCE">DEFAULT_CONFIDENCE</span></code>
             </td>
           </tr>
       </tbody>
@@ -811,7 +831,7 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Optional">Optional</span>[list[<a class="autorefs autorefs-internal" title="vision_agent_tools.tools.owlv2.Owlv2InferenceData" href="#vision_agent_tools.tools.owlv2.Owlv2InferenceData">Owlv2InferenceData</a>]]</code>
+                  <code><span title="typing.Optional">Optional</span>[list[<a class="autorefs autorefs-internal" title="vision_agent_tools.models.owlv2.Owlv2InferenceData" href="#vision_agent_tools.models.owlv2.Owlv2InferenceData">Owlv2InferenceData</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -832,10 +852,10 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.owlv2.Owlv2.__init__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.owlv2.Owlv2.__init__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__init__</span><span class="p">()</span></code>
 
-<a href="#vision_agent_tools.tools.owlv2.Owlv2.__init__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.owlv2.Owlv2.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -859,11 +879,11 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 
 
 
-<h2 id="vision_agent_tools.tools.owlv2.Owlv2InferenceData" class="doc doc-heading">
+<h2 id="vision_agent_tools.models.owlv2.Owlv2InferenceData" class="doc doc-heading">
             <code>Owlv2InferenceData</code>
 
 
-<a href="#vision_agent_tools.tools.owlv2.Owlv2InferenceData" class="headerlink" title="Permanent link">#</a></h2>
+<a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="headerlink" title="Permanent link">#</a></h2>
 
 
     <div class="doc doc-contents ">
@@ -872,54 +892,6 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 
 
       <p>Represents an inference result from the Owlv2 model.</p>
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><span title="vision_agent_tools.tools.owlv2.Owlv2InferenceData.label">label</span></code></td>
-            <td>
-                  <code>str</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The predicted label for the detected object.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="vision_agent_tools.tools.owlv2.Owlv2InferenceData.score">score</span></code></td>
-            <td>
-                  <code>float</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The confidence score associated with the prediction (between 0 and 1).</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="vision_agent_tools.tools.owlv2.Owlv2InferenceData.bbox">bbox</span></code></td>
-            <td>
-                  <code>list[float]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax)
-              of the detected object in the image.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
 
 
 
@@ -1001,7 +973,7 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
     <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
     
   </body>

@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -377,7 +377,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa" class="md-nav__link">
     <span class="md-ellipsis">
       florencev2_qa
     </span>
@@ -386,7 +386,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA" class="md-nav__link">
     <span class="md-ellipsis">
       FlorenceQA
     </span>
@@ -396,7 +396,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -405,7 +405,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -546,6 +546,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared_model_manager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared Model Manager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -573,7 +593,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa" class="md-nav__link">
     <span class="md-ellipsis">
       florencev2_qa
     </span>
@@ -582,7 +602,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA" class="md-nav__link">
     <span class="md-ellipsis">
       FlorenceQA
     </span>
@@ -592,7 +612,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -601,7 +621,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -632,7 +652,7 @@
 <h1 id="florenceqa">FlorenceQA<a class="headerlink" href="#florenceqa" title="Permanent link">#</a></h1>
 <p>This example demonstrates using the Florence2-QA tool to   to answer questions about images.</p>
 <p><strong>NOTE</strong>: The FlorenceQA model can only be used in GPU environments.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.tools.florencev2_qa</span> <span class="kn">import</span> <span class="n">FlorenceQA</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.florencev2_qa</span> <span class="kn">import</span> <span class="n">FlorenceQA</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># (replace this path with your own!)</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">test_image</span> <span class="o">=</span> <span class="s2">&quot;path/to/your/image.jpg&quot;</span>
@@ -653,7 +673,7 @@
 
 
 
-<a id="vision_agent_tools.tools.florencev2_qa"></a>
+<a id="vision_agent_tools.models.florencev2_qa"></a>
     <div class="doc doc-contents first">
 
 
@@ -671,16 +691,16 @@
 
 
 
-<h2 id="vision_agent_tools.tools.florencev2_qa.FlorenceQA" class="doc doc-heading">
+<h2 id="vision_agent_tools.models.florencev2_qa.FlorenceQA" class="doc doc-heading">
             <code>FlorenceQA</code>
 
 
-<a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA" class="headerlink" title="Permanent link">#</a></h2>
+<a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA" class="headerlink" title="Permanent link">#</a></h2>
 
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="vision_agent_tools.shared_types.BaseTool">BaseTool</span></code></p>
+              Bases: <code><span title="vision_agent_tools.shared_types.BaseMLModel">BaseMLModel</span></code></p>
 
 
       <p>FlorenceQA is a tool that combines the Florence-2 and Roberta QA models
@@ -703,10 +723,10 @@ to answer questions about images.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.florencev2_qa.FlorenceQA.__call__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.florencev2_qa.FlorenceQA.__call__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">question</span><span class="p">)</span></code>
 
-<a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__call__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -786,10 +806,10 @@ to answer questions about images.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.florencev2_qa.FlorenceQA.__init__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.florencev2_qa.FlorenceQA.__init__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__init__</span><span class="p">()</span></code>
 
-<a href="#vision_agent_tools.tools.florencev2_qa.FlorenceQA.__init__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.florencev2_qa.FlorenceQA.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -867,7 +887,7 @@ to answer questions about images.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
     
   </body>

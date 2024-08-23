@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -306,7 +306,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim" class="md-nav__link">
     <span class="md-ellipsis">
       clip_media_sim
     </span>
@@ -315,7 +315,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim" class="md-nav__link">
     <span class="md-ellipsis">
       CLIPMediaSim
     </span>
@@ -325,7 +325,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -334,7 +334,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -555,6 +555,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared_model_manager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared Model Manager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -591,7 +611,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim" class="md-nav__link">
     <span class="md-ellipsis">
       clip_media_sim
     </span>
@@ -600,7 +620,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim" class="md-nav__link">
     <span class="md-ellipsis">
       CLIPMediaSim
     </span>
@@ -610,7 +630,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__call__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__call__" class="md-nav__link">
     <span class="md-ellipsis">
       __call__
     </span>
@@ -619,7 +639,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__init__" class="md-nav__link">
+  <a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__init__" class="md-nav__link">
     <span class="md-ellipsis">
       __init__
     </span>
@@ -649,7 +669,7 @@
 
 <h1 id="clipmediasim">CLIPMediaSim<a class="headerlink" href="#clipmediasim" title="Permanent link">#</a></h1>
 <h2 id="video-similarity">Video similarity<a class="headerlink" href="#video-similarity" title="Permanent link">#</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.tools.clip_media_sim</span> <span class="kn">import</span> <span class="n">CLIPMediaSim</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.clip_media_sim</span> <span class="kn">import</span> <span class="n">CLIPMediaSim</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">decord</span> <span class="kn">import</span> <span class="n">VideoReader</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span> <span class="nn">decord</span> <span class="kn">import</span> <span class="n">cpu</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
@@ -699,7 +719,7 @@
 
 
 
-<a id="vision_agent_tools.tools.clip_media_sim"></a>
+<a id="vision_agent_tools.models.clip_media_sim"></a>
     <div class="doc doc-contents first">
 
 
@@ -717,16 +737,16 @@
 
 
 
-<h2 id="vision_agent_tools.tools.clip_media_sim.CLIPMediaSim" class="doc doc-heading">
+<h2 id="vision_agent_tools.models.clip_media_sim.CLIPMediaSim" class="doc doc-heading">
             <code>CLIPMediaSim</code>
 
 
-<a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim" class="headerlink" title="Permanent link">#</a></h2>
+<a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim" class="headerlink" title="Permanent link">#</a></h2>
 
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="vision_agent_tools.shared_types.BaseTool">BaseTool</span></code></p>
+              Bases: <code><span title="vision_agent_tools.shared_types.BaseMLModel">BaseMLModel</span></code></p>
 
 
       <p>A class that receives a video and a target image or text and returns the frames
@@ -748,10 +768,10 @@ that are most similar to the target.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__call__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__call__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">target_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span></code>
 
-<a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__call__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -836,10 +856,10 @@ that are most similar to the target.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__init__" class="doc doc-heading">
+<h3 id="vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__init__" class="doc doc-heading">
             <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span></code>
 
-<a href="#vision_agent_tools.tools.clip_media_sim.CLIPMediaSim.__init__" class="headerlink" title="Permanent link">#</a></h3>
+<a href="#vision_agent_tools.models.clip_media_sim.CLIPMediaSim.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -917,7 +937,7 @@ that are most similar to the target.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
     
   </body>
