@@ -3,7 +3,7 @@ from PIL import Image
 from pydantic import BaseModel
 from transformers import AutoModelForImageClassification, ViTImageProcessor
 
-from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.shared_types import BaseMLModel
 
 CHECKPOINT = "Falconsai/nsfw_image_detection"
 
@@ -21,7 +21,7 @@ class NSFWInferenceData(BaseModel):
     score: float
 
 
-class NSFWClassification(BaseTool):
+class NSFWClassification(BaseMLModel):
     """
     The primary intended use of this model is for the classification of
     [NSFW (Not Safe for Work)](https://huggingface.co/Falconsai/nsfw_image_detection) images.

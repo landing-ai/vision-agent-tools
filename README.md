@@ -35,10 +35,10 @@ You can install by running `poetry install --extras "all"` to install all tools,
 and `florencev2`.
 
 ## Usage
-Here's a simple example of how to use the `OwlV2` tool to detect objects in an image:
+Here's a simple example of how to use the `Owlv2` tool to detect objects in an image:
 ```python
 from PIL import Image
-from vision_agent_tools.tools.owlv2 import OwlV2
+from vision_agent_tools.models.owlv2 import Owlv2
 
 # load image
 image = Image.open("/path/to/my/image.png")
@@ -60,15 +60,15 @@ poetry run pre-commit install
 
 Tools can be added in `vision_agent_tools/tools`. Simply create a new python file with
 the tool name and add a class with the same name. The class should inherit from
-`BaseTool` and implement the `__call__` method. Here's a simplified example for adding
+`BaseMLModel` and implement the `__call__` method. Here's a simplified example for adding
 Owlv2 from the transformers library:
 
 ```python
 from Image import Image
-from vision_agent_tools.base_tool import BaseTool
+from vision_agent_tools.base_tool import BaseMLModel
 from transformers import Owlv2Processor, Owlv2ForObjectDetection
 
-class Owlv2(BaseTool):
+class Owlv2(BaseMLModel):
     def __init__(self):
         self.processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
         self.model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble")

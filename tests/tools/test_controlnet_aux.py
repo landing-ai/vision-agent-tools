@@ -2,7 +2,7 @@ import os
 
 from PIL import Image
 
-from vision_agent_tools.tools.controlnet_aux import Image2Pose
+from vision_agent_tools.models.controlnet_aux import Image2Pose
 
 
 def test_successful_image_2_pos_detection():

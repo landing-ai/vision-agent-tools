@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from vision_agent_tools.tools.florence2_sam2 import Florence2SAM2
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
 
 
 def test_successful_florence2_sam2_image():
@@ -13,7 +13,7 @@ def test_successful_florence2_sam2_image():
 
     florence2_sam2 = Florence2SAM2()
 
-    results = florence2_sam2(image=test_image, prompts=["tomato"])
+    results = florence2_sam2(prompts=["tomato"], image=test_image)
 
     # The disctionary should have only one key: 0
     assert len(results) == 1
@@ -45,7 +45,7 @@ def test_successful_florence2_sam2_video():
 
     florence2_sam2 = Florence2SAM2()
 
-    results = florence2_sam2(video=test_video, prompts=["tomato"])
+    results = florence2_sam2(prompts=["tomato"], video=test_video)
 
     # The disctionary should have 2 keys for the two frames in the video
     assert len(results) == 2
@@ -74,10 +74,10 @@ def test_florence2_sam2_invalid_media():
     florence2_sam2 = Florence2SAM2()
 
     with pytest.raises(ValueError):
-        florence2_sam2(image="invalid media", prompts=["tomato"])
+        florence2_sam2(prompts=["tomatoe"], image="invalid media")
 
     with pytest.raises(ValueError):
-        florence2_sam2(video="invalid media", prompts=["tomato"])
+        florence2_sam2(prompts=["tomato"], video="invalid media")
 
     with pytest.raises(AssertionError):
-        florence2_sam2(video=np.array([1, 2, 3]), prompts=["tomato"])
+        florence2_sam2(prompts=["tomatoe"], video=np.array([1, 2, 3]))

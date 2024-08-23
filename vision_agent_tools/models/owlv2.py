@@ -5,7 +5,7 @@ from PIL import Image
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
-from vision_agent_tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 MODEL_NAME = "google/owlv2-large-patch14-ensemble"
 PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
@@ -26,7 +26,7 @@ class Owlv2InferenceData(BaseModel):
     )
 
 
-class Owlv2(BaseTool):
+class Owlv2(BaseMLModel):
     """
     Tool for object detection using the pre-trained Owlv2 model from
     [Transformers](https://github.com/huggingface/transformers).

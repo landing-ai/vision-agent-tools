@@ -7,12 +7,12 @@ from pydantic import validate_call
 from transformers import CLIPModel, CLIPProcessor
 from typing_extensions import Annotated
 
-from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy
+from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 
 _HF_MODEL = "openai/clip-vit-large-patch14"
 
 
-class CLIPMediaSim(BaseTool):
+class CLIPMediaSim(BaseMLModel):
     """
     A class that receives a video and a target image or text and returns the frames
     that are most similar to the target.

@@ -2,7 +2,7 @@ import torch
 from pydantic import BaseModel
 from transformers import pipeline
 
-from vision_agent_tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 MODEL_NAME = "deepset/roberta-base-squad2"
 PROCESSOR_NAME = "deepset/roberta-base-squad2"
@@ -21,7 +21,7 @@ class RobertaQAInferenceData(BaseModel):
     score: float
 
 
-class RobertaQA(BaseTool):
+class RobertaQA(BaseMLModel):
     """
     [Roberta QA](https://huggingface.co/deepset/roberta-base-squad2)
     has been trained on question-answer pairs, including unanswerable questions,

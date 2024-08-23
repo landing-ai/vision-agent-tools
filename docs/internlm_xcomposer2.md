@@ -7,7 +7,7 @@ __NOTE__: The InternLM-XComposer-2.5 model should be used in GPU environments.
 ```python
 from decord import VideoReader
 from decord import cpu
-from vision_agent_tools.tools.internlm_xcomposer2 import InternLMXComposer2
+from vision_agent_tools.models.internlm_xcomposer2 import InternLMXComposer2
 
 # (replace this path with your own!)
 video_path = "path/to/your/my_video.mp4"
@@ -28,4 +28,4 @@ answer = run_inference(video=p_video, prompt=prompt)
 print(answer)
 ```
 
-::: vision_agent_tools.tools.internlm_xcomposer2
+::: vision_agent_tools.models.internlm_xcomposer2

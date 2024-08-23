@@ -12,7 +12,7 @@ from depth_anything_v2.dpt import DepthAnythingV2 as DepthAnythingV2Model
 from PIL import Image
 from pydantic import BaseModel
 
-from vision_agent_tools.shared_types import BaseTool, Device
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 from .utils import CHECKPOINT_DIR, download
 
@@ -27,7 +27,7 @@ class DepthMap(BaseModel):
     map: Any
 
 
-class DepthAnythingV2(BaseTool):
+class DepthAnythingV2(BaseMLModel):
     """
     Tool for depth estimation using the Depth-Anything-V2 model from the paper
     [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2).
