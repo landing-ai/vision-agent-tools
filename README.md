@@ -130,62 +130,61 @@ class Owlv2(BaseMLModel):
         return output
 ```
 
-## Registering a model in the Model Registry
+## Registering a model in the model registry
 
 To use a model with your tool, you need to register it in the `model_registry`. This allows tools to dynamically load the correct model based on the model name provided at runtime. Follow these steps in the `model_registry.py` file:
 
 1. **Import the new model**:
-```python
-from vision_agent_tools.models.owlv2_model import Owlv2Model
-```
+    ```python
+    from vision_agent_tools.models.owlv2_model import Owlv2Model
+    ```
 
-2. **Define the Model Enum**: Create an Enum that lists the models capable of handling the task:
-```python
-class TextToObjectDetectionModel(str, Enum):
-    FLORENCE_V2 = "florencev2"
-    OWLV2 = "owlv2"
-```
-
-3. **Register the Model**: Add the model to the `MODEL_REGISTRY` dictionary, mapping the string identifier to the model class:
-```python
-MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-    "florence2": FlorenceV2,
-    "owlv2": Owlv2Model,  # Register the new Owlv2 model here
-}
-```
-
-4. **Map the Task to Models**: Associate the task Enum with the list of models that can perform the task using `TASK_MODEL_MAP`:
-```python
-TASK_MODEL_MAP: Dict[Enum, List[str]] = {
-    TextToObjectDetectionModel: [model.value for model in TextToObjectDetectionModel]
-}
-``` 
-
-This setup ensures that your tools can automatically select and use the correct model for any given task.
+2. **Register the Model**: Add the model to the `MODEL_REGISTRY` dictionary, mapping the string identifier to the model class:
+    ```python
+    MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
+        "florence2": FlorenceV2,
+        "owlv2": Owlv2Model,  # Register the new Owlv2 model here
+    }
+    ```
 
 ## Adding new tool code
 
 You can easily add new tools to the vision_agent_tools/tools directory. Tools are designed to wrap around one or more machine learning models and perform specific tasks. Steps to add a new Tool:
 
-- Create a Python File: In the `vision_agent_tools/tools directory`, create a new Python file named after the tool you want to add (e.g., text_to_object_detection.py).
-- Implement the Tool Class: Inside the new Python file, create a class with the same name as the file. This class should inherit from BaseTool and implement the `__call__` method.
-- Model Integration: Use the get_model_class function from the model_registry to dynamically load the appropriate model for your tool based on the model name.
+1. **Create a Python File**: In the `vision_agent_tools/tools` directory, create a new Python file named after the tool you want to add (e.g., text_to_object_detection.py).
+2. **Map the Models to Tool**: Associate the list of models that can perform some task creating an Enum inside your tool file:
+    ```python
+    class TextToObjectDetectionModel(str, Enum):
+        FLORENCEV2 = "florencev2"
+        OWLV2 = "owlv2"
+    ``` 
+3. **Implement the Tool Class**: Inside the new Python file, create a class with the same name as the file. This class should inherit from BaseTool and implement the `__call__` method.
 
 ```python
 from typing import List, Any
+from enum import Enum
 from PIL import Image
 from pydantic import BaseModel
 from vision_agent_tools.shared_types import BaseTool
 from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.models.model_registry import TextToObjectDetectionModel
+
 
 class TextToObjectDetectionOutput(BaseModel):
     output: Any
 
+
+class TextToObjectDetectionModel(str, Enum):
+    FLORENCEV2 = "florencev2"
+    OWLV2 = "owlv2"
+
+
 class TextToObjectDetection(BaseTool):
-    def __init__(self, model: str):
-        self.model_name = model
-        model_instance = get_model_class(model_name=model, task=TextToObjectDetectionModel)
+    def __init__(self, model: TextToObjectDetectionModel):
+        if model not in TextToObjectDetectionModel._value2member_map_:
+            raise ValueError(
+                f"Model '{model}' is not a valid model for {self.__class__.__name__}."
+            )
+        model_class = get_model_class(model_name=model)
         model_instance = model_class()
         super().__init__(model=model_instance)
 
@@ -200,7 +199,10 @@ class TextToObjectDetection(BaseTool):
             results.append(output)
 
         return results
+
 ```
+
+This setup ensures that your tools can automatically select and use the correct model for any given task and avoid tools using models that do not match with their designated task.
 
 ## Adding new dependencies
 Afer that you can add the dependencies as optional like so:
