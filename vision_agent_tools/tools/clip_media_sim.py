@@ -1,15 +1,13 @@
-from annotated_types import Gt, Lt
-from typing_extensions import Annotated
-
 import numpy as np
 import torch
 import torch.nn.functional as F
+from annotated_types import Gt, Lt
 from PIL import Image
 from pydantic import validate_call
 from transformers import CLIPModel, CLIPProcessor
+from typing_extensions import Annotated
 
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy
-
+from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy
 
 _HF_MODEL = "openai/clip-vit-large-patch14"
 
@@ -91,3 +89,6 @@ class CLIPMediaSim(BaseTool):
         output = np.concatenate([indices[:, None], sims[:, None]], axis=1)
         output = output[output[:, 1] > thresh]
         return output.tolist()
+
+    def to(self, device: Device):
+        self.model.to(device=device.value)
