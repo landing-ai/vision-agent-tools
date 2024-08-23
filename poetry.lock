@@ -992,21 +992,21 @@ colorama = ">=0.4"
 
 [[package]]
 name = "griffe-fieldz"
-version = "0.1.2"
+version = "0.2.0"
 description = "Griffe extension adding support for data-class like things (pydantic, attrs, etc...)"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "griffe_fieldz-0.1.2-py3-none-any.whl", hash = "sha256:2528af30f5a1ff91c3a34e73225e3d173b80c28b3ba019bcadfde119b6344d98"},
-    {file = "griffe_fieldz-0.1.2.tar.gz", hash = "sha256:7a109c0f3fc38cce2107f1ae6270045f937406587bd6c20a1d1e7565c9d8c57d"},
+    {file = "griffe_fieldz-0.2.0-py3-none-any.whl", hash = "sha256:c2ebb0c63e7b660ddcc7c94237c6309a6bce998552b8c3483f0c14016fabf949"},
+    {file = "griffe_fieldz-0.2.0.tar.gz", hash = "sha256:fba1ecadb4d19e7f1c7b87e13caadd426f7066bd8f4bbb53615bd035bf67be58"},
 ]
 
 [package.dependencies]
-fieldz = ">=0.0.2"
-griffe = ">=0.35"
+fieldz = ">=0.1.0"
+griffe = ">=1.0"
 
 [package.extras]
-dev = ["black", "ipython", "mypy", "pdbpp", "pre-commit", "rich", "ruff"]
+dev = ["ipython", "mypy", "pdbpp", "pre-commit", "rich", "ruff"]
 test = ["pytest", "pytest-cov"]
 
 [[package]]
@@ -1131,13 +1131,13 @@ license = ["ukkonen"]
 
 [[package]]
 name = "idna"
-version = "3.7"
+version = "3.8"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 files = [
-    {file = "idna-3.7-py3-none-any.whl", hash = "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"},
-    {file = "idna-3.7.tar.gz", hash = "sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc"},
+    {file = "idna-3.8-py3-none-any.whl", hash = "sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac"},
+    {file = "idna-3.8.tar.gz", hash = "sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603"},
 ]
 
 [[package]]
@@ -1910,13 +1910,13 @@ pyyaml = ">=5.1"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.32"
+version = "9.5.33"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_material-9.5.32-py3-none-any.whl", hash = "sha256:f3704f46b63d31b3cd35c0055a72280bed825786eccaf19c655b44e0cd2c6b3f"},
-    {file = "mkdocs_material-9.5.32.tar.gz", hash = "sha256:38ed66e6d6768dde4edde022554553e48b2db0d26d1320b19e2e2b9da0be1120"},
+    {file = "mkdocs_material-9.5.33-py3-none-any.whl", hash = "sha256:dbc79cf0fdc6e2c366aa987de8b0c9d4e2bb9f156e7466786ba2fd0f9bf7ffca"},
+    {file = "mkdocs_material-9.5.33.tar.gz", hash = "sha256:d23a8b5e3243c9b2f29cdfe83051104a8024b767312dc8fde05ebe91ad55d89d"},
 ]
 
 [package.dependencies]
@@ -2109,13 +2109,13 @@ files = [
 
 [[package]]
 name = "narwhals"
-version = "1.5.2"
+version = "1.5.4"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "narwhals-1.5.2-py3-none-any.whl", hash = "sha256:431d7fdca6104a8b6a72254e31ee6630b526c03544df8e338b3249ca9160f5d2"},
-    {file = "narwhals-1.5.2.tar.gz", hash = "sha256:4d8ce16ecf431a544c1740adbb523477565c9614e5e330ce444f3a432ff93d7f"},
+    {file = "narwhals-1.5.4-py3-none-any.whl", hash = "sha256:f388d72fb872410dd9a509c4c75b5fd44d0a15ef37b74b09003cf36012e84714"},
+    {file = "narwhals-1.5.4.tar.gz", hash = "sha256:ba2e9583f5166bcdab3cd334da178e1085b0bb7b0e454f727bfc0e758b73a749"},
 ]
 
 [package.extras]
@@ -2416,6 +2416,28 @@ numpy = [
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\" and python_version < \"3.11\""},
     {version = ">=1.21.2", markers = "platform_system != \"Darwin\" and python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
+
+[[package]]
+name = "opencv-stubs"
+version = "0.0.10"
+description = "Unofficial stubs for the opencv-python package."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "opencv_stubs-0.0.10-py3-none-any.whl", hash = "sha256:470f979b7403e1766857fd21922f292a9b84450da90d2e498d63c6b59148d87e"},
+    {file = "opencv_stubs-0.0.10.tar.gz", hash = "sha256:d739c5e7b0628838e1a9a7dc88f9eb1b2c0a9df14d5ae879f9615788a9de1436"},
+]
+
+[package.dependencies]
+numpy = ">=1.21"
+
+[package.extras]
+build = ["hatch"]
+dev = ["pip-tools", "pre-commit", "pyright", "ruff"]
+flake8 = ["flake8", "flake8-broken-line", "flake8-bugbear", "flake8-builtins", "flake8-commas", "flake8-comprehensions", "flake8-docstrings", "flake8-import-order", "flake8-noqa", "flake8-pyproject", "flake8-quotes", "pep8-naming"]
+opencv = ["opencv-python (>=4.7.0)"]
+opencv-contrib = ["opencv-contrib-python (>=4.7.0)"]
+opencv-headless = ["opencv-python-headless (>=4.7.0)"]
 
 [[package]]
 name = "orjson"
@@ -3145,6 +3167,24 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+
+[[package]]
+name = "pytest-asyncio"
+version = "0.23.8"
+description = "Pytest support for asyncio"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest_asyncio-0.23.8-py3-none-any.whl", hash = "sha256:50265d892689a5faefb84df80819d1ecef566eb3549cf915dfb33569359d1ce2"},
+    {file = "pytest_asyncio-0.23.8.tar.gz", hash = "sha256:759b10b33a6dc61cce40a8bd5205e302978bbbcc00e279a8b61d9a6a3c82e4d3"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0,<9"
+
+[package.extras]
+docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
 
 [[package]]
 name = "python-dateutil"
@@ -4677,13 +4717,13 @@ test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,
 
 [[package]]
 name = "transformers"
-version = "4.44.1"
+version = "4.44.2"
 description = "State-of-the-art Machine Learning for JAX, PyTorch and TensorFlow"
 optional = true
 python-versions = ">=3.8.0"
 files = [
-    {file = "transformers-4.44.1-py3-none-any.whl", hash = "sha256:bd2642da18b4e6d29b135c17650cd7ca8e874f2d092d2eddd3ed6b71a93a155c"},
-    {file = "transformers-4.44.1.tar.gz", hash = "sha256:3b9a1a07ca65c665c7bf6109b7da76182184d10bb58d9ab14e6892e7b9e073a2"},
+    {file = "transformers-4.44.2-py3-none-any.whl", hash = "sha256:1c02c65e7bfa5e52a634aff3da52138b583fc6f263c1f28d547dc144ba3d412d"},
+    {file = "transformers-4.44.2.tar.gz", hash = "sha256:36aa17cc92ee154058e426d951684a2dab48751b35b49437896f898931270826"},
 ]
 
 [package.dependencies]
@@ -4809,13 +4849,13 @@ files = [
 
 [[package]]
 name = "ultralytics"
-version = "8.2.80"
+version = "8.2.81"
 description = "Ultralytics YOLOv8 for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "ultralytics-8.2.80-py3-none-any.whl", hash = "sha256:8d4107c32f5d5de4d9df32d413709b75f16b70a99228d6b57bb4c4367effbc78"},
-    {file = "ultralytics-8.2.80.tar.gz", hash = "sha256:003130721c68af008c462cd6ee0f3bb5fb8ef7c7c9ffca30fff3813322628ded"},
+    {file = "ultralytics-8.2.81-py3-none-any.whl", hash = "sha256:4fca00206946df6a021ec4c3f548d1c477a864fb5002681c96d675571be83580"},
+    {file = "ultralytics-8.2.81.tar.gz", hash = "sha256:52c9362d30dae5f952166704e55494d77d0ee6fc9e97ff7a329bf6175f361a84"},
 ]
 
 [package.dependencies]
@@ -5108,4 +5148,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "b71fc79502c775241bd2d6dbcbea11f4e3e61e8adb4da4603fa0e7b7f9204852"
+content-hash = "442514a603212770389f4d51aa75236dbcecf4aab6a187c1e05e66a18eb7bc82"

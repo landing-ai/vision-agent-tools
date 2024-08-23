@@ -1,9 +1,9 @@
-from PIL import Image
 import torch
+from PIL import Image
 
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.shared_types import BaseMLModel
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 
 class FlorenceQA(BaseMLModel):
@@ -40,3 +40,7 @@ class FlorenceQA(BaseMLModel):
         answer = self._roberta_qa(caption, question)
 
         return answer.answer
+
+    def to(self, device: Device):
+        self._florence.to(device=device)
+        self._roberta_qa.to(device=device)

@@ -2,10 +2,10 @@ from typing import Optional
 
 import torch
 from PIL import Image
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
-from vision_agent_tools.shared_types import BaseMLModel
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 MODEL_NAME = "google/owlv2-large-patch14-ensemble"
 PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
@@ -15,17 +15,15 @@ DEFAULT_CONFIDENCE = 0.1
 class Owlv2InferenceData(BaseModel):
     """
     Represents an inference result from the Owlv2 model.
-
-    Attributes:
-        label (str): The predicted label for the detected object.
-        score (float): The confidence score associated with the prediction (between 0 and 1).
-        bbox (list[float]): A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax)
-                          of the detected object in the image.
     """
 
-    label: str
-    score: float
-    bbox: list[float]
+    label: str = Field(description="The predicted label for the detected object")
+    score: float = Field(
+        description="TThe confidence score associated with the prediction (between 0 and 1)"
+    )
+    bbox: list[float] = Field(
+        description=" A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax) of the detected object in the image"
+    )
 
 
 class Owlv2(BaseMLModel):
@@ -116,3 +114,6 @@ class Owlv2(BaseMLModel):
         if len(inferences) == 0:
             return None
         return inferences
+
+    def to(self, device: Device):
+        self._model.to(device=device.value)

@@ -3,16 +3,18 @@ import os
 # Run this line before loading torch
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-import numpy as np
 import os.path as osp
-import torch
+from typing import Any, Union
 
-from PIL import Image
-from .utils import download, CHECKPOINT_DIR
-from typing import Union, Any
-from vision_agent_tools.shared_types import BaseMLModel
+import numpy as np
+import torch
 from depth_anything_v2.dpt import DepthAnythingV2 as DepthAnythingV2Model
+from PIL import Image
 from pydantic import BaseModel
+
+from vision_agent_tools.shared_types import BaseMLModel, Device
+
+from .utils import CHECKPOINT_DIR, download
 
 
 class DepthMap(BaseModel):
@@ -87,3 +89,6 @@ class DepthAnythingV2(BaseMLModel):
         depth = self._model.infer_image(image)  # HxW raw depth map
 
         return DepthMap(map=depth)
+
+    def to(self, device: Device):
+        self._model.to(device=device.value)

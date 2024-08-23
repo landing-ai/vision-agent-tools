@@ -1,8 +1,15 @@
+from enum import Enum
 from typing import Annotated, Literal, TypeVar
 
-from pydantic import BaseModel
 import numpy as np
 import numpy.typing as npt
+from pydantic import BaseModel
+
+
+class Device(str, Enum):
+    GPU = "cuda"
+    CPU = "cpu"
+    MPS = "mps"
 
 
 class BaseMLModel:
@@ -25,6 +32,9 @@ class BaseTool:
 
     def __call__(self, input, **kwargs):
         raise NotImplementedError("Subclasses should implement this method.")
+
+    def to(self, device: Device):
+        raise NotImplementedError("Subclass must implement abstract method")
 
 
 DType = TypeVar("DType", bound=np.generic)

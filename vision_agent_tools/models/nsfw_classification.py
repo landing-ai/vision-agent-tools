@@ -1,9 +1,9 @@
 import torch
-
 from PIL import Image
 from pydantic import BaseModel
 from transformers import AutoModelForImageClassification, ViTImageProcessor
-from vision_agent_tools.shared_types import BaseMLModel
+
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 CHECKPOINT = "Falconsai/nsfw_image_detection"
 
@@ -72,3 +72,6 @@ class NSFWClassification(BaseMLModel):
         predicted_label = logits.argmax(-1).item()
         text = self._model.config.id2label[predicted_label]
         return NSFWInferenceData(label=text, score=scores[predicted_label])
+
+    def to(self, device: Device):
+        self._model.to(device=device.value)

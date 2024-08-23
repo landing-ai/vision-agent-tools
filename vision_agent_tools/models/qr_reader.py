@@ -1,10 +1,15 @@
 import numpy as np
 from PIL import Image
 from pydantic import BaseModel, Field
-
 from qreader import QReader
 
-from vision_agent_tools.shared_types import BaseMLModel, Polygon, Point, BoundingBox
+from vision_agent_tools.shared_types import (
+    BaseMLModel,
+    BoundingBox,
+    Device,
+    Point,
+    Polygon,
+)
 
 
 class QRCodeDetection(BaseModel):
@@ -79,3 +84,6 @@ class QRReader(BaseMLModel):
             for text, meta in zip(all_text, all_meta)
         ]
         return detections
+
+    def to(self, device: Device):
+        self.qreader.detector.model.to(device=device.value)
