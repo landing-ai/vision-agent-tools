@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from vision_agent_tools.shared_types import BaseTool
 from transformers.models.bert import BertConfig, BertModel
 from transformers import AutoTokenizer
+from torchvision.ops.boxes import box_area
 
 from .utils import download, CHECKPOINT_DIR
 from countgd.datasets_inference import transforms as cgd_transforms
@@ -16,9 +17,10 @@ from countgd.util.misc import nested_tensor_from_tensor_list
 from countgd.groundingdino.util.box_ops import box_cxcywh_to_xyxy
 
 
-DEFAULT_CONFIDENCE = 0.23
-CURRENT_DIR = osp.dirname(osp.abspath(__file__))
-CFG_FILE = "../helpers/cfg_countgd.py"
+_DEFAULT_CONFIDENCE = 0.23
+_AREA_THRESHOLD = 0.8
+_CURRENT_DIR = osp.dirname(osp.abspath(__file__))
+_CFG_FILE = "../helpers/cfg_countgd.py"
 
 
 class CountInferenceData(BaseModel):
@@ -67,7 +69,7 @@ class CountGDCounting(BaseTool):
 
         # build model
         print("building model ... ...")
-        cfg = SLConfig.fromfile(CFG_FILE)
+        cfg = SLConfig.fromfile(_CFG_FILE)
         model = self.build_model_main(cfg, BERT_CHECKPOINT[1])
         checkpoint = torch.load(self.model_checkpoint_path, map_location="cpu")["model"]
         model.load_state_dict(checkpoint, strict=False)
@@ -106,7 +108,7 @@ class CountGDCounting(BaseTool):
         image: Union[str, Image.Image],
         text: str,
         visual_prompts: List[List[float]],
-        threshold: float = DEFAULT_CONFIDENCE,
+        threshold: float = _DEFAULT_CONFIDENCE,
     ):
         assert text != "" or len(
             visual_prompts
@@ -142,6 +144,7 @@ class CountGDCounting(BaseTool):
         logits = logits[box_mask, :].cpu().numpy()
         boxes = box_cxcywh_to_xyxy(boxes[box_mask, :])
         boxes = boxes.cpu().numpy()
+        box_areas = box_area(boxes).cpu().numpy()
 
         # create output structure required by va
         assert len(boxes) == len(logits)
@@ -149,6 +152,10 @@ class CountGDCounting(BaseTool):
         labels = text.split(" .") if text.strip() != "" else ["object"]
 
         for i in range(len(boxes)):
+            # filter boxes which counts whole image as an instance
+            if box_areas[i] > _AREA_THRESHOLD:
+                continue
+
             if len(labels) == 1:
                 lbl = labels[0]
             else:
