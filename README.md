@@ -34,8 +34,16 @@ You can install by running `poetry install --extras "all"` to install all tools,
 `poetry install --extras "owlv2 florencev2"` to install specific tools such as `owlv2`
 and `florencev2`.
 
+### Installing flash-attn
+
+If your project requires the `flash-attn` dependency, please note that installing it through Poetry can be tricky. We recommend installing `flash-attn` manually using pip after setting up your environment with Poetry with `poetry run pip install flash-attn` - this ensures that the `flash-attn` package is correctly installed in your environment.
+
 ## Usage
-Here's a simple example of how to use the `Owlv2` tool to detect objects in an image:
+
+### Models
+Models in this project are machine learning models that perform specific tasks (like object detection and instance segmentation). 
+
+Here's a simple example of how to use the `Owlv2` model to detect objects in an image:
 ```python
 from PIL import Image
 from vision_agent_tools.models.owlv2 import Owlv2
@@ -47,6 +55,44 @@ model = Owlv2()
 detections = model(image=image, prompts=["cat"])
 ```
 
+### Tools
+Tools are higher-level abstractions that wrap around one or more models to accomplish specific tasks. Each tool is designed to work with different models via a dynamic model registry, allowing users to switch between models.
+
+Here's an example of how to use the `TextToObjectDetection` tool to detect objects in an image based on text prompts:
+
+
+```python
+from PIL import Image
+from vision_agent_tools.tools.text_to_object_detection import TextToObjectDetection
+
+# load image
+img_path = "/path/to/my/image.jpg"
+image = Image.open(img_path)
+
+# Initialize the text-to-object detection tool with the desired model
+detector = TextToObjectDetection(model="owlv2")
+
+# Run the detector with the image and a text prompt
+detections = detector(image=image, prompts=["find dogs in the picture"])
+```
+
+In this example:
+
+- `TextToObjectDetection` tool is initialized with the "florencev2" model.
+- The tool detects objects based on the text prompt "find dogs in the picture" and returns a list of `TextToObjectDetectionOutput` containing the detection results.
+
+## Listing Available Models
+
+To list all available models and their associated tasks, you can use the list_models_and_tasks function:
+```python
+from vision_agent_tools.models.model_registry import list_models_and_tasks
+
+models_and_tasks = list_models_and_tasks()
+print(models_and_tasks)
+```
+
+This will return a dictionary where the keys are task names, and the values are lists of model names that can perform those tasks.
+
 # Contributing
 
 ## Clone the repo and install it
@@ -56,16 +102,16 @@ poetry install
 poetry run pre-commit install
 ```
 
-## Adding new tool code
+## Adding new model code
 
-Tools can be added in `vision_agent_tools/tools`. Simply create a new python file with
-the tool name and add a class with the same name. The class should inherit from
+Tools can be added in `vision_agent_tools/models`. Simply create a new python file with
+the model name and add a class with the same name. The class should inherit from
 `BaseMLModel` and implement the `__call__` method. Here's a simplified example for adding
 Owlv2 from the transformers library:
 
 ```python
 from Image import Image
-from vision_agent_tools.base_tool import BaseMLModel
+from vision_agent_tools.shared_types import BaseMLModel
 from transformers import Owlv2Processor, Owlv2ForObjectDetection
 
 class Owlv2(BaseMLModel):
@@ -83,6 +129,80 @@ class Owlv2(BaseMLModel):
             output.append({"box": box.tolist()), "score": score.item(), "label": label.item()}
         return output
 ```
+
+## Registering a model in the model registry
+
+To use a model with your tool, you need to register it in the `model_registry`. This allows tools to dynamically load the correct model based on the model name provided at runtime. Follow these steps in the `model_registry.py` file:
+
+1. **Import the new model**:
+    ```python
+    from vision_agent_tools.models.owlv2_model import Owlv2Model
+    ```
+
+2. **Register the Model**: Add the model to the `MODEL_REGISTRY` dictionary, mapping the string identifier to the model class:
+    ```python
+    MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
+        "florence2": FlorenceV2,
+        "owlv2": Owlv2Model,  # Register the new Owlv2 model here
+    }
+    ```
+
+## Adding new tool code
+
+You can easily add new tools to the vision_agent_tools/tools directory. Tools are designed to wrap around one or more machine learning models and perform specific tasks. Steps to add a new Tool:
+
+1. **Create a Python File**: In the `vision_agent_tools/tools` directory, create a new Python file named after the tool you want to add (e.g., text_to_object_detection.py).
+2. **Map the Models to Tool**: Associate the list of models that can perform some task creating an Enum inside your tool file:
+    ```python
+    class TextToObjectDetectionModel(str, Enum):
+        FLORENCEV2 = "florencev2"
+        OWLV2 = "owlv2"
+    ``` 
+3. **Implement the Tool Class**: Inside the new Python file, create a class with the same name as the file. This class should inherit from BaseTool and implement the `__call__` method.
+
+```python
+from typing import List, Any
+from enum import Enum
+from PIL import Image
+from pydantic import BaseModel
+from vision_agent_tools.shared_types import BaseTool
+from vision_agent_tools.models.model_registry import get_model_class
+
+
+class TextToObjectDetectionOutput(BaseModel):
+    output: Any
+
+
+class TextToObjectDetectionModel(str, Enum):
+    FLORENCEV2 = "florencev2"
+    OWLV2 = "owlv2"
+
+
+class TextToObjectDetection(BaseTool):
+    def __init__(self, model: TextToObjectDetectionModel):
+        if model not in TextToObjectDetectionModel._value2member_map_:
+            raise ValueError(
+                f"Model '{model}' is not a valid model for {self.__class__.__name__}."
+            )
+        model_class = get_model_class(model_name=model)
+        model_instance = model_class()
+        super().__init__(model=model_instance)
+
+    def __call__(
+        self, image: Image.Image, prompts: List[str]
+    ) -> List[TextToObjectDetectionOutput]:
+        results = []
+
+        for prompt in prompts:
+            prediction = self.model(image=image, task=prompt)
+            output = TextToObjectDetectionOutput(output=prediction)
+            results.append(output)
+
+        return results
+
+```
+
+This setup ensures that your tools can automatically select and use the correct model for any given task and avoid tools using models that do not match with their designated task.
 
 ## Adding new dependencies
 Afer that you can add the dependencies as optional like so:
