@@ -118,7 +118,13 @@ class Owlv2(BaseMLModel):
         """
 
         texts = [prompts]
-        if image:
+
+        if image is None and video is None:
+            raise ValueError("Either 'image' or 'video' must be provided.")
+        if image is not None and video is not None:
+            raise ValueError("Only one of 'image' or 'video' can be provided.")
+
+        if image is not None:
             image = image.convert("RGB")
             inferences = self.__run_inference(
                 image=image, texts=texts, confidence=confidence
