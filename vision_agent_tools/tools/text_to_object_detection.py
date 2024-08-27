@@ -12,7 +12,6 @@ class TextToObjectDetectionOutput(BaseModel):
 
 class TextToObjectDetectionModel(str, Enum):
     FLORENCEV2 = "florencev2"
-    OWLV2 = "owlv2"
 
 
 class TextToObjectDetection(BaseTool):
@@ -30,13 +29,9 @@ class TextToObjectDetection(BaseTool):
         super().__init__(model=model_instance)
 
     def __call__(
-        self, image: Image.Image, prompts: List[str]
+        self, image: Image.Image, task: List[str]
     ) -> List[TextToObjectDetectionOutput]:
-        results = []
+        prediction = self.model(image=image, task=task)
+        output = TextToObjectDetectionOutput(output=prediction)
 
-        for prompt in prompts:
-            prediction = self.model(image=image, task=prompt)
-            output = TextToObjectDetectionOutput(output=prediction)
-            results.append(output)
-
-        return results
+        return output
