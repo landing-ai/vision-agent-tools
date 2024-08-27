@@ -1,6 +1,5 @@
 from enum import Enum
-from typing import Annotated, Literal, TypeVar, Optional, List
-from PIL import Image
+from typing import Annotated, Literal, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -19,18 +18,7 @@ class BaseMLModel:
     This class serves as a common interface for all ML models that can be used within tools.
     """
 
-    def predict(
-        self, image: Image.Image, prompts: Optional[List[str]] = None, **kwargs
-    ):
-        """
-        Perform a prediction using the model.
-
-        Args:
-            image: The input image for prediction.
-            prompts: A list of prompts or tasks for the prediction.
-            kwargs: Additional model-specific parameters.
-        """
-        raise NotImplementedError("Subclass must implement 'predict' method")
+    pass
 
 
 class BaseTool:

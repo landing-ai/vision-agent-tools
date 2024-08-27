@@ -32,16 +32,6 @@ class TextToObjectDetection(BaseTool):
     def __call__(
         self, image: Image.Image, prompts: List[str]
     ) -> List[TextToObjectDetectionOutput]:
-        """
-        Run object detection on the image based on text prompts.
-
-        Args:
-            image (Image.Image): The input image for object detection.
-            prompts (List[str]): List of text prompts for object detection.
-
-        Returns:
-            List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
-        """
         results = []
 
         for prompt in prompts:
