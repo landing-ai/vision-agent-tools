@@ -2,27 +2,27 @@ from typing import Dict, Callable
 from vision_agent_tools.shared_types import BaseMLModel
 from vision_agent_tools.models.florencev2 import (
     Florencev2,
-)  # Florencev2: Text-to-object detection, classification, instance segmentation
-from vision_agent_tools.models.owlv2 import Owlv2  # Owlv2: Object detection
+)  # Florencev2: interpret simple text prompts to perform tasks like captioning, object detection, and segmentation
+from vision_agent_tools.models.owlv2 import Owlv2  # Owlv2: object detection
 from vision_agent_tools.models.qr_reader import (
     QRReader,
-)  # QRReader: OCR and QR code reading
+)  # QRReader: QR code reading
 from vision_agent_tools.models.nshot_counting import (
     NShotCounting,
-)  # NShotCounting: Few-shot object counting
+)  # NShotCounting: object counting using the zeroshot and n-shot versions of LOCA model
 from vision_agent_tools.models.nsfw_classification import (
     NSFWClassification,
-)  # NSFWClassification: Classification for NSFW content
+)  # NSFWClassification: classification for NSFW (Not Safe for Work) images
 from vision_agent_tools.models.controlnet_aux import Image2Pose
 from vision_agent_tools.models.internlm_xcomposer2 import (
     InternLMXComposer2,
-)  # InternLMXComposer2: Text-to-image editing
+)  # InternLMXComposer2: text to image comprehension and composition
 from vision_agent_tools.models.clip_media_sim import (
     CLIPMediaSim,
-)  # ClipMediaSim: Multi-modal similarity (text-to-image, image-to-text)
+)  # ClipMediaSim: video and target (image or text) to frames that are most similar to the target
 from vision_agent_tools.models.depth_anything_v2 import (
     DepthAnythingV2,
-)  # DepthAnythingV2: Depth estimation and segmentation
+)  # DepthAnythingV2: depth estimation
 
 
 MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
