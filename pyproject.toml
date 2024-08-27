@@ -39,6 +39,7 @@ mypy = "^1.10.1"
 ipykernel = "^6.29.5"
 pytest-asyncio = "^0.23.7"
 opencv-stubs = "^0.0.10"
+decord = "^0.6.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = {extras = ["python"], version = "^0.25.1"}
