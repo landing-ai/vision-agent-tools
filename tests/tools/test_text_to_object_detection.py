@@ -3,11 +3,15 @@ from vision_agent_tools.tools.text_to_object_detection import TextToObjectDetect
 
 
 def test_successful_text_to_object_detection():
-    test_image = "car.jpg"
+    test_image = "000000039769.jpg"
+    prompts = ["a photo of a cat", "a photo of a dog"]
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
 
-    tool = TextToObjectDetection(model="florencev2")
-    output = tool(image=image)
+    tool = TextToObjectDetection(model="owlv2")
+    output = tool(image=image, prompts=prompts)
 
-    assert output == "A green car parked in front of a yellow building."
+    assert len(output) > 0
+
+    for pred in output:
+        assert pred.label == "a photo of a cat"

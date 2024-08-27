@@ -118,9 +118,3 @@ class Owlv2(BaseMLModel):
 
     def to(self, device: Device):
         self._model.to(device=device.value)
-
-    def predict(
-        self, image: Image.Image, prompts, **kwargs
-    ) -> Optional[list[Owlv2InferenceData]]:
-        confidence = kwargs.get("confidence", DEFAULT_CONFIDENCE)
-        return self.__call__(image=image, prompts=prompts, confidence=confidence)
