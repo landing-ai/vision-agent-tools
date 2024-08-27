@@ -12,8 +12,8 @@ def test_successful_qr_tool(expected_text):
     for test_image in ["001.jpeg", "002.jpeg"]:
         image = Image.open(f"tests/tools/data/qr_reader/{test_image}")
 
-        qr_tool = QRReader(model="qr_reader")
+        tool = QRReader(model="qr_reader")
 
-        detection = qr_tool(image=image)
+        detection = tool(image=image)
 
         assert detection.text == expected_text

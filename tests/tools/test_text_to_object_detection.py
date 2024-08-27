@@ -7,9 +7,7 @@ def test_successful_text_to_object_detection():
 
     image = Image.open(f"tests/tools/data/florencev2/{test_image}")
 
-    florencev2 = TextToObjectDetection()
+    tool = TextToObjectDetection(model="florencev2")
+    output = tool(image=image)
 
-    results = florencev2(image=image, task="<CAPTION>")
-    caption = results["<CAPTION>"]
-
-    assert caption == "A green car parked in front of a yellow building."
+    assert output == "A green car parked in front of a yellow building."
