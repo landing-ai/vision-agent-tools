@@ -47,9 +47,7 @@ class InternLMXComposer2(BaseMLModel):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
+            else "mps" if torch.backends.mps.is_available() else "cpu"
         )
         self._frame2img = get_class_from_dynamic_module(
             "ixc_utils.frame2img", self._HF_MODEL

@@ -10,5 +10,5 @@ else
 	sudo apt update
 	sudo apt-get install -y libzbar0
 fi
-POETRY install -E all
+POETRY run install-dependencies
 FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE POETRY run pip install flash-attn --no-build-isolation

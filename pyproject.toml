@@ -64,3 +64,6 @@ florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+install-dependencies = "install_dependencies:install_dependencies"

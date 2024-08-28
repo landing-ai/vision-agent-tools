@@ -30,9 +30,19 @@ We encourage you to explore the tools, leverage the documentation, and contribut
 
 
 ## Installation
+
+### Easy way
+```bash
+poetry shell
+make install
+```
+### Advanced usage
+
 You can install by running `poetry install --extras "all"` to install all tools, or with
 `poetry install --extras "owlv2 florencev2"` to install specific tools such as `owlv2`
 and `florencev2`.
+
+
 
 ### Installing flash-attn
 
@@ -41,7 +51,7 @@ If your project requires the `flash-attn` dependency, please note that installin
 ## Usage
 
 ### Models
-Models in this project are machine learning models that perform specific tasks (like object detection and instance segmentation). 
+Models in this project are machine learning models that perform specific tasks (like object detection and instance segmentation).
 
 Here's a simple example of how to use the `Owlv2` model to detect objects in an image:
 ```python
@@ -146,7 +156,7 @@ You can easily add new tools to the vision_agent_tools/tools directory. Tools ar
     class TextToObjectDetectionModel(str, Enum):
         FLORENCEV2 = "florencev2"
         OWLV2 = "owlv2"
-    ``` 
+    ```
 3. **Implement the Tool Class**: Inside the new Python file, create a class with the same name as the file. This class should inherit from BaseTool and implement the `__call__` method.
 
 ```python
