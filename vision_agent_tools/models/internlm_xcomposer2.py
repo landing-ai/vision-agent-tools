@@ -76,7 +76,8 @@ class InternLMXComposer2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         frames: Frames = MAX_NUMBER_OF_FRAMES,
-    ) -> str:
+        n_chunks: int = 1,
+    ) -> list[str]:
         """
         InternLMXComposer2 model answers questions about a video or image.
 
@@ -85,9 +86,10 @@ class InternLMXComposer2(BaseMLModel):
             image (Image.Image | None): The image to be analyzed.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             frames (int): The number of frames to be used from the video.
+            n_chunks (int): The number of chunks to split the input video to.
 
         Returns:
-            str: The answer to the prompt.
+            list[str]: The answers to the prompt.
         """
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
@@ -96,10 +98,18 @@ class InternLMXComposer2(BaseMLModel):
 
         if image is not None:
             media = self._transform_image(image)
+            sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
+            return [sess.response.text]
         if video is not None:
-            video = self._process_video(video, frames)
-            image_frames = self._frame2img(video, self._get_font())
-            media = self._video_transform(image_frames)
-
-        sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
-        return sess.response.text
+            num_frames = video.shape[0]
+            step_frames = num_frames // n_chunks
+            answers: list[str] = []
+            for i in range(0, num_frames, step_frames):
+                chunk = video[i : i + step_frames, :, :, :]
+                chunk = self._process_video(chunk, frames)
+                image_frames = self._frame2img(chunk, self._get_font())
+                media = self._video_transform(image_frames)
+                sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
+                response = sess.response.text
+                answers.append(response)
+            return answers
