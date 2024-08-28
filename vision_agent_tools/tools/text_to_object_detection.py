@@ -37,7 +37,7 @@ class TextToObjectDetection(BaseTool):
         prompts: List[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-        *args,
+        confidence: float | None = None,
     ) -> List[TextToObjectDetectionOutput]:
         """
         Run object detection on the image based on text prompts.
@@ -58,9 +58,9 @@ class TextToObjectDetection(BaseTool):
 
         for prompt in prompts:
             if image is not None:
-                prediction = self.model(image=image, task=prompt, *args)
+                prediction = self.model(image=image, task=prompt, confidence=confidence)
             if video is not None:
-                prediction = self.model(video=video, task=prompt, *args)
+                prediction = self.model(video=video, task=prompt, confidence=confidence)
 
             output = TextToObjectDetectionOutput(output=prediction)
             results.append(output)
