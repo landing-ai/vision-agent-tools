@@ -77,7 +77,7 @@ class InternLMXComposer2(BaseMLModel):
         video: VideoNumpy | None = None,
         frames: Frames = MAX_NUMBER_OF_FRAMES,
         chunk_size: int = 1,
-    ) -> str | list[str]:
+    ) -> list[str]:
         """
         InternLMXComposer2 model answers questions about a video or image.
 
@@ -89,7 +89,7 @@ class InternLMXComposer2(BaseMLModel):
             chunk_size (int): The number of chunks to split the input video to.
 
         Returns:
-            str: The answer to the prompt.
+            list[str]: The answers to the prompt.
         """
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
@@ -99,7 +99,7 @@ class InternLMXComposer2(BaseMLModel):
         if image is not None:
             media = self._transform_image(image)
             sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
-            return sess.response.text
+            return [sess.response.text]
         if video is not None:
             num_frames = video.shape[0]
             step_frames = num_frames // chunk_size
