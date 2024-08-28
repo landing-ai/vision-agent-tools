@@ -16,9 +16,9 @@ def test_successful_image_detection():
 
     results = owlv2(prompts=prompts, image=image)
 
-    assert len(results) > 0
+    assert len(results[0]) > 0
 
-    for pred in results:
+    for pred in results[0]:
         assert pred.label == "a photo of a cat"
 
 

@@ -68,8 +68,6 @@ class Owlv2(BaseMLModel):
                 )
             )
 
-        if len(inferences) == 0:
-            return None
         return inferences
 
     def __init__(self):
@@ -99,7 +97,7 @@ class Owlv2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
         confidence: Optional[float] = DEFAULT_CONFIDENCE,
-    ) -> Optional[list[Owlv2InferenceData]]:
+    ) -> list[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
 
@@ -126,8 +124,9 @@ class Owlv2(BaseMLModel):
 
         if image is not None:
             image = image.convert("RGB")
-            inferences = self.__run_inference(
-                image=image, texts=texts, confidence=confidence
+            inferences = []
+            inferences.append(
+                self.__run_inference(image=image, texts=texts, confidence=confidence)
             )
         if video is not None:
             inferences = []
