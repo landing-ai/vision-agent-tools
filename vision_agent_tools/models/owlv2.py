@@ -4,6 +4,7 @@ import torch
 from PIL import Image
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
+from typing import List
 
 from vision_agent_tools.shared_types import BaseMLModel, Device
 
@@ -60,9 +61,9 @@ class Owlv2(BaseMLModel):
     def __call__(
         self,
         image: Image.Image,
-        prompts: list[str],
+        prompts: List[str],
         confidence: Optional[float] = DEFAULT_CONFIDENCE,
-    ) -> Optional[list[Owlv2InferenceData]]:
+    ) -> Optional[List[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
 
