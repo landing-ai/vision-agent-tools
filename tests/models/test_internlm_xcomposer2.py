@@ -13,6 +13,17 @@ def test_successful_internlm_xcomposer2_for_video(random_video_generator):
     assert len(answer) > 0
 
 
+def test_successful_internlm_xcomposer2_for_video_chunks(random_video_generator):
+    video_np = random_video_generator(n_frames=10)
+    prompt = "Here are some frames of a video. Describe this video in detail"
+
+    run_inference = InternLMXComposer2()
+
+    answer = run_inference(video=video_np, prompt=prompt, n_chunks=2)
+
+    assert len(answer) > 1
+
+
 def test_successful_internlm_xcomposer2_for_images():
     test_image = "car.jpg"
 
