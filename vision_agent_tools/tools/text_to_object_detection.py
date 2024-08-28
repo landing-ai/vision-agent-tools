@@ -37,6 +37,7 @@ class TextToObjectDetection(BaseTool):
         prompts: List[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
+        *args,
     ) -> List[TextToObjectDetectionOutput]:
         """
         Run object detection on the image based on text prompts.
@@ -56,7 +57,11 @@ class TextToObjectDetection(BaseTool):
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
         for prompt in prompts:
-            prediction = self.model(image=image, task=prompt)
+            if image is not None:
+                prediction = self.model(image=image, task=prompt, *args)
+            if video is not None:
+                prediction = self.model(video=video, task=prompt, *args)
+
             output = TextToObjectDetectionOutput(output=prediction)
             results.append(output)
 
