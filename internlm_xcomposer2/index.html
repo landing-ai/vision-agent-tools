@@ -731,7 +731,7 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
 
 
 <h3 id="vision_agent_tools.models.internlm_xcomposer2.InternLMXComposer2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">MAX_NUMBER_OF_FRAMES</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">MAX_NUMBER_OF_FRAMES</span><span class="p">,</span> <span class="n">n_chunks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.internlm_xcomposer2.InternLMXComposer2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -808,6 +808,20 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
                   <code><span title="vision_agent_tools.models.internlm_xcomposer2.MAX_NUMBER_OF_FRAMES">MAX_NUMBER_OF_FRAMES</span></code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>n_chunks</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of chunks to split the input video to.</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -816,18 +830,18 @@ comprehension and composition applications, achieving GPT-4V level capabilities.
     <table>
       <thead>
         <tr>
-<th>Name</th>          <th>Type</th>
+          <th>Type</th>
           <th>Description</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-<td><code>str</code></td>            <td>
-                  <code>str</code>
+            <td>
+                  <code>list[str]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The answer to the prompt.</p>
+                <p>list[str]: The answers to the prompt.</p>
               </div>
             </td>
           </tr>
