@@ -101,22 +101,15 @@ class InternLMXComposer2(BaseMLModel):
             sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
             return sess.response.text
         if video is not None:
-            if chunk_size > 1:
-                num_frames = video.shape[0]
-                step_frames = num_frames // chunk_size
-                answers: list[str] = []
-                for i in range(0, num_frames, step_frames):
-                    chunk = video[i : i + step_frames, :, :, :]
-                    chunk = self._process_video(chunk, frames)
-                    image_frames = self._frame2img(chunk, self._get_font())
-                    media = self._video_transform(image_frames)
-                    sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
-                    response = sess.response.text
-                    answers.append(response)
-                return answers
-            else:
-                video = self._process_video(video, frames)
-                image_frames = self._frame2img(video, self._get_font())
+            num_frames = video.shape[0]
+            step_frames = num_frames // chunk_size
+            answers: list[str] = []
+            for i in range(0, num_frames, step_frames):
+                chunk = video[i : i + step_frames, :, :, :]
+                chunk = self._process_video(chunk, frames)
+                image_frames = self._frame2img(chunk, self._get_font())
                 media = self._video_transform(image_frames)
                 sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
-                return sess.response.text
+                response = sess.response.text
+                answers.append(response)
+            return answers if len(answers) > 1 else answers[0]
