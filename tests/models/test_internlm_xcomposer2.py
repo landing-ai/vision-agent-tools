@@ -21,7 +21,7 @@ def test_successful_internlm_xcomposer2_for_video_chunks(random_video_generator)
 
     answer = run_inference(video=video_np, prompt=prompt, n_chunks=2)
 
-    assert len(answer) > 1
+    assert len(answer) == 2
 
 
 def test_successful_internlm_xcomposer2_for_images():
