@@ -39,12 +39,9 @@ class Owlv2(BaseMLModel):
 
     def __run_inference(self, image, texts, confidence):
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
-            self.device
-        )
+        inputs = self._processor(text=texts, images=image, return_tensors="pt")
         # Forward pass
-        with torch.autocast(self.device):
-            outputs = self._model(**inputs)
+        outputs = self._model(**inputs)
 
         target_sizes = torch.Tensor([image.size[::-1]])
 
@@ -79,15 +76,6 @@ class Owlv2(BaseMLModel):
         self._processor = Owlv2Processor.from_pretrained(PROCESSOR_NAME)
         self._model = Owlv2ForObjectDetection.from_pretrained(MODEL_NAME)
 
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
-        )
-
-        self._model.to(self.device)
         self._model.eval()
 
     @torch.inference_mode()
