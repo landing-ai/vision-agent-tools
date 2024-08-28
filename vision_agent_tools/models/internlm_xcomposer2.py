@@ -86,6 +86,7 @@ class InternLMXComposer2(BaseMLModel):
             image (Image.Image | None): The image to be analyzed.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             frames (int): The number of frames to be used from the video.
+            chunk_size (int): The number of chunks to split the input video to.
 
         Returns:
             str: The answer to the prompt.
