@@ -112,4 +112,4 @@ class InternLMXComposer2(BaseMLModel):
                 sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
                 response = sess.response.text
                 answers.append(response)
-            return answers if len(answers) > 1 else answers[0]
+            return answers
