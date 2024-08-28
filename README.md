@@ -81,17 +81,6 @@ In this example:
 - `TextToObjectDetection` tool is initialized with the "florencev2" model.
 - The tool detects objects based on the text prompt "find dogs in the picture" and returns a list of `TextToObjectDetectionOutput` containing the detection results.
 
-## Listing Available Models
-
-To list all available models and their associated tasks, you can use the list_models_and_tasks function:
-```python
-from vision_agent_tools.models.model_registry import list_models_and_tasks
-
-models_and_tasks = list_models_and_tasks()
-print(models_and_tasks)
-```
-
-This will return a dictionary where the keys are task names, and the values are lists of model names that can perform those tasks.
 
 # Contributing
 

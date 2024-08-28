@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import torch
 from PIL import Image
@@ -125,3 +125,12 @@ class Florencev2(BaseMLModel):
 
     def to(self, device: Device):
         self._model.to(device=device.value)
+
+    def predict(
+        self, image: Image.Image, prompts: Optional[List[str]] = None, **kwargs
+    ) -> Any:
+        task = kwargs.get("task", "")
+        results = []
+        for prompt in prompts:
+            results.append(self.__call__(image=image, task=task, prompt=prompt))
+        return results

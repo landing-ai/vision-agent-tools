@@ -14,7 +14,6 @@ class TextToObjectDetectionOutput(BaseModel):
 
 
 class TextToObjectDetectionModel(str, Enum):
-    FLORENCEV2 = "florencev2"
     OWLV2 = "owlv2"
 
 
