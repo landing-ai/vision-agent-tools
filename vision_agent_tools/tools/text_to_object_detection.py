@@ -55,13 +55,12 @@ class TextToObjectDetection(BaseTool):
         if image is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
-        for prompt in prompts:
-            if image is not None:
-                prediction = self.model(image=image, task=prompt)
-            if video is not None:
-                prediction = self.model(video=video, task=prompt)
+        if image is not None:
+            prediction = self.model(image=image, prompts=prompts)
+        if video is not None:
+            prediction = self.model(video=video, prompts=prompts)
 
-            output = TextToObjectDetectionOutput(output=prediction)
-            results.append(output)
+        output = TextToObjectDetectionOutput(output=prediction)
+        results.append(output)
 
         return results
