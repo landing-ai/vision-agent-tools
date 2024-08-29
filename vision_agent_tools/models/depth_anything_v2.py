@@ -29,7 +29,7 @@ class DepthMap(BaseModel):
 
 class DepthAnythingV2(BaseMLModel):
     """
-    Tool for depth estimation using the Depth-Anything-V2 model from the paper
+    Model for depth estimation using the Depth-Anything-V2 model from the paper
     [Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2).
 
     """

@@ -34,7 +34,7 @@ class CountingDetection(BaseModel):
 
 class NShotCounting(BaseMLModel):
     """
-    Tool for object counting using the zeroshot and n-shot versions of the LOCA model from the paper
+    Model for object counting using the zeroshot and n-shot versions of the LOCA model from the paper
     [A Low-Shot Object Counting Network With Iterative Prototype Adaptation ](https://github.com/djukicn/loca).
 
     """

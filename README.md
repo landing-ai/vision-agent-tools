@@ -121,20 +121,14 @@ class Owlv2(BaseMLModel):
 
 ## Registering a model in the model registry
 
-To use a model with your tool, you need to register it in the `model_registry`. This allows tools to dynamically load the correct model based on the model name provided at runtime. Follow these steps in the `model_registry.py` file:
+To use a model with your tool, you need to register it in the `model_registry`. This allows tools to dynamically load the correct model based on the model name provided at runtime. In the `model_registry.py` file: add the model to the `MODEL_REGISTRY` dictionary, mapping the string identifier to the model class. To avoid dependency issues caused by importing all models at once, use the `lazy_import` function.
 
-1. **Import the new model**:
-    ```python
-    from vision_agent_tools.models.owlv2_model import Owlv2Model
-    ```
-
-2. **Register the Model**: Add the model to the `MODEL_REGISTRY` dictionary, mapping the string identifier to the model class:
-    ```python
-    MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-        "florence2": FlorenceV2,
-        "owlv2": Owlv2Model,  # Register the new Owlv2 model here
-    }
-    ```
+```python
+MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
+    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2")(),
+    "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2")(), # Register the new Owlv2 model here
+}
+```
 
 ## Adding new tool code
 
@@ -157,15 +151,8 @@ from pydantic import BaseModel
 from vision_agent_tools.shared_types import BaseTool
 from vision_agent_tools.models.model_registry import get_model_class
 
-
-class TextToObjectDetectionOutput(BaseModel):
-    output: Any
-
-
 class TextToObjectDetectionModel(str, Enum):
-    FLORENCEV2 = "florencev2"
-    OWLV2 = "owlv2"
-
+    OWLV2 = "owlv2"  # Register the Owlv2 model here
 
 class TextToObjectDetection(BaseTool):
     def __init__(self, model: TextToObjectDetectionModel):
@@ -178,16 +165,11 @@ class TextToObjectDetection(BaseTool):
         super().__init__(model=model_instance)
 
     def __call__(
-        self, image: Image.Image, prompts: List[str]
+        self, image: Image.Image, prompts: List[str], **model_config: Dict[str, Any]
     ) -> List[TextToObjectDetectionOutput]:
-        results = []
+        result = self.model(image=image, prompts=prompts, **model_config)
+        return result
 
-        for prompt in prompts:
-            prediction = self.model(image=image, task=prompt)
-            output = TextToObjectDetectionOutput(output=prediction)
-            results.append(output)
-
-        return results
 
 ```
 
