@@ -33,7 +33,6 @@ We encourage you to explore the tools, leverage the documentation, and contribut
 
 ### Easy way
 ```bash
-poetry shell
 make install
 ```
 ### Advanced usage

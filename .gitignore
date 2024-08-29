@@ -173,3 +173,5 @@ cython_debug/
 # pytorch
 *.pt
 *.pth
+
+get-pip.py
