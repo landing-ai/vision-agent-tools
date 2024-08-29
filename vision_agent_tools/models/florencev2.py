@@ -91,7 +91,7 @@ class Florencev2(BaseMLModel):
     def __call__(
         self,
         task: PromptTask,
-        image: Optional[Image.Image] = None,
+        image: Optional[Image.Imgage] = None,
         video: Optional[VideoNumpy] = None,
         prompt: Optional[str] = "",
     ) -> Any:
