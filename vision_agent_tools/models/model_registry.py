@@ -1,26 +1,35 @@
-from typing import Dict, Callable
+from typing import Dict, Callable, Type
 from vision_agent_tools.shared_types import BaseMLModel
-from vision_agent_tools.models.florencev2 import Florencev2
-from vision_agent_tools.models.owlv2 import Owlv2
-from vision_agent_tools.models.qr_reader import QRReader
-from vision_agent_tools.models.nshot_counting import NShotCounting
-from vision_agent_tools.models.nsfw_classification import NSFWClassification
-from vision_agent_tools.models.controlnet_aux import Image2Pose
-from vision_agent_tools.models.internlm_xcomposer2 import InternLMXComposer2
-from vision_agent_tools.models.clip_media_sim import CLIPMediaSim
-from vision_agent_tools.models.depth_anything_v2 import DepthAnythingV2
+
+MODELS_PATH = "vision_agent_tools.models"
+
+
+def lazy_import(model_path: str, class_name: str) -> Type[BaseMLModel]:
+    """Lazy import for a model class"""
+    module = __import__(model_path, fromlist=[class_name])
+    return getattr(module, class_name)
 
 
 MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-    "florencev2": Florencev2,  # Florencev2: interpret simple text prompts to perform tasks like captioning, object detection, and segmentation
-    "owlv2": Owlv2,  # Owlv2: object detection
-    "qr_reader": QRReader,  # QRReader: QR code reading
-    "nshot_counting": NShotCounting,  # NShotCounting: object counting using the zeroshot and n-shot versions of LOCA model
-    "nsfw_classification": NSFWClassification,  # NSFWClassification: classification for NSFW (Not Safe for Work) images
-    "image2pose": Image2Pose,
-    "internlm_xcomposer2": InternLMXComposer2,  # InternLMXComposer2: text to image comprehension and composition
-    "clip_media_sim": CLIPMediaSim,  # ClipMediaSim: video and target (image or text) to frames that are most similar to the target
-    "depth_anything_v2": DepthAnythingV2,  # DepthAnythingV2: depth estimation
+    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2")(),
+    "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2")(),
+    "qr_reader": lambda: lazy_import(f"{MODELS_PATH}.qr_reader", "QRReader")(),
+    "nshot_counting": lambda: lazy_import(
+        f"{MODELS_PATH}.nshot_counting", "NShotCounting"
+    )(),
+    "nsfw_classification": lambda: lazy_import(
+        f"{MODELS_PATH}.nsfw_classification", "NSFWClassification"
+    )(),
+    "image2pose": lambda: lazy_import(f"{MODELS_PATH}.controlnet_aux", "Image2Pose")(),
+    "internlm_xcomposer2": lambda: lazy_import(
+        f"{MODELS_PATH}.internlm_xcomposer2", "InternLMXComposer2"
+    )(),
+    "clip_media_sim": lambda: lazy_import(
+        f"{MODELS_PATH}.clip_media_sim", "CLIPMediaSim"
+    )(),
+    "depth_anything_v2": lambda: lazy_import(
+        f"{MODELS_PATH}.depth_anything_v2", "DepthAnythingV2"
+    )(),
 }
 
 
