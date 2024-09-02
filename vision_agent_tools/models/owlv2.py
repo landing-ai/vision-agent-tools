@@ -37,16 +37,16 @@ class Owlv2(BaseMLModel):
     and bounding boxes for detected objects with confidence exceeding a threshold.
     """
 
-    def __run_inference(self, image, texts, confidence):
+    def __run_inference(self, images, texts, confidence):
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
+        inputs = self._processor(text=texts, images=images, return_tensors="pt").to(
             self.device
         )
         # Forward pass
         with torch.autocast(self.device):
             outputs = self._model(**inputs)
 
-        target_sizes = torch.Tensor([image.size[::-1]])
+        target_sizes = torch.Tensor([images.size[::-1]])
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
         results = self._processor.post_process_object_detection(
@@ -126,17 +126,13 @@ class Owlv2(BaseMLModel):
             image = image.convert("RGB")
             inferences = []
             inferences.append(
-                self.__run_inference(image=image, texts=texts, confidence=confidence)
+                self.__run_inference(images=image, texts=texts, confidence=confidence)
             )
         if video is not None:
-            inferences = []
-            for frame in video:
-                image = Image.fromarray(frame).convert("RGB")
-                inferences.append(
-                    self.__run_inference(
-                        image=image, texts=texts, confidence=confidence
-                    )
-                )
+            images = [Image.fromarray(frame).convert("RGB") for frame in video]
+            inferences = self.__run_inference(
+                images=images, texts=texts, confidence=confidence
+            )
 
         return inferences
 
