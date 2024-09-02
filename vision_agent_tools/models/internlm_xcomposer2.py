@@ -76,7 +76,7 @@ class InternLMXComposer2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         frames: Frames = MAX_NUMBER_OF_FRAMES,
-        n_chunks: int = 1,
+        chunk_length: int | None = None,
     ) -> list[str]:
         """
         InternLMXComposer2 model answers questions about a video or image.
@@ -86,7 +86,7 @@ class InternLMXComposer2(BaseMLModel):
             image (Image.Image | None): The image to be analyzed.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             frames (int): The number of frames to be used from the video.
-            n_chunks (int): The number of chunks to split the input video to.
+            chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
 
         Returns:
             list[str]: The answers to the prompt.
@@ -102,10 +102,11 @@ class InternLMXComposer2(BaseMLModel):
             return [sess.response.text]
         if video is not None:
             num_frames = video.shape[0]
-            step_frames = num_frames // n_chunks
+            if chunk_length is None:
+                chunk_length = num_frames
             answers: list[str] = []
-            for i in range(0, num_frames, step_frames):
-                chunk = video[i : i + step_frames, :, :, :]
+            for i in range(0, num_frames, chunk_length):
+                chunk = video[i : i + chunk_length, :, :, :]
                 chunk = self._process_video(chunk, frames)
                 image_frames = self._frame2img(chunk, self._get_font())
                 media = self._video_transform(image_frames)
