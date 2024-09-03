@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import torch
 from PIL import Image
@@ -10,7 +8,15 @@ from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 
 MODEL_NAME = "google/owlv2-large-patch14-ensemble"
 PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
-DEFAULT_CONFIDENCE = 0.1
+
+
+class OWLV2Config(BaseModel):
+    confidence: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description="Confidence threshold for model predictions",
+    )
 
 
 class Owlv2InferenceData(BaseModel):
@@ -96,7 +102,7 @@ class Owlv2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-        confidence: Optional[float] = DEFAULT_CONFIDENCE,
+        model_config: OWLV2Config | None = None,
     ) -> list[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
@@ -114,7 +120,9 @@ class Owlv2(BaseMLModel):
                                                with confidence exceeding the threshold. Returns None if no objects
                                                are detected above the confidence threshold.
         """
-
+        if model_config is None:
+            model_config = OWLV2Config()
+        confidence = model_config.confidence
         texts = [prompts]
 
         if image is None and video is None:
