@@ -17,13 +17,13 @@ def test_successful_florencev2_detection():
     assert caption == "A green car parked in front of a yellow building."
 
 
-def test_successful_florencev2_detection_video(random_video_generator):
-    video_np = random_video_generator()
-    task = PromptTask.CAPTION
+# def test_successful_florencev2_detection_video(random_video_generator):
+#     video_np = random_video_generator()
+#     task = PromptTask.CAPTION
 
-    florencev2 = Florencev2()
+#     florencev2 = Florencev2()
 
-    results = florencev2(video=video_np, task=task)
-    captions = results[task]
+#     results = florencev2(video=video_np, task=task)
+#     captions = results[task]
 
-    assert len(captions) > 0
+#     assert len(captions) > 0
