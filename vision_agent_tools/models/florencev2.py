@@ -73,10 +73,10 @@ class Florencev2(BaseMLModel):
             PROCESSOR_NAME, trust_remote_code=True
         )
         self._frame2img = get_class_from_dynamic_module(
-            "ixc_utils.frame2img", self._HF_MODEL
+            "ixc_utils.frame2img", MODEL_NAME
         )
         self._video_transform = get_class_from_dynamic_module(
-            "ixc_utils.Video_transform", self._HF_MODEL
+            "ixc_utils.Video_transform", MODEL_NAME
         )
 
         self.device = (
