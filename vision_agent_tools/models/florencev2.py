@@ -72,12 +72,12 @@ class Florencev2(BaseMLModel):
         self._processor = AutoProcessor.from_pretrained(
             PROCESSOR_NAME, trust_remote_code=True
         )
-        self._frame2img = get_class_from_dynamic_module(
-            "ixc_utils.frame2img", MODEL_NAME
-        )
-        self._video_transform = get_class_from_dynamic_module(
-            "ixc_utils.Video_transform", MODEL_NAME
-        )
+        # self._frame2img = get_class_from_dynamic_module(
+        #     "ixc_utils.frame2img", MODEL_NAME
+        # )
+        # self._video_transform = get_class_from_dynamic_module(
+        #     "ixc_utils.Video_transform", MODEL_NAME
+        # )
 
         self.device = (
             "cuda"
