@@ -114,7 +114,7 @@ class Florencev2(BaseMLModel):
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
         if image is not None:
-            image = self._process_image("RGB")
+            image = self._process_image(image)
             return self._single_image_call(text_input, image, task, prompt)
         if video is not None:
             images = self._process_video(video)
