@@ -35,7 +35,7 @@ class FlorenceQA(BaseMLModel):
         """
         image = image.convert("RGB")
         task = PromptTask.MORE_DETAILED_CAPTION
-        output_caption = self._florence(image, task)
+        output_caption = self._florence(image=image, task=task)
         caption = output_caption[task]
         answer = self._roberta_qa(caption, question)
 
