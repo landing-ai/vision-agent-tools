@@ -67,9 +67,10 @@ class Florence2SAM2(BaseMLModel):
         annotation_id = 0
         with torch.autocast(device_type=self.device, dtype=torch.float16):
             preds = self.florence2(
-                image, PromptTask.CAPTION_TO_PHRASE_GROUNDING, prompt
+                image=image, task=PromptTask.CAPTION_TO_PHRASE_GROUNDING, prompt=prompt,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
-        preds = [{"bbox": preds["bboxes"][i], "label": preds["labels"][i]} for i in range(len(preds["labels"]))]
+        preds = [{"bbox": preds["bboxes"][i], "label": preds["labels"][i]}
+                 for i in range(len(preds["labels"]))]
         if return_mask:
             with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
                 masks, _, _ = self.image_predictor.predict(
@@ -82,7 +83,8 @@ class Florence2SAM2(BaseMLModel):
             objs[annotation_id] = ImageBboxAndMaskLabel(
                 bounding_box=preds[i]["bbox"],
                 mask=(
-                    masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :]
+                    masks[i, 0, :, :] if len(
+                        masks.shape) == 4 else masks[i, :, :]
                 )
                 if return_mask
                 else None,

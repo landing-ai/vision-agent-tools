@@ -18,7 +18,7 @@ image = Image.open(test_image)
 run_florence = Florencev2()
 
 # Time to put Florencev2 to work! Let's see what it finds...
-results = run_florence(image, task=task_prompt)
+results = run_florence(image=image, task=task_prompt)
 
 # Print the output result
 print(f"The image contains: {results[task_prompt]}")
