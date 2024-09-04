@@ -57,7 +57,7 @@ class Florencev2(BaseMLModel):
     """
 
     def _process_image(self, image: Image.Image) -> Image.Image:
-        return image.convert("RGB")
+        return image.convert(image)
 
     def _process_video(self, images: VideoNumpy) -> list[Image.Image]:
         return [self._process_image(Image.fromarray(arr)) for arr in images]
