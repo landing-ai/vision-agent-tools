@@ -1,34 +1,66 @@
-from typing import Dict, Callable, Type
+import re
+from typing import Dict, Type
+from pydantic import BaseModel, field_validator
 from vision_agent_tools.shared_types import BaseMLModel
 
 MODELS_PATH = "vision_agent_tools.models"
 
 
-def lazy_import(model_path: str, class_name: str) -> Type[BaseMLModel]:
-    """Lazy import for a model class"""
-    module = __import__(model_path, fromlist=[class_name])
-    return getattr(module, class_name)
+class ModelRegistryEntry(BaseModel):
+    model_name: str
+    class_name: str
+
+    @field_validator("model_name")
+    @classmethod
+    def validate_model_name(cls, v: str) -> str:
+        """Ensure model names are lowercase and separated by underscores."""
+        if not re.match(r"^[a-z][a-z0-9_]*$", v):
+            raise ValueError(
+                f"Model name '{v}' must be lowercase and separated by underscores."
+            )
+        return v
+
+    def model_import(self) -> Type[BaseMLModel]:
+        """Lazy import for a model class."""
+        module = __import__(
+            f"{MODELS_PATH}.{self.model_name}", fromlist=[self.class_name]
+        )
+        return getattr(module, self.class_name)
 
 
-MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2"),
-    "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2"),
-    "qr_reader": lambda: lazy_import(f"{MODELS_PATH}.qr_reader", "QRReader"),
-    "nshot_counting": lambda: lazy_import(
-        f"{MODELS_PATH}.nshot_counting", "NShotCounting"
+MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
+    "florencev2": ModelRegistryEntry(
+        model_name="florencev2",
+        class_name="Florencev2",
     ),
-    "nsfw_classification": lambda: lazy_import(
-        f"{MODELS_PATH}.nsfw_classification", "NSFWClassification"
+    "owlv2": ModelRegistryEntry(model_name="owlv2", class_name="Owlv2"),
+    "qr_reader": ModelRegistryEntry(
+        model_name="qr_reader",
+        class_name="QRReader",
     ),
-    "image2pose": lambda: lazy_import(f"{MODELS_PATH}.controlnet_aux", "Image2Pose"),
-    "internlm_xcomposer2": lambda: lazy_import(
-        f"{MODELS_PATH}.internlm_xcomposer2", "InternLMXComposer2"
+    "nshot_counting": ModelRegistryEntry(
+        model_name="nshot_counting",
+        class_name="NShotCounting",
     ),
-    "clip_media_sim": lambda: lazy_import(
-        f"{MODELS_PATH}.clip_media_sim", "CLIPMediaSim"
+    "nsfw_classification": ModelRegistryEntry(
+        model_name="nsfw_classification",
+        class_name="NSFWClassification",
     ),
-    "depth_anything_v2": lambda: lazy_import(
-        f"{MODELS_PATH}.depth_anything_v2", "DepthAnythingV2"
+    "image2pose": ModelRegistryEntry(
+        model_name="image2pose",
+        class_name="Image2Pose",
+    ),
+    "internlm_xcomposer2": ModelRegistryEntry(
+        model_name="internlm_xcomposer2",
+        class_name="InternLMXComposer2",
+    ),
+    "clip_media_sim": ModelRegistryEntry(
+        model_name="clip_media_sim",
+        class_name="CLIPMediaSim",
+    ),
+    "depth_anything_v2": ModelRegistryEntry(
+        model_name="depth_anything_v2",
+        class_name="DepthAnythingV2",
     ),
 }
 
@@ -39,20 +71,19 @@ def get_model_class(model_name: str) -> BaseMLModel:
 
     Args:
         model_name (str): The name of the model to retrieve
-        task (Type[Enum]): The enum representing the valid models for a specific task
 
     Returns:
         BaseMLModel: An instance of the requested model
 
     Raises:
-        ValueError: If the model is not registered or is not valid for the given task
+        ValueError: If the model is not registered.
     """
 
-    model_class = MODEL_REGISTRY.get(model_name)
+    entry = MODEL_REGISTRY.get(model_name)
 
-    if not model_class:
+    if not entry:
         raise ValueError(
             f"Model '{model_name}' is not registered in the model registry."
         )
 
-    return model_class
+    return entry.model_import
