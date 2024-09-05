@@ -11,25 +11,25 @@ def lazy_import(model_path: str, class_name: str) -> Type[BaseMLModel]:
 
 
 MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2")(),
-    "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2")(),
-    "qr_reader": lambda: lazy_import(f"{MODELS_PATH}.qr_reader", "QRReader")(),
+    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2"),
+    "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2"),
+    "qr_reader": lambda: lazy_import(f"{MODELS_PATH}.qr_reader", "QRReader"),
     "nshot_counting": lambda: lazy_import(
         f"{MODELS_PATH}.nshot_counting", "NShotCounting"
-    )(),
+    ),
     "nsfw_classification": lambda: lazy_import(
         f"{MODELS_PATH}.nsfw_classification", "NSFWClassification"
-    )(),
-    "image2pose": lambda: lazy_import(f"{MODELS_PATH}.controlnet_aux", "Image2Pose")(),
+    ),
+    "image2pose": lambda: lazy_import(f"{MODELS_PATH}.controlnet_aux", "Image2Pose"),
     "internlm_xcomposer2": lambda: lazy_import(
         f"{MODELS_PATH}.internlm_xcomposer2", "InternLMXComposer2"
-    )(),
+    ),
     "clip_media_sim": lambda: lazy_import(
         f"{MODELS_PATH}.clip_media_sim", "CLIPMediaSim"
-    )(),
+    ),
     "depth_anything_v2": lambda: lazy_import(
         f"{MODELS_PATH}.depth_anything_v2", "DepthAnythingV2"
-    )(),
+    ),
 }
 
 

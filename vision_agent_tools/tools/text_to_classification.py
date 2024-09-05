@@ -26,7 +26,7 @@ class TextToClassification(BaseTool):
             )
         model_class = get_model_class(model_name=model)
         model_instance = model_class()
-        super().__init__(model=model_instance)
+        super().__init__(model=model_instance())
 
     def __call__(self, image: Image.Image) -> list[TextToClassificationOutput]:
         results = self.model(image=image)

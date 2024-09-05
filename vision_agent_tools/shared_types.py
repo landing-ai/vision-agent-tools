@@ -30,7 +30,7 @@ class BaseTool:
     def __init__(self, model: str):
         self.model = model
 
-    def __call__(self, input, **kwargs):
+    def __call__(self):
         raise NotImplementedError("Subclasses should implement '__call__' method.")
 
     def to(self, device: Device):
