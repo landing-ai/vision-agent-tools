@@ -3,7 +3,7 @@ import io
 from decord import VideoReader, cpu
 from PIL import Image
 
-from vision_agent_tools.models.owlv2 import Owlv2
+from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
 
 
 def test_successful_image_detection():
@@ -39,3 +39,19 @@ def test_successful_video_detection():
     results = owlv2(prompts=prompts, video=frames)
 
     assert len(results) > 0
+
+
+def test_successful_image_detection_with_nms():
+    test_image = "surfers_with_shark.png"
+    prompts = ["a photo of a shark", "a photo of a surfer"]
+
+    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
+
+    owlv2 = Owlv2()
+    owlv2_config = OWLV2Config(confidence=0.3, nms_threshold=0.4)
+    results = owlv2(prompts=prompts, image=image, model_config=owlv2_config)
+
+    assert len(results[0]) == 3
+
+    for pred in results[0]:
+        assert pred.label in ["a photo of a shark", "a photo of a surfer"]
