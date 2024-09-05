@@ -59,6 +59,11 @@ class SharedModelManager:
                 if device == Device.GPU:
                     # Acquire semaphore if needed
                     async with self.gpu_semaphore:
+                        # Move existing GPU model to CPU
+                        exisitng = self._get_current_gpu_model()
+                        if exisitng:
+                            await self._move_to_cpu(exisitng)
+
                         # Update current GPU model (for testing)
                         self.current_gpu_model = class_name
                         model.to(Device.GPU)
