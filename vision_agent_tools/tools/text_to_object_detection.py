@@ -31,13 +31,11 @@ class TextToObjectDetection(BaseTool):
             raise ValueError(
                 f"Model '{model}' is not a valid model for {self.__class__.__name__}."
             )
-        model_class = get_model_class(model_name=model)
 
-        if model_config is None:
-            model_config = OWLV2Config()
-
-        self.model_config = model_config
-        super().__init__(model=model_class())
+        self.model_config = model_config or OWLV2Config()
+        self.model_class = get_model_class(model_name=model)
+        model_instance = self.model_class()
+        super().__init__(model=model_instance(self.model_config))
 
     def __call__(
         self,
@@ -63,13 +61,9 @@ class TextToObjectDetection(BaseTool):
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
         if image is not None:
-            prediction = self.model(
-                image=image, prompts=prompts, model_config=self.model_config
-            )
+            prediction = self.model(image=image, prompts=prompts)
         if video is not None:
-            prediction = self.model(
-                video=video, prompts=prompts, model_config=self.model_config
-            )
+            prediction = self.model(video=video, prompts=prompts)
 
         output = TextToObjectDetectionOutput(output=prediction)
         results.append(output)

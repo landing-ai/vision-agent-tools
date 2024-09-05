@@ -27,9 +27,8 @@ def test_successful_text_to_object_detection_custom_confidence():
 
     image = Image.open(f"tests/tools/data/owlv2/{test_image}")
 
-    config = OWLV2Config(confidence=0.2)
     tool = TextToObjectDetection(
-        model=TextToObjectDetectionModel.OWLV2, model_config=config
+        model=TextToObjectDetectionModel.OWLV2, model_config=OWLV2Config(confidence=0.2)
     )
     output = tool(image=image, prompts=prompts)[0].output
 

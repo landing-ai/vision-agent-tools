@@ -7,7 +7,7 @@ def test_get_model_class_valid_model():
     valid_model_name = "florencev2"
     model_class = get_model_class(valid_model_name)
     model_instance = model_class()
-    assert isinstance(model_instance, Florencev2)
+    assert isinstance(model_instance(), Florencev2)
 
 
 def test_get_model_class_invalid_model():

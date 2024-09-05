@@ -6,16 +6,29 @@ from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 
-MODEL_NAME = "google/owlv2-large-patch14-ensemble"
-PROCESSOR_NAME = "google/owlv2-large-patch14-ensemble"
-
 
 class OWLV2Config(BaseModel):
+    model_name: str = Field(
+        default="google/owlv2-large-patch14-ensemble",
+        description="Name of the model",
+    )
+    processor_name: str = Field(
+        default="google/owlv2-large-patch14-ensemble",
+        description="Name of the processor",
+    )
     confidence: float = Field(
         default=0.1,
         ge=0.0,
         le=1.0,
         description="Confidence threshold for model predictions",
+    )
+    device: Device = Field(
+        default=Device.GPU
+        if torch.cuda.is_available()
+        else Device.MPS
+        if torch.backends.mps.is_available()
+        else Device.CPU,
+        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
     )
 
 
@@ -46,10 +59,10 @@ class Owlv2(BaseMLModel):
     def __run_inference(self, image, texts, confidence):
         # Run model inference here
         inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
-            self.device
+            self.model_config.device
         )
         # Forward pass
-        with torch.autocast(self.device):
+        with torch.autocast(self.model_config.device):
             outputs = self._model(**inputs)
 
         target_sizes = torch.Tensor([image.size[::-1]])
@@ -76,24 +89,20 @@ class Owlv2(BaseMLModel):
 
         return inferences
 
-    def __init__(self):
+    def __init__(self, model_config: OWLV2Config | None = None):
         """
         Initializes the Owlv2 object detection tool.
 
         Loads the pre-trained Owlv2 processor and model from Transformers.
         """
-        self._processor = Owlv2Processor.from_pretrained(PROCESSOR_NAME)
-        self._model = Owlv2ForObjectDetection.from_pretrained(MODEL_NAME)
-
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
+        self.model_config = model_config or OWLV2Config()
+        self._model = Owlv2ForObjectDetection.from_pretrained(
+            self.model_config.model_name
         )
-
-        self._model.to(self.device)
+        self._processor = Owlv2Processor.from_pretrained(
+            self.model_config.processor_name
+        )
+        self._model.to(self.model_config.device)
         self._model.eval()
 
     @torch.inference_mode()
@@ -102,7 +111,6 @@ class Owlv2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-        model_config: OWLV2Config | None = None,
     ) -> list[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
@@ -120,9 +128,6 @@ class Owlv2(BaseMLModel):
                                                with confidence exceeding the threshold. Returns None if no objects
                                                are detected above the confidence threshold.
         """
-        if model_config is None:
-            model_config = OWLV2Config()
-        confidence = model_config.confidence
         texts = [prompts]
 
         if image is None and video is None:
@@ -134,7 +139,9 @@ class Owlv2(BaseMLModel):
             image = image.convert("RGB")
             inferences = []
             inferences.append(
-                self.__run_inference(image=image, texts=texts, confidence=confidence)
+                self.__run_inference(
+                    image=image, texts=texts, confidence=self.model_config.confidence
+                )
             )
         if video is not None:
             inferences = []
@@ -142,7 +149,9 @@ class Owlv2(BaseMLModel):
                 image = Image.fromarray(frame).convert("RGB")
                 inferences.append(
                     self.__run_inference(
-                        image=image, texts=texts, confidence=confidence
+                        image=image,
+                        texts=texts,
+                        confidence=self.model_config.confidence,
                     )
                 )
 
