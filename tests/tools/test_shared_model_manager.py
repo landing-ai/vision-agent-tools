@@ -68,7 +68,8 @@ async def test_get_model_not_found(model_pool):
 
 
 @pytest.mark.asyncio
-async def test_get_model_multiple_gpu(model_pool):
+async def test_swap_model_in_gpu(model_pool):
+
     def model_creation_fn_a():
         model = MockBaseModel()
         model.to = MagicMock()

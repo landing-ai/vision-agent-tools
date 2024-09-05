@@ -18,7 +18,14 @@ class BaseMLModel:
     This class serves as a common interface for all ML models that can be used within tools.
     """
 
-    pass
+    def __init__(self, model: str):
+        self.model = model
+
+    def __call__(self):
+        raise NotImplementedError("Subclasses should implement '__call__' method.")
+
+    def to(self, device: Device):
+        raise NotImplementedError("Subclass must implement 'to' method")
 
 
 class BaseTool:

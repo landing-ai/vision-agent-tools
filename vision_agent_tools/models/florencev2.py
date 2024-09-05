@@ -118,9 +118,18 @@ class Florencev2(BaseMLModel):
             return self._single_image_call(text_input, image, task, prompt)
         if video is not None:
             images = self._process_video(video)
-            return [self._single_image_call(text_input, image, task, prompt) for image in images]
+            return [
+                self._single_image_call(text_input, image, task, prompt)
+                for image in images
+            ]
 
-    def _single_image_call(self, text_input: str, image: Image.Image, task: PromptTask, prompt: str):
+    def _single_image_call(
+        self,
+        text_input: str,
+        image: Image.Image,
+        task: PromptTask,
+        prompt: str,
+    ):
         inputs = self._processor(text=text_input, images=image, return_tensors="pt").to(
             self.device
         )
@@ -153,6 +162,5 @@ class Florencev2(BaseMLModel):
         task = kwargs.get("task", "")
         results = []
         for prompt in prompts:
-            results.append(self.__call__(
-                image=image, task=task, prompt=prompt))
+            results.append(self.__call__(image=image, task=task, prompt=prompt))
         return results
