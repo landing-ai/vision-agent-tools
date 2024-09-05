@@ -64,7 +64,7 @@ class SharedModelManager:
                         if exisitng:
                             await self._move_to_cpu(exisitng)
 
-                        # Update current GPU model (for testing)
+                        # Update current GPU model
                         self.current_gpu_model = class_name
                         model.to(Device.GPU)
                 return model
@@ -85,4 +85,3 @@ class SharedModelManager:
         model.to(Device.CPU)
         if self.current_gpu_model == class_name:
             self.current_gpu_model = None
-            self.gpu_semaphore.release()  # Release semaphore if held

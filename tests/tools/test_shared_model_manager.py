@@ -68,6 +68,32 @@ async def test_get_model_not_found(model_pool):
 
 
 @pytest.mark.asyncio
+async def test_swap_model_in_gpu(model_pool):
+    def model_creation_fn_a():
+        model = MockBaseModel()
+        model.to = MagicMock()
+        return model
+
+    def model_creation_fn_b():
+        model = MockBaseModel()
+        model.to = MagicMock()
+        return model
+
+    model_pool.add(model_creation_fn_a, device=Device.GPU)
+    model_pool.add(model_creation_fn_b, device=Device.GPU)
+
+    # Get Model1 first, should use GPU
+    model1_to_get = await model_pool.fetch_model(model_creation_fn_a.__name__)
+    assert model1_to_get is not None
+    assert model_pool._get_current_gpu_model() == model_creation_fn_a.__name__
+
+    # Get Model2, should move Model1 to CPU and use GPU
+    model2_to_get = await model_pool.fetch_model(model_creation_fn_b.__name__)
+    assert model2_to_get is not None
+    assert model_pool._get_current_gpu_model() == model_creation_fn_b.__name__
+
+
+@pytest.mark.asyncio
 async def test_get_model_multiple_gpu(model_pool):
     def model_creation_fn_a():
         model = MockBaseModel()
