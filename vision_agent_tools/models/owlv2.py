@@ -151,7 +151,7 @@ class Owlv2(BaseMLModel):
                     image=image,
                     texts=texts,
                     confidence=self.model_config.confidence,
-                    nms_threshold=self.model_config.nms_threshold
+                    nms_threshold=self.model_config.nms_threshold,
                 )
             )
         if video is not None:
@@ -163,6 +163,7 @@ class Owlv2(BaseMLModel):
                         image=image,
                         texts=texts,
                         confidence=self.model_config.confidence,
+                        nms_threshold=self.model_config.nms_threshold,
                     )
                 )
 
