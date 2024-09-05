@@ -47,9 +47,8 @@ def test_successful_image_detection_with_nms():
 
     image = Image.open(f"tests/tools/data/owlv2/{test_image}")
 
-    owlv2 = Owlv2()
-    owlv2_config = OWLV2Config(confidence=0.3, nms_threshold=0.4)
-    results = owlv2(prompts=prompts, image=image, model_config=owlv2_config)
+    owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.3, nms_threshold=0.4))
+    results = owlv2(prompts=prompts, image=image)
 
     assert len(results[0]) == 3
 
