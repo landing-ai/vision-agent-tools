@@ -34,7 +34,7 @@ class OWLV2Config(BaseModel):
         description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
     )
     nms_threshold: float = Field(
-        default=0.4,
+        default=0.3,
         ge=0.0,
         le=1.0,
         description="IoU threshold for non-maximum suppression of overlapping boxes",
@@ -175,7 +175,7 @@ class Owlv2(BaseMLModel):
 
 class Owlv2ProcessorWithNMS(Owlv2Processor):
     def post_process_object_detection_with_nms(
-        self, outputs, threshold: float = 0.1,  nms_threshold: float = 0.4,  target_sizes: Union[TensorType, List[Tuple]] = None
+        self, outputs, threshold: float = 0.1,  nms_threshold: float = 0.3,  target_sizes: Union[TensorType, List[Tuple]] = None
     ):
         """
         Converts the raw output of [`OwlViTForObjectDetection`] into final bounding boxes in (top_left_x, top_left_y,
