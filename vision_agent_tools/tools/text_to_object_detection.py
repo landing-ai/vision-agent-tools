@@ -93,6 +93,39 @@ class TextToObjectDetection(BaseTool):
                 )
             )
 
+    def _convert_owlv2_output(
+        self, output: list[ODResponseData]
+    ) -> list[ODResponseData]:
+        """
+        Convert the output of the OWLV2 model to the format used in the playground-tools.
+
+        Args:
+            output (list[Owlv2InferenceData]): The output from the OWLV2 model.
+        class Owlv2InferenceData(BaseModel):
+            label: str = Field(description="The predicted label for the detected object")
+            score: float = Field(
+                description="TThe confidence score associated with the prediction (between 0 and 1)"
+            )
+            bbox: list[float] = Field(
+                description=" A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax) of the detected object in the image"
+            )
+
+
+        Returns:
+            list[ODResponseData]: The converted output.
+        """
+        od_response = []
+        for pred in output:
+            od_response.append(
+                ODResponseData(
+                    label=pred.label,
+                    score=pred.score,
+                    bbox=pred.bbox,
+                )
+            )
+
+        return od_response
+
     def __call__(
         self,
         prompts: List[str],
