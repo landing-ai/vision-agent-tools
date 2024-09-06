@@ -110,39 +110,53 @@ class TextToObjectDetection(BaseTool):
             List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
         results = []
-        prediction_output: list[list[ODResponseData]] = []
+
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
         if image is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
-        if self.model == TextToObjectDetectionModel.OWLV2:
-            if image is not None:
-                prediction_output = self.model(image=image, prompts=prompts)
-            if video is not None:
-                prediction_output = self.model(video=video, prompts=prompts)
-        elif self.model == TextToObjectDetectionModel.FLORENCEV2:
-            od_task = PromptTask.OBJECT_DETECTION
-            if image is not None:
-                prediction_output = self.model(
-                    image=image,
-                    task=od_task,
-                )
-            if video is not None:
-                prediction_output = self.model(
-                    video=video,
-                    task=od_task,
-                )
+        if image is not None:
+            prediction = self.model(image=image, prompts=prompts)
+        if video is not None:
+            prediction = self.model(video=video, prompts=prompts)
 
-            # Prediction should be a list of lists of ODResponseData objects
-            # We need to convert the output to the format that is used in the playground-tools
-            std_output = []
-            for pred in prediction_output:
-                std_output.append(self._convert_florencev2_output(pred[od_task]))
-
-            prediction_output: list[list[ODResponseData]] = std_output
-
-        output = TextToObjectDetectionOutput(output=prediction_output)
+        output = TextToObjectDetectionOutput(output=prediction)
         results.append(output)
 
         return results
+        # results = []
+        # prediction: list[list[ODResponseData]] = []
+        # if image is None and video is None:
+        #     raise ValueError("Either 'image' or 'video' must be provided.")
+        # if image is not None and video is not None:
+        #     raise ValueError("Only one of 'image' or 'video' can be provided.")
+
+        # if self.model == TextToObjectDetectionModel.OWLV2:
+        #     if image is not None:
+        #         prediction = self.model(image=image, prompts=prompts)
+        #     elif video is not None:
+        #         prediction = self.model(video=video, prompts=prompts)
+
+        # elif self.model == TextToObjectDetectionModel.FLORENCEV2:
+        #     od_task = PromptTask.OBJECT_DETECTION
+        #     if image is not None:
+        #         prediction = self.model(
+        #             image=image,
+        #             task=od_task,
+        #         )
+        #     elif video is not None:
+        #         prediction = self.model(
+        #             video=video,
+        #             task=od_task,
+        #         )
+
+        #     # Prediction should be a list of lists of ODResponseData objects
+        #     # We need to convert the output to the format that is used in the playground-tools
+        #     for pred in prediction:
+        #         prediction.append(self._convert_florencev2_output(pred[od_task]))
+
+        # output = TextToObjectDetectionOutput(output=prediction)
+        # results.append(output)
+
+        # return results
