@@ -26,7 +26,7 @@ class ODResponseData(BaseModel):
     )
 
 
-class TextToObjectDetectionOutput(list[list[ODResponseData]]):
+class TextToObjectDetectionOutput(BaseModel):
     """This can be a list of lists of ODResponseData objects,
     each list can be the frame of a video or the image of a batch of images,
     then inside the list it is the list of ODResponseData objects for each object detected in the frame or image.
