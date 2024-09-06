@@ -211,6 +211,8 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
         boxes = center_to_corners_format(boxes)
 
         # Apply non-maximum suppression (NMS)
+        # borrowed the implementation from HuggingFace Owlv2 post_process_image_guided_detection()
+        # https://github.com/huggingface/transformers/blob/main/src/transformers/models/owlv2/image_processing_owlv2.py#L563-L573
         if nms_threshold < 1.0:
             for idx in range(boxes.shape[0]):
                 for i in torch.argsort(-scores[idx]):
