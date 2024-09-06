@@ -527,6 +527,30 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="md-nav__link">
+    <span class="md-ellipsis">
+      Owlv2ProcessorWithNMS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Owlv2ProcessorWithNMS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="md-nav__link">
+    <span class="md-ellipsis">
+      post_process_object_detection_with_nms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -649,6 +673,30 @@
       Owlv2InferenceData
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="md-nav__link">
+    <span class="md-ellipsis">
+      Owlv2ProcessorWithNMS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Owlv2ProcessorWithNMS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="md-nav__link">
+    <span class="md-ellipsis">
+      post_process_object_detection_with_nms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -802,18 +850,17 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>confidence</code></td>
+            <td><code>video</code></td>
             <td>
-                  <code>Optional[float], defaults=DEFAULT_CONFIDENCE</code>
+                  <code>Optional[<span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The minimum confidence threshold for
-                                                          including a detection in the results.</p>
+                <p>The input video for object detection.</p>
               </div>
             </td>
             <td>
-                <em>required</em>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -905,6 +952,136 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 
 
 
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="doc doc-heading">
+            <code>Owlv2ProcessorWithNMS</code>
+
+
+<a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="transformers.Owlv2Processor">Owlv2Processor</span></code></p>
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">post_process_object_detection_with_nms</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">target_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="headerlink" title="Permanent link">#</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Converts the raw output of [<code>OwlViTForObjectDetection</code>] into final bounding boxes in (top_left_x, top_left_y,
+bottom_right_x, bottom_right_y) format.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>outputs</code></td>
+            <td>
+                  <code>[`OwlViTObjectDetectionOutput`]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Raw outputs of the model.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>threshold</code></td>
+            <td>
+                  <code>`float`, *optional*</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Score threshold to keep object detection predictions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>nms_threshold</code></td>
+            <td>
+                  <code>`float`, *optional*</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IoU threshold to filter overlapping objects the raw detections.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.3</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_sizes</code></td>
+            <td>
+                  <code>`torch.Tensor` or `List[Tuple[int, int]]`, *optional*</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Tensor of shape <code>(batch_size, 2)</code> or list of tuples (<code>Tuple[int, int]</code>) containing the target size
+<code>(height, width)</code> of each image in the batch. If unset, predictions will not be resized.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+      <p>Returns:
+    <code>List[Dict]</code>: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
+    in the batch as predicted by the model.</p>
+
+    </div>
+
+</div>
 
 
 
