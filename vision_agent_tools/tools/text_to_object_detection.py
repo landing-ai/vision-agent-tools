@@ -110,7 +110,7 @@ class TextToObjectDetection(BaseTool):
             List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
         results = []
-
+        prediction_output: list[list[ODResponseData]] = []
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
         if image is not None and video is not None:
