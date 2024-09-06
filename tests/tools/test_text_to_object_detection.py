@@ -12,21 +12,21 @@ def test_successful_text_to_object_detection():
 
     image = Image.open(f"tests/tools/data/owlv2/{test_image}")
 
-    # tool = TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
-    # output = tool(image=image, prompts=prompts)[0].output
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
+    output = tool(image=image, prompts=prompts)[0].output
 
-    # assert len(output) > 0
+    assert len(output) > 0
 
-    # for pred in output[0]:
-    #     assert pred.label == "a photo of a cat"
+    for pred in output[0]:
+        assert pred.label == "a photo of a cat"
 
-    # tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
-    # output = tool(image=image, prompts=prompts)[0].output
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
+    output = tool(image=image, prompts=prompts)[0].output
 
-    # assert len(output) > 0
+    assert len(output) > 0
 
-    # for pred in output[0]:
-    #     assert pred.label == "a photo of a cat"
+    for pred in output[0]:
+        assert pred.label == "a photo of a cat"
 
 
 def test_successful_text_to_object_detection_custom_confidence():

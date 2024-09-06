@@ -26,7 +26,7 @@ class ODResponseData(BaseModel):
     )
 
 
-class ODResponse(list[list[ODResponseData]]):
+class TextToObjectDetectionOutput(list[list[ODResponseData]]):
     """This can be a list of lists of ODResponseData objects,
     each list can be the frame of a video or the image of a batch of images,
     then inside the list it is the list of ODResponseData objects for each object detected in the frame or image.
@@ -34,11 +34,7 @@ class ODResponse(list[list[ODResponseData]]):
     Downstream usage example, later the playground-tools (baseten model APIs) can wrap this 2-d list in the datafield of BaseReponse.
     """
 
-    pass
-
-
-class TextToObjectDetectionOutput(BaseModel):
-    output: Any  # TODO: Replace Any with ODResponse
+    output: list[list[ODResponseData]]
 
 
 class TextToObjectDetectionModel(str, Enum):
@@ -122,31 +118,31 @@ class TextToObjectDetection(BaseTool):
 
         if self.model == TextToObjectDetectionModel.OWLV2:
             if image is not None:
-                prediction = self.model(image=image, prompts=prompts)
+                prediction_output = self.model(image=image, prompts=prompts)
             if video is not None:
-                prediction = self.model(video=video, prompts=prompts)
+                prediction_output = self.model(video=video, prompts=prompts)
         elif self.model == TextToObjectDetectionModel.FLORENCEV2:
             od_task = PromptTask.OBJECT_DETECTION
             if image is not None:
-                prediction = self.model(
+                prediction_output = self.model(
                     image=image,
                     task=od_task,
                 )
             if video is not None:
-                prediction = self.model(
+                prediction_output = self.model(
                     video=video,
                     task=od_task,
                 )
 
             # Prediction should be a list of lists of ODResponseData objects
             # We need to convert the output to the format that is used in the playground-tools
-            standardized = []
-            for pred in prediction:
-                standardized.append(self._convert_florencev2_output(pred[od_task]))
+            std_output = []
+            for pred in prediction_output:
+                std_output.append(self._convert_florencev2_output(pred[od_task]))
 
-            prediction: ODResponse = standardized
+            prediction_output: list[list[ODResponseData]] = std_output
 
-        output = TextToObjectDetectionOutput(output=prediction)
+        output = TextToObjectDetectionOutput(output=prediction_output)
         results.append(output)
 
         return results
