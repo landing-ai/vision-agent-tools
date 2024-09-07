@@ -154,7 +154,9 @@ class TextToObjectDetection(BaseTool):
         if video is not None:
             prediction = self.model(video=video, prompts=prompts)
 
-        output = TextToObjectDetectionOutput(output=prediction)
+        output = TextToObjectDetectionOutput(
+            output=self._convert_owlv2_output(prediction)
+        )
         results.append(output)
 
         return results
