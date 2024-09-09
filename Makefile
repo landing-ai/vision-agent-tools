@@ -7,6 +7,7 @@ install:
 	bash ./scripts/install.sh
 
 test:
+	$(POETRY) run pytest tests/tools/test_text_to_object_detection.py
 	$(POETRY) run pytest tests
 
 serve/docs:
