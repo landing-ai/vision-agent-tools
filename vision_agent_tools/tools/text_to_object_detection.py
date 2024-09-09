@@ -57,6 +57,9 @@ class TextToObjectDetection(BaseTool):
                 f"Model '{model}' is not a valid model for {self.__class__.__name__}."
             )
 
+        # Later modal is changed to actual model object
+        self.modelname:TextToObjectDetectionModel = model
+
         if model == TextToObjectDetectionModel.OWLV2:
             self.owlv2_config = model_config or OWLV2Config()
         elif model == TextToObjectDetectionModel.FLORENCEV2:
@@ -145,56 +148,59 @@ class TextToObjectDetection(BaseTool):
         Returns:
             List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
-        results = []
-
-        if image is None and video is None:
-            raise ValueError("Either 'image' or 'video' must be provided.")
-        if image is not None and video is not None:
-            raise ValueError("Only one of 'image' or 'video' can be provided.")
-
-        if image is not None:
-            prediction = self.model(image=image, prompts=prompts)
-        if video is not None:
-            prediction = self.model(video=video, prompts=prompts)
-
-        output = TextToObjectDetectionOutput(
-            output=self._convert_owlv2_output(prediction)
-        )
-        results.append(output)
-
-        return results
         # results = []
-        # prediction: list[list[ODResponseData]] = []
+
         # if image is None and video is None:
         #     raise ValueError("Either 'image' or 'video' must be provided.")
         # if image is not None and video is not None:
         #     raise ValueError("Only one of 'image' or 'video' can be provided.")
 
-        # if self.model == TextToObjectDetectionModel.OWLV2:
-        #     if image is not None:
-        #         prediction = self.model(image=image, prompts=prompts)
-        #     elif video is not None:
-        #         prediction = self.model(video=video, prompts=prompts)
+        # if image is not None:
+        #     prediction = self.model(image=image, prompts=prompts)
+        # if video is not None:
+        #     prediction = self.model(video=video, prompts=prompts)
 
-        # elif self.model == TextToObjectDetectionModel.FLORENCEV2:
-        #     od_task = PromptTask.OBJECT_DETECTION
-        #     if image is not None:
-        #         prediction = self.model(
-        #             image=image,
-        #             task=od_task,
-        #         )
-        #     elif video is not None:
-        #         prediction = self.model(
-        #             video=video,
-        #             task=od_task,
-        #         )
-
-        #     # Prediction should be a list of lists of ODResponseData objects
-        #     # We need to convert the output to the format that is used in the playground-tools
-        #     for pred in prediction:
-        #         prediction.append(self._convert_florencev2_output(pred[od_task]))
-
-        # output = TextToObjectDetectionOutput(output=prediction)
+        # output = TextToObjectDetectionOutput(
+        #     output=self._convert_owlv2_output(prediction)
+        # )
         # results.append(output)
 
         # return results
+
+        results = []
+        prediction: list[list[ODResponseData]] = []
+        if image is None and video is None:
+            raise ValueError("Either 'image' or 'video' must be provided.")
+        if image is not None and video is not None:
+            raise ValueError("Only one of 'image' or 'video' can be provided.")
+
+        if self.modelname == TextToObjectDetectionModel.OWLV2:
+            if image is not None:
+                prediction = self.model(image=image, prompts=prompts)
+            elif video is not None:
+                prediction = self.model(video=video, prompts=prompts)
+
+            prediction = self._convert_owlv2_output(prediction)
+
+        elif self.modelname== TextToObjectDetectionModel.FLORENCEV2:
+            od_task = PromptTask.OBJECT_DETECTION
+            if image is not None:
+                prediction = self.model(
+                    image=image,
+                    task=od_task,
+                )
+            elif video is not None:
+                prediction = self.model(
+                    video=video,
+                    task=od_task,
+                )
+
+            # Prediction should be a list of lists of ODResponseData objects
+            # We need to convert the output to the format that is used in the playground-tools
+            for pred in prediction:
+                prediction.append(self._convert_florencev2_output(pred[od_task]))
+
+        output = TextToObjectDetectionOutput(output=prediction)
+        results.append(output)
+
+        return results
