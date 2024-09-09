@@ -198,6 +198,7 @@ class TextToObjectDetection(BaseTool):
             # Prediction should be a list of lists of ODResponseData objects
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output=[]
+            print(prediction)
             for pred in prediction:
                 fv2_pred_output.append(self._convert_florencev2_output(pred[od_task]))
             prediction = fv2_pred_output
