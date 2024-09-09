@@ -12,7 +12,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
 	brew install zbar
 else
 	sudo apt update
-	sudo apt-get install -y libzbar0 cuda-toolkit nvcc
+	sudo apt-get install -y libzbar0 # cuda-toolkit nvcc？
 fi
 echo "Installing poetry dependencies"
 poetry lock --no-update
