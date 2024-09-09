@@ -19,12 +19,15 @@ _HF_MODEL = "facebook/sam2-hiera-large"
 @dataclass
 class ImageBboxAndMaskLabel:
     label: str
-    bounding_box: list[
-        Annotated[float, "x_min"],
-        Annotated[float, "y_min"],
-        Annotated[float, "x_max"],
-        Annotated[float, "y_max"],
-    ]
+    bounding_box: (
+        list[
+            Annotated[float, "x_min"],
+            Annotated[float, "y_min"],
+            Annotated[float, "x_max"],
+            Annotated[float, "y_max"],
+        ]
+        | None
+    )
     mask: SegmentationBitMask | None
 
 
@@ -52,97 +55,62 @@ class Florence2SAM2(BaseMLModel):
         self.video_predictor = SAM2VideoPredictor.from_pretrained(_HF_MODEL)
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
-    def mask_to_bbox(self, mask: np.ndarray) -> list:
+    def _calculate_iou(
+        self, mask1: SegmentationBitMask, mask2: SegmentationBitMask
+    ) -> float:
         """
-        Converts a mask  into a bounding box with coordinates (x_min, y_min, x_max, y_max).
+        Calculate the Intersection over Union (IoU) between two masks.
 
         Parameters:
-        mask (numpy.ndarray): Input mask with shape (1, width, height).
-
-        Returns:
-        list: Bounding box coordinates [x_min, y_min, x_max, y_max].
-        """
-        # Remove the singleton dimension
-        mask = mask.squeeze()
-
-        # Find the indices of the non-zero elements
-        y_indices, x_indices = np.nonzero(mask)
-
-        # Calculate the bounding box coordinates
-        x_min = np.min(x_indices)
-        y_min = np.min(y_indices)
-        x_max = np.max(x_indices)
-        y_max = np.max(y_indices)
-
-        return [x_min, y_min, x_max, y_max]
-
-    def calculate_iou(self, box1, box2) -> float:
-        """
-        Calculate the Intersection over Union (IoU) between two bounding boxes.
-
-        Parameters:
-        box1 (tuple): Bounding box in the format (x_min, y_min, x_max, y_max).
-        box2 (tuple): Bounding box in the format (x_min, y_min, x_max, y_max).
+        mask1 (numpy.ndarray): First mask.
+        mask2 (numpy.ndarray): Second mask.
 
         Returns:
         float: IoU value.
         """
-        x_min1, y_min1, x_max1, y_max1 = box1
-        x_min2, y_min2, x_max2, y_max2 = box2
+        # Ensure the masks are binary
+        mask1 = mask1.astype(bool)
+        mask2 = mask2.astype(bool)
 
-        # Calculate the coordinates of the intersection rectangle
-        x_min_inter = max(x_min1, x_min2)
-        y_min_inter = max(y_min1, y_min2)
-        x_max_inter = min(x_max1, x_max2)
-        y_max_inter = min(y_max1, y_max2)
-
-        # Calculate the area of the intersection rectangle
-        inter_width = max(0, x_max_inter - x_min_inter)
-        inter_height = max(0, y_max_inter - y_min_inter)
-        inter_area = inter_width * inter_height
-
-        # Calculate the area of both bounding boxes
-        box1_area = (x_max1 - x_min1) * (y_max1 - y_min1)
-        box2_area = (x_max2 - x_min2) * (y_max2 - y_min2)
-
-        # Calculate the area of the union
-        union_area = box1_area + box2_area - inter_area
+        # Calculate the intersection and union
+        intersection = np.sum(np.logical_and(mask1, mask2))
+        union = np.sum(np.logical_or(mask1, mask2))
 
         # Calculate the IoU
-        iou = inter_area / union_area if union_area != 0 else 0
+        iou = intersection / union if union != 0 else 0
 
         return iou
 
-    def update_reference_predictions(
+    def _update_reference_predictions(
         self,
         last_predictions: dict[int, ImageBboxAndMaskLabel],
         new_predictions: dict[int, ImageBboxAndMaskLabel],
+        objects_count: int,
         iou_threshold: float = 0.8,
-    ) -> dict[int, ImageBboxAndMaskLabel]:
+    ) -> tuple[dict[int, ImageBboxAndMaskLabel], int]:
         """
         Updates the object prediction ids of the 'new_predictions' input to match
         the ids coming from the 'last_predictions' input, by comparing the IoU between
         the two elements.
 
         Parameters:
-        last_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the 
+        last_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the last frame's prediction
             of the video propagation.
-        new_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the 
+        new_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the FlorenceV2 model prediction.
         iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
 
         Returns:
         float: IoU value.
         """
-        objects_count: int = len(last_predictions.keys())
         updated_predictions: dict[int, ImageBboxAndMaskLabel] = {}
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
-                iou = self.calculate_iou(
-                    new_predictions[new_annotation_id],
-                    last_predictions[old_annotation_id],
+                iou = self._calculate_iou(
+                    new_predictions[new_annotation_id].mask,
+                    last_predictions[old_annotation_id].mask,
                 )
                 if iou > iou_threshold:
                     new_obj_id = old_annotation_id
@@ -152,17 +120,16 @@ class Florence2SAM2(BaseMLModel):
                         label=new_predictions[new_annotation_id].label,
                     )
                     break
-                # annotation_id_to_label[annotation_id] = objs[annotation_id].label
 
             if not new_obj_id:
                 objects_count += 1
                 new_obj_id = objects_count
                 updated_predictions[new_obj_id] = new_predictions[new_annotation_id]
 
-        return updated_predictions
+        return (updated_predictions, objects_count)
 
     @torch.inference_mode()
-    def get_bbox_and_mask(
+    def _get_bbox_and_mask(
         self, prompt: str, image: Image.Image, return_mask: bool = True
     ) -> dict[int, ImageBboxAndMaskLabel]:
         objs = {}
@@ -202,7 +169,7 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
-        objs = self.get_bbox_and_mask(prompt, image.convert("RGB"))
+        objs = self._get_bbox_and_mask(prompt, image.convert("RGB"))
         return {0: objs}
 
     @torch.inference_mode()
@@ -211,13 +178,11 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         video: VideoNumpy,
         step: int = 20,
-    ) -> tuple[
-        dict[int, dict[int, ImageBboxAndMaskLabel]],
-        dict[int, dict[int, ImageBboxAndMaskLabel]],
-    ]:
+        iou_threshold: float = 0.8,
+    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         video_shape = video.shape
         video_segments = {}
-        image_predictions = {}
+        objects_count = 0
         last_step_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
 
         with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
@@ -225,20 +190,19 @@ class Florence2SAM2(BaseMLModel):
 
             for start_frame_idx in range(0, video_shape[0], step):
                 self.image_predictor.reset_predictor()
-                objs = self.get_bbox_and_mask(
+                objs = self._get_bbox_and_mask(
                     prompt,
                     Image.fromarray(video[start_frame_idx]).convert("RGB"),
-                    return_mask=False,
                 )
-                image_predictions[start_frame_idx] = objs
                 # Compare the IOU between the predicted label 'objs' and the 'last_step_frame_pred'
-                # and update the object prediction id, to match the id.
-                # Also add the new ids in case of new label objects
-                updated_objs = self.update_reference_predictions(
-                    last_step_frame_pred, objs
+                # and update the object prediction id, to match the previous id.
+                # Also add the new objects in case they didn't exist before.
+                updated_objs, objects_count = self._update_reference_predictions(
+                    last_step_frame_pred, objs, objects_count, iou_threshold
                 )
                 self.video_predictor.reset_state(inference_state)
-                # Add new label points to the video predictor
+
+                # Add new label points to the video predictor coming from the FlorenceV2 object predictions
                 annotation_id_to_label = {}
                 for annotation_id in updated_objs:
                     annotation_id_to_label[annotation_id] = updated_objs[
@@ -250,7 +214,7 @@ class Florence2SAM2(BaseMLModel):
                         obj_id=annotation_id,
                         box=updated_objs[annotation_id].bounding_box,
                     )
-
+                # Propagate the predictions on the given video segment (chunk)
                 for (
                     out_frame_idx,
                     out_obj_ids,
@@ -263,18 +227,23 @@ class Florence2SAM2(BaseMLModel):
 
                     for i, out_obj_id in enumerate(out_obj_ids):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
-                        pred_box = self.mask_to_bbox(pred_mask)
                         video_segments[out_frame_idx][out_obj_id] = (
                             ImageBboxAndMaskLabel(
                                 label=annotation_id_to_label[out_obj_id],
-                                bounding_box=pred_box,
+                                bounding_box=None,
                                 mask=pred_mask,
                             )
                         )
-                last_step_frame_pred = video_segments[start_frame_idx + step]
+                index = (
+                    start_frame_idx + step
+                    if (start_frame_idx + step) < video_shape[0]
+                    else video_shape[0] - 1
+                )
+                # Save the last frame predictions to later update the newly found FlorenceV2 object ids
+                last_step_frame_pred = video_segments[index]
                 self.video_predictor.reset_state(inference_state)
 
-        return (video_segments, image_predictions)
+        return video_segments
 
     @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
