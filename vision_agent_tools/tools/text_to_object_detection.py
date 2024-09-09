@@ -94,7 +94,7 @@ class TextToObjectDetection(BaseTool):
             )
 
     def _convert_owlv2_output(
-        self, output: list[ODResponseData]
+        self, output: list[list[ODResponseData]]
     ) -> list[ODResponseData]:
         """
         Convert the output of the OWLV2 model to the format used in the playground-tools.
@@ -114,16 +114,18 @@ class TextToObjectDetection(BaseTool):
         Returns:
             list[ODResponseData]: The converted output.
         """
-        print(output)
         od_response = []
         for pred in output:
-            od_response.append(
-                ODResponseData(
-                    label=pred.label,
-                    score=pred.score,
-                    bbox=pred.bbox,
+            single_img_od_response = []
+            od_response.append(single_img_od_response)
+            for box in pred:
+                single_img_od_response.append(
+                    ODResponseData(
+                        label=box.label,
+                        score=box.score,
+                        bbox=box.bbox,
+                    )
                 )
-            )
 
         return od_response
 

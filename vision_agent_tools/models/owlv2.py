@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 import torch
 from PIL import Image
@@ -89,7 +90,7 @@ class Owlv2(BaseMLModel):
 
         return inferences
 
-    def __init__(self, model_config: OWLV2Config | None = None):
+    def __init__(self, model_config: Optional[OWLV2Config] = None):
         """
         Initializes the Owlv2 object detection tool.
 
