@@ -7,7 +7,7 @@ sudo apt-get update && sudo apt-get upgrade
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 curl -sSL https://install.python-poetry.org | python -
-poetry run pip install --upgrade pip setuptools toml
+poetry run pip install --upgrade pip setuptools toml flash_attn
 if [[ "$(uname)" == "Darwin" ]]; then
 	brew install zbar
 else
