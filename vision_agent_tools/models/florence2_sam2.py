@@ -137,7 +137,9 @@ class Florence2SAM2(BaseMLModel):
         annotation_id = 0
         with torch.autocast(device_type=self.device, dtype=torch.float16):
             preds = self.florence2(
-                image=image, task=PromptTask.CAPTION_TO_PHRASE_GROUNDING, prompt=prompt,
+                image=image,
+                task=PromptTask.CAPTION_TO_PHRASE_GROUNDING,
+                prompt=prompt,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
         preds = [
             {"bbox": preds["bboxes"][i], "label": preds["labels"][i]}
@@ -177,28 +179,31 @@ class Florence2SAM2(BaseMLModel):
         self,
         prompt: str,
         video: VideoNumpy,
-        step: int = 20,
+        chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         video_shape = video.shape
+        num_frames = video_shape[0]
         video_segments = {}
         objects_count = 0
-        last_step_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
+        last_chunk_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
 
+        if chunk_length is None:
+            chunk_length = num_frames
         with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
             inference_state = self.video_predictor.init_state(video=video)
 
-            for start_frame_idx in range(0, video_shape[0], step):
+            for start_frame_idx in range(0, num_frames, chunk_length):
                 self.image_predictor.reset_predictor()
                 objs = self._get_bbox_and_mask(
                     prompt,
                     Image.fromarray(video[start_frame_idx]).convert("RGB"),
                 )
-                # Compare the IOU between the predicted label 'objs' and the 'last_step_frame_pred'
+                # Compare the IOU between the predicted label 'objs' and the 'last_chunk_frame_pred'
                 # and update the object prediction id, to match the previous id.
                 # Also add the new objects in case they didn't exist before.
                 updated_objs, objects_count = self._update_reference_predictions(
-                    last_step_frame_pred, objs, objects_count, iou_threshold
+                    last_chunk_frame_pred, objs, objects_count, iou_threshold
                 )
                 self.video_predictor.reset_state(inference_state)
 
@@ -220,7 +225,7 @@ class Florence2SAM2(BaseMLModel):
                     out_obj_ids,
                     out_mask_logits,
                 ) in self.video_predictor.propagate_in_video(
-                    inference_state, start_frame_idx, step
+                    inference_state, start_frame_idx, chunk_length
                 ):
                     if out_frame_idx not in video_segments.keys():
                         video_segments[out_frame_idx] = {}
@@ -235,12 +240,12 @@ class Florence2SAM2(BaseMLModel):
                             )
                         )
                 index = (
-                    start_frame_idx + step
-                    if (start_frame_idx + step) < video_shape[0]
-                    else video_shape[0] - 1
+                    start_frame_idx + chunk_length
+                    if (start_frame_idx + chunk_length) < num_frames
+                    else num_frames - 1
                 )
                 # Save the last frame predictions to later update the newly found FlorenceV2 object ids
-                last_step_frame_pred = video_segments[index]
+                last_chunk_frame_pred = video_segments[index]
                 self.video_predictor.reset_state(inference_state)
 
         return video_segments
@@ -252,19 +257,29 @@ class Florence2SAM2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
-        step: int | None = 20,
+        chunk_length: int | None = 20,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
-        """Returns a dictionary where the first key is the frame index then an annotation
-        ID, then an object with the mask, label and possibly bbox (for images) for each
-        annotation ID. For example:
-        {
-            0:
+        """
+        Florence2Sam2 model find objects in an image and track objects in a video.
+
+        Args:
+            prompt (list[str]): The list of objects to be found.
+            image (Image.Image | None): The image to be analyzed.
+            video (VideoNumpy | None): A numpy array containing the different images, representing the video.
+            chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
+
+        Returns:
+            dict[int, ImageBboxMaskLabel]: a dictionary where the first key is the frame index
+            then an annotation ID, then an object with the mask, label and possibly bbox (for images)
+            for each annotation ID. For example:
                 {
-                    0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
-                    1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
-                },
-            1: ...
-        }
+                    0:
+                        {
+                            0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
+                            1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
+                        },
+                    1: ...
+                }
         """
 
         prompt = ", ".join(prompts)
@@ -277,5 +292,5 @@ class Florence2SAM2(BaseMLModel):
             return self.handle_image(prompt, image)
         elif video is not None:
             assert video.ndim == 4, "Video should have 4 dimensions"
-            return self.handle_video(prompt, video, step)
+            return self.handle_video(prompt, video, chunk_length)
         # No need to raise an error here, the validatie_call decorator will take care of it
