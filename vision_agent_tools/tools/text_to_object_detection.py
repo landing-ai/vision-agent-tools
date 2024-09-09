@@ -202,6 +202,7 @@ class TextToObjectDetection(BaseTool):
             if isinstance(prediction, list):
                 prediction = [prediction]
             for pred in prediction:
+                print(f"each of pred is {pred}, type: {type(pred)}")
                 fv2_pred_output.append(self._convert_florencev2_output(pred[od_task]))
             prediction = fv2_pred_output
 
