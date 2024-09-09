@@ -114,6 +114,7 @@ class TextToObjectDetection(BaseTool):
         Returns:
             list[ODResponseData]: The converted output.
         """
+        print(output)
         od_response = []
         for pred in output:
             od_response.append(
