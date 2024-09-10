@@ -4,16 +4,33 @@ from typing_extensions import Annotated
 import torch
 import numpy as np
 from PIL import Image
-from pydantic import validate_call
+from pydantic import BaseModel, validate_call, Field
 
-from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy, SegmentationBitMask
+from vision_agent_tools.shared_types import (
+    BaseMLModel,
+    VideoNumpy,
+    SegmentationBitMask,
+    Device,
+)
 from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 
-_HF_MODEL = "facebook/sam2-hiera-large"
+class Florence2SAM2Config(BaseModel):
+    hf_model: str = Field(
+        default="facebook/sam2-hiera-large",
+        description="Name of the model",
+    )
+    device: Device = Field(
+        default=Device.GPU
+        if torch.cuda.is_available()
+        else Device.MPS
+        if torch.backends.mps.is_available()
+        else Device.CPU,
+        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
+    )
 
 
 @dataclass
@@ -37,22 +54,16 @@ class Florence2SAM2(BaseMLModel):
     returns the instance segmentation for the text prompts in each frame.
     """
 
-    def __init__(self, device: str | None = None):
+    def __init__(self, model_config: Florence2SAM2Config | None = None):
         """
         Initializes the Florence2SAM2 object with a pre-trained Florencev2 model
         and a SAM2 model.
         """
-        self.device = (
-            device
-            if device in ["cuda", "mps", "cpu"]
-            else "cuda"
-            if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
-        )
+        self._model_config = model_config or Florence2SAM2Config()
         self.florence2 = Florencev2()
-        self.video_predictor = SAM2VideoPredictor.from_pretrained(_HF_MODEL)
+        self.video_predictor = SAM2VideoPredictor.from_pretrained(
+            self._model_config.hf_model
+        )
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
     def _calculate_iou(
@@ -138,7 +149,7 @@ class Florence2SAM2(BaseMLModel):
         objs = {}
         self.image_predictor.set_image(np.array(image, dtype=np.uint8))
         annotation_id = 0
-        with torch.autocast(device_type=self.device, dtype=torch.float16):
+        with torch.autocast(device_type=self._model_config.device, dtype=torch.float16):
             preds = self.florence2(
                 image=image,
                 task=PromptTask.CAPTION_TO_PHRASE_GROUNDING,
@@ -149,7 +160,9 @@ class Florence2SAM2(BaseMLModel):
             for i in range(len(preds["labels"]))
         ]
         if return_mask:
-            with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
+            with torch.autocast(
+                device_type=self._model_config.device, dtype=torch.bfloat16
+            ):
                 masks, _, _ = self.image_predictor.predict(
                     point_coords=None,
                     point_labels=None,
@@ -193,7 +206,9 @@ class Florence2SAM2(BaseMLModel):
 
         if chunk_length is None:
             chunk_length = num_frames
-        with torch.autocast(device_type=self.device, dtype=torch.bfloat16):
+        with torch.autocast(
+            device_type=self._model_config.device, dtype=torch.bfloat16
+        ):
             inference_state = self.video_predictor.init_state(video=video)
 
             for start_frame_idx in range(0, num_frames, chunk_length):

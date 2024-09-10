@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 from enum import Enum
 
 import numpy as np
@@ -10,7 +10,7 @@ from vision_agent_tools.models.model_registry import get_model_class
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy
 
 from vision_agent_tools.models.owlv2 import OWLV2Config
-from typing import Annotated, Any, List, Optional
+from typing import Annotated
 from annotated_types import Len
 
 BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
@@ -58,7 +58,7 @@ class TextToObjectDetection(BaseTool):
             )
 
         # Later modal is changed to actual model object
-        self.modelname:TextToObjectDetectionModel = model
+        self.modelname: TextToObjectDetectionModel = model
 
         if model == TextToObjectDetectionModel.OWLV2:
             self.owlv2_config = model_config or OWLV2Config()
@@ -74,9 +74,7 @@ class TextToObjectDetection(BaseTool):
         elif model == TextToObjectDetectionModel.FLORENCEV2:
             super().__init__(model=model_instance())
 
-    def _convert_florencev2_res(
-        self, res: FlorenceV2ODRes
-    ) -> list[ODResponseData]:
+    def _convert_florencev2_res(self, res: FlorenceV2ODRes) -> list[ODResponseData]:
         """
 
         Returns:
@@ -179,7 +177,7 @@ class TextToObjectDetection(BaseTool):
 
             prediction = self._convert_owlv2_res(prediction)
 
-        elif self.modelname== TextToObjectDetectionModel.FLORENCEV2:
+        elif self.modelname == TextToObjectDetectionModel.FLORENCEV2:
             od_task = PromptTask.OBJECT_DETECTION
             if image is not None:
                 prediction = self.model(
@@ -194,11 +192,13 @@ class TextToObjectDetection(BaseTool):
 
             # Prediction should be a list of lists of ODResponseData objects
             # We need to convert the output to the format that is used in the playground-tools
-            fv2_pred_output=[]
+            fv2_pred_output = []
             if not isinstance(prediction, list):
                 prediction = [prediction]
             for pred in prediction:
-                fv2_pred_output.append(self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task])))
+                fv2_pred_output.append(
+                    self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task]))
+                )
             prediction = fv2_pred_output
 
         res = TextToObjectDetectionRes(res=prediction)
