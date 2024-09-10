@@ -258,6 +258,7 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
+        iou_threshold: float = 0.8,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
@@ -292,5 +293,5 @@ class Florence2SAM2(BaseMLModel):
             return self.handle_image(prompt, image)
         elif video is not None:
             assert video.ndim == 4, "Video should have 4 dimensions"
-            return self.handle_video(prompt, video, chunk_length)
+            return self.handle_video(prompt, video, chunk_length, iou_threshold)
         # No need to raise an error here, the validatie_call decorator will take care of it
