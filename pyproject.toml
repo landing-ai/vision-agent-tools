@@ -49,7 +49,7 @@ griffe-fieldz = "^0.2.0"
 all = ["qreader", "transformers", "scipy", "loca", "depth-anything-v2", "timm", "einops", "controlnet-aux", "lmdeploy", "decord", "sam-2"]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
-florencev2 = ["transformers", "scipy", "timm", "einops"]
+florencev2 = ["transformers", "scipy", "timm", "einops", "flash_attn"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
@@ -61,7 +61,7 @@ florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 
 
 [build-system]
-requires = ["poetry-core", "setuptools", "packaging", "wheel"]
+requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]

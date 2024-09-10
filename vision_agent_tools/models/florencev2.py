@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Optional, List
 
+from pydantic import BaseModel, Field
 import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
@@ -164,3 +165,57 @@ class Florencev2(BaseMLModel):
         for prompt in prompts:
             results.append(self.__call__(image=image, task=task, prompt=prompt))
         return results
+
+
+class FlorenceV2ODRes(BaseModel):
+    """
+    Schema for the <OD> task.
+    """
+
+    bboxes: List[List[float]] = Field(
+        ..., description="List of bounding boxes, each represented as [x1, y1, x2, y2]"
+    )
+    labels: List[str] = Field(
+        ..., description="List of labels corresponding to each bounding box"
+    )
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "<OD>": {
+                    "bboxes": [
+                        [
+                            33.599998474121094,
+                            159.59999084472656,
+                            596.7999877929688,
+                            371.7599792480469,
+                        ],
+                        [
+                            454.0799865722656,
+                            96.23999786376953,
+                            580.7999877929688,
+                            261.8399963378906,
+                        ],
+                        [
+                            224.95999145507812,
+                            86.15999603271484,
+                            333.7599792480469,
+                            164.39999389648438,
+                        ],
+                        [
+                            449.5999755859375,
+                            276.239990234375,
+                            554.5599975585938,
+                            370.3199768066406,
+                        ],
+                        [
+                            91.19999694824219,
+                            280.0799865722656,
+                            198.0800018310547,
+                            370.3199768066406,
+                        ],
+                    ],
+                    "labels": ["car", "door", "door", "wheel", "wheel"],
+                }
+            }
+        }

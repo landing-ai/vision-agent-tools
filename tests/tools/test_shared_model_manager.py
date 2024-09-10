@@ -92,3 +92,5 @@ async def test_swap_model_in_gpu(model_pool):
     model2_to_get = await model_pool.fetch_model(model_creation_fn_b.__name__)
     assert model2_to_get is not None
     assert model_pool._get_current_gpu_model() == model_creation_fn_b.__name__
+
+    # Also 

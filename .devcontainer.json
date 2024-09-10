@@ -1,3 +1,7 @@
 {
-    "image": "mcr.microsoft.com/vscode/devcontainers/python:3.10"
+    "image": "mcr.microsoft.com/vscode/devcontainers/python:3.10",
+    "runArgs": [
+    "--gpus",
+    "all"
+]
 }

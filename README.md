@@ -214,5 +214,5 @@ poetry install -E "all"
 ## Unit tests
 Example of how to run a single unit test:
 ```bash
-poetry run pytest tests/tools/test_shared_model_manager.py::test_swap_model_in_gpu
+poetry run pytest -vvvv tests/tools/test_shared_model_manager.py::test_swap_model_in_gpu
 ```

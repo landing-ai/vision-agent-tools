@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 import torch
 from PIL import Image
@@ -26,11 +27,11 @@ class OWLV2Config(BaseModel):
         description="Confidence threshold for model predictions",
     )
     device: Device = Field(
-        default=Device.GPU
-        if torch.cuda.is_available()
-        else Device.MPS
-        if torch.backends.mps.is_available()
-        else Device.CPU,
+        default=(
+            Device.GPU
+            if torch.cuda.is_available()
+            else Device.MPS if torch.backends.mps.is_available() else Device.CPU
+        ),
         description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
     )
     nms_threshold: float = Field(
@@ -98,7 +99,7 @@ class Owlv2(BaseMLModel):
 
         return inferences
 
-    def __init__(self, model_config: OWLV2Config | None = None):
+    def __init__(self, model_config: Optional[OWLV2Config] = None):
         """
         Initializes the Owlv2 object detection tool.
 
