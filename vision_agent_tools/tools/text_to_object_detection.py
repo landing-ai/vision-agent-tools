@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field
 
-from vision_agent_tools.models.florencev2 import FlorenceV2ODOutput, PromptTask
+from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
 from vision_agent_tools.models.model_registry import get_model_class
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy
 
@@ -74,30 +74,27 @@ class TextToObjectDetection(BaseTool):
         elif model == TextToObjectDetectionModel.FLORENCEV2:
             super().__init__(model=model_instance())
 
-    def _convert_florencev2_output(
-        self, output: FlorenceV2ODOutput
+    def _convert_florencev2_res(
+        self, res: FlorenceV2ODRes
     ) -> list[ODResponseData]:
         """
-
-        Args:
-            output (example):
-            a
 
         Returns:
             ODResponse: the one we are using already in the playground-tools(baseten) ,that will be wrapped in the datafield of BaseReponse.
         """
+        print(f"converting res: {res}")
         od_response = []
-        for i, label in enumerate(output.labels):
+        for i, label in enumerate(res.labels):
             od_response.append(
                 ODResponseData(
                     label=label,
                     score=1.0,  # FlorenceV2 doesn't provide confidence score
-                    bbox=output.bboxes[i],
+                    bbox=res.bboxes[i],
                 )
             )
 
-    def _convert_owlv2_output(
-        self, output: list[list[ODResponseData]]
+    def _convert_owlv2_res(
+        self, res: list[list[ODResponseData]]
     ) -> list[ODResponseData]:
         """
         Convert the output of the OWLV2 model to the format used in the playground-tools.
@@ -118,7 +115,7 @@ class TextToObjectDetection(BaseTool):
             list[ODResponseData]: The converted output.
         """
         od_response = []
-        for pred in output:
+        for pred in res:
             single_img_od_response = []
             od_response.append(single_img_od_response)
             for box in pred:
@@ -180,7 +177,7 @@ class TextToObjectDetection(BaseTool):
             elif video is not None:
                 prediction = self.model(video=video, prompts=prompts)
 
-            prediction = self._convert_owlv2_output(prediction)
+            prediction = self._convert_owlv2_res(prediction)
 
         elif self.modelname== TextToObjectDetectionModel.FLORENCEV2:
             od_task = PromptTask.OBJECT_DETECTION
@@ -203,7 +200,7 @@ class TextToObjectDetection(BaseTool):
                 prediction = [prediction]
             for pred in prediction:
                 print(f"each of pred is {pred}, type: {type(pred)}")
-                fv2_pred_output.append(self._convert_florencev2_output(pred[od_task]))
+                fv2_pred_output.append(self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task])))
             prediction = fv2_pred_output
 
         output = TextToObjectDetectionOutput(output=prediction)

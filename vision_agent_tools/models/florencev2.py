@@ -167,7 +167,7 @@ class Florencev2(BaseMLModel):
         return results
 
 
-class FlorenceV2ODOutput(BaseModel):
+class FlorenceV2ODRes(BaseModel):
     """
     Schema for the <OD> task.
     """
