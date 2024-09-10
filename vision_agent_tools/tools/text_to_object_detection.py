@@ -82,7 +82,6 @@ class TextToObjectDetection(BaseTool):
         Returns:
             ODResponse: the one we are using already in the playground-tools(baseten) ,that will be wrapped in the datafield of BaseReponse.
         """
-        print(f"converting res: {res}")
         od_response = []
         for i, label in enumerate(res.labels):
             od_response.append(
@@ -199,12 +198,9 @@ class TextToObjectDetection(BaseTool):
             if not isinstance(prediction, list):
                 prediction = [prediction]
             for pred in prediction:
-                print(f"each of pred is {pred}, type: {type(pred)}")
                 fv2_pred_output.append(self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task])))
-                print(f"each of fv2_pred_output is {fv2_pred_output}, type: {type(fv2_pred_output)}")
             prediction = fv2_pred_output
 
-        print(f"prediction for TextToObjectDetectionRes is {prediction}")
         res = TextToObjectDetectionRes(res=prediction)
         results.append(res)
 
