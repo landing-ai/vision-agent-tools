@@ -26,7 +26,7 @@ class ODResponseData(BaseModel):
     )
 
 
-class TextToObjectDetectionOutput(BaseModel):
+class TextToObjectDetectionRes(BaseModel):
     """This can be a list of lists of ODResponseData objects,
     each list can be the frame of a video or the image of a batch of images,
     then inside the list it is the list of ODResponseData objects for each object detected in the frame or image.
@@ -34,7 +34,7 @@ class TextToObjectDetectionOutput(BaseModel):
     Downstream usage example, later the playground-tools (baseten model APIs) can wrap this 2-d list in the datafield of BaseReponse.
     """
 
-    output: list[list[ODResponseData]]
+    res: list[list[ODResponseData]]
 
 
 class TextToObjectDetectionModel(str, Enum):
@@ -134,7 +134,7 @@ class TextToObjectDetection(BaseTool):
         prompts: List[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> List[TextToObjectDetectionOutput]:
+    ) -> List[TextToObjectDetectionRes]:
         """
         Run object detection on the image based on text prompts.
 
@@ -195,15 +195,16 @@ class TextToObjectDetection(BaseTool):
             # Prediction should be a list of lists of ODResponseData objects
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output=[]
-            print(prediction)
             if not isinstance(prediction, list):
                 prediction = [prediction]
             for pred in prediction:
                 print(f"each of pred is {pred}, type: {type(pred)}")
                 fv2_pred_output.append(self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task])))
+                print(f"each of fv2_pred_output is {fv2_pred_output}, type: {type(fv2_pred_output)}")
             prediction = fv2_pred_output
 
-        output = TextToObjectDetectionOutput(output=prediction)
-        results.append(output)
+        print(f"prediction for TextToObjectDetectionRes is {prediction}")
+        res = TextToObjectDetectionRes(res=prediction)
+        results.append(res)
 
         return results
