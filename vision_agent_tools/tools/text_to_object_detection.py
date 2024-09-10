@@ -92,6 +92,7 @@ class TextToObjectDetection(BaseTool):
                     bbox=res.bboxes[i],
                 )
             )
+        return od_response
 
     def _convert_owlv2_res(
         self, res: list[list[ODResponseData]]
