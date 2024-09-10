@@ -745,16 +745,123 @@ returns the instance segmentation for the text prompts in each frame.</p>
 
 
 <h3 id="vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chunk_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Returns a dictionary where the first key is the frame index then an annotation
-ID, then an object with the mask, label and possibly bbox (for images) for each
-annotation ID. For example:
+      <p>Florence2Sam2 model find objects in an image and track objects in a video.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>prompt</code></td>
+            <td>
+                  <code>list[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The list of objects to be found.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>image</code></td>
+            <td>
+                  <code><span title="PIL.Image.Image">Image</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The image to be analyzed.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>video</code></td>
+            <td>
+                  <code><span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A numpy array containing the different images, representing the video.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>chunk_length</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.</p>
+              </div>
+            </td>
+            <td>
+                  <code>20</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>dict[int, ImageBboxMaskLabel]: a dictionary where the first key is the frame index</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>then an annotation ID, then an object with the mask, label and possibly bbox (for images)</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>for each annotation ID. For example:
 {
     0:
         {
@@ -763,6 +870,11 @@ annotation ID. For example:
         },
     1: ...
 }</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 
