@@ -199,7 +199,7 @@ class TextToObjectDetection(BaseTool):
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output=[]
             print(prediction)
-            if isinstance(prediction, list):
+            if not isinstance(prediction, list):
                 prediction = [prediction]
             for pred in prediction:
                 print(f"each of pred is {pred}, type: {type(pred)}")
