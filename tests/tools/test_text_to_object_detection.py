@@ -25,7 +25,7 @@ def test_successful_text_to_object_detection():
 
     assert len(output) > 0
 
-    print(output)
+    assert "cat" in [pred.label for pred in output[0]]
     for pred in output[0]:
         assert pred.label == "cat"
 
