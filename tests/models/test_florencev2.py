@@ -11,7 +11,8 @@ def test_successful_florencev2_detection():
 
     florencev2 = Florencev2()
 
-    results = florencev2(image=image, task=task)
+    results = florencev2(images=image, task=task)
+    print(results)
     caption = results[task]
 
     assert caption == "A green car parked in front of a yellow building."
@@ -26,3 +27,20 @@ def test_successful_florencev2_detection_video(random_video_generator):
     captions = results[0][task]
 
     assert len(captions) > 0
+
+
+def test_batch_ocr():
+    ocr_image_1 = Image.open("tests/models/data/florencev2/ocr_image_1.jpg")
+    ocr_image_2 = Image.open("tests/models/data/florencev2/ocr_image_2.jpg")
+    ocr_image_3 = Image.open("tests/models/data/florencev2/ocr_image_3.jpg")
+    task = PromptTask.OCR
+
+    florencev2 = Florencev2()
+
+    results = florencev2(images=[ocr_image_1, ocr_image_2, ocr_image_3], task=task)
+
+    assert len(results) == 3
+
+    assert results[0][task] == "HOWARD JACOBSONREDBACK"
+    assert results[1][task] == "Panasync E70"
+    assert results[2][task] == "conditions"

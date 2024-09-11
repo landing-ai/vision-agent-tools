@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Union
 
 from pydantic import BaseModel, Field
 import torch
@@ -7,7 +7,6 @@ from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
-from transformers.dynamic_module_utils import get_class_from_dynamic_module
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"
@@ -77,7 +76,9 @@ class Florencev2(BaseMLModel):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
         )
         self._model.to(self.device)
         self._model.eval()
@@ -86,22 +87,23 @@ class Florencev2(BaseMLModel):
     def __call__(
         self,
         task: PromptTask,
-        image: Optional[Image.Image] = None,
+        images: Optional[Union[Image.Image, List[Image.Image]]] = None,
         video: Optional[VideoNumpy] = None,
         prompt: Optional[str] = "",
     ) -> Any:
         """
-        Florence-2 model sequence-to-sequence architecture enables it to excel in both
-        zero-shot and fine-tuned settings, proving to be a competitive vision foundation model.
-        For more examples and details, refer to the [Florence-2 sample usage](https://huggingface.co/microsoft/Florence-2-large/blob/main/sample_inference.ipynb).
+        Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
+
+        Florence-2 is a sequence-to-sequence architecture excelling in both zero-shot and fine-tuned settings, making it a competitive vision foundation model.
 
         Args:
-            image (Image.Image): The input image for object detection.
-            task (PromptTask): The task to be performed on the image.
-            prompt (Optional[str]): The text input that complements the prompt task.
+            task (PromptTask): The specific task to be performed.
+            images (Optional[Union[Image.Image, List[Image.Image]]]): A single image or a list of images for the model to process. None if using video.
+            video (Optional[VideoNumpy]): A NumPy representation of the video for inference. None if using images.
+            prompt (Optional[str]): An optional text prompt to complement the task.
 
         Returns:
-            Any: The output of the Florence-2 model based on the task and prompt.
+            Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
         """
         if prompt is None:
             text_input = task
@@ -109,14 +111,24 @@ class Florencev2(BaseMLModel):
             text_input = task + prompt
 
         # Either video or image should be provided
-        if image is None and video is None:
+        if images is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
-        if image is not None and video is not None:
+        if images is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
-        if image is not None:
-            image = self._process_image(image)
-            return self._single_image_call(text_input, image, task, prompt)
+        if images is not None:
+            if not isinstance(images, list):
+                images = self._process_image(images)
+                return self._single_image_call(text_input, images, task, prompt)
+            else:
+                results = []
+                for image in images:
+                    processed_image = self._process_image(image)
+                    result = self._single_image_call(
+                        text_input, processed_image, task, prompt
+                    )
+                    results.append(result)
+                return results
         if video is not None:
             images = self._process_video(video)
             return [
@@ -163,7 +175,7 @@ class Florencev2(BaseMLModel):
         task = kwargs.get("task", "")
         results = []
         for prompt in prompts:
-            results.append(self.__call__(image=image, task=task, prompt=prompt))
+            results.append(self.__call__(images=image, task=task, prompt=prompt))
         return results
 
 
