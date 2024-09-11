@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
 import torch
 from PIL import Image
@@ -87,7 +87,8 @@ class Florencev2(BaseMLModel):
     def __call__(
         self,
         task: PromptTask,
-        images: Optional[Union[Image.Image, List[Image.Image]]] = None,
+        image: Optional[Image.Image] = None,
+        images: Optional[List[Image.Image]] = None,
         video: Optional[VideoNumpy] = None,
         prompt: Optional[str] = "",
     ) -> Any:
@@ -112,25 +113,30 @@ class Florencev2(BaseMLModel):
         else:
             text_input = task + prompt
 
-        # Either video or image should be provided
-        if images is None and video is None:
-            raise ValueError("Either 'image' or 'video' must be provided.")
-        if images is not None and video is not None:
-            raise ValueError("Only one of 'image' or 'video' can be provided.")
+        # Validate input parameters
+        if image is None and images is None and video is None:
+            raise ValueError("Either 'image', 'images', or 'video' must be provided.")
 
+        # Ensure only one of image, images, or video is provided
+        if (image is not None and (images is not None or video is not None)) or (
+            images is not None and video is not None
+        ):
+            raise ValueError(
+                "Only one of 'image', 'images', or 'video' can be provided."
+            )
+
+        if image is not None:
+            images = self._process_image(images)
+            return self._single_image_call(text_input, images, task, prompt)
         if images is not None:
-            if not isinstance(images, list):
-                images = self._process_image(images)
-                return self._single_image_call(text_input, images, task, prompt)
-            else:
-                results = []
-                for image in images:
-                    processed_image = self._process_image(image)
-                    result = self._single_image_call(
-                        text_input, processed_image, task, prompt
-                    )
-                    results.append(result)
-                return results
+            results = []
+            for image in images:
+                processed_image = self._process_image(image)
+                result = self._single_image_call(
+                    text_input, processed_image, task, prompt
+                )
+                results.append(result)
+            return results
         if video is not None:
             images = self._process_video(video)
             return [

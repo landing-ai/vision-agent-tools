@@ -11,7 +11,7 @@ def test_successful_florencev2_detection():
 
     florencev2 = Florencev2()
 
-    results = florencev2(images=image, task=task)
+    results = florencev2(image=image, task=task)
     caption = results[task]
 
     assert caption == "A green car parked in front of a yellow building."
