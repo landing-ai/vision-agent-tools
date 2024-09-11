@@ -1066,16 +1066,16 @@ text prompts to perform tasks like captioning, object detection, and segmentatio
 
 
 <h3 id="vision_agent_tools.models.florencev2.Florencev2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florencev2.Florencev2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Florence-2 model sequence-to-sequence architecture enables it to excel in both
-zero-shot and fine-tuned settings, proving to be a competitive vision foundation model.
-For more examples and details, refer to the <a href="https://huggingface.co/microsoft/Florence-2-large/blob/main/sample_inference.ipynb">Florence-2 sample usage</a>.</p>
+      <p>Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.</p>
+<p>Florence-2 is a sequence-to-sequence architecture excelling in both zero-shot and fine-tuned settings, making it a competitive vision foundation model.</p>
+<p>For more examples and details, refer to the <a href="https://huggingface.co/microsoft/Florence-2-large/blob/main/sample_inference.ipynb">Florence-2 sample usage</a>.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1090,13 +1090,27 @@ For more examples and details, refer to the <a href="https://huggingface.co/micr
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>image</code></td>
+            <td><code>task</code></td>
             <td>
-                  <code><span title="PIL.Image.Image">Image</span></code>
+                  <code><a class="autorefs autorefs-internal" title="vision_agent_tools.models.florencev2.PromptTask" href="#vision_agent_tools.models.florencev2.PromptTask">PromptTask</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The input image for object detection.</p>
+                <p>The specific task to be performed.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>image</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="PIL.Image.Image">Image</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A single image for the model to process. None if using video or a list of images.</p>
               </div>
             </td>
             <td>
@@ -1104,17 +1118,31 @@ For more examples and details, refer to the <a href="https://huggingface.co/micr
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>task</code></td>
+            <td><code>images</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="vision_agent_tools.models.florencev2.PromptTask" href="#vision_agent_tools.models.florencev2.PromptTask">PromptTask</a></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="PIL.Image.Image">Image</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The task to be performed on the image.</p>
+                <p>A list of images for the model to process. None if using video or a single image</p>
               </div>
             </td>
             <td>
-                <em>required</em>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>video</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A NumPy representation of the video for inference. None if using images.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -1124,7 +1152,7 @@ For more examples and details, refer to the <a href="https://huggingface.co/micr
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The text input that complements the prompt task.</p>
+                <p>An optional text prompt to complement the task.</p>
               </div>
             </td>
             <td>
@@ -1150,7 +1178,7 @@ For more examples and details, refer to the <a href="https://huggingface.co/micr
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The output of the Florence-2 model based on the task and prompt.</p>
+                <p>The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.</p>
               </div>
             </td>
           </tr>
