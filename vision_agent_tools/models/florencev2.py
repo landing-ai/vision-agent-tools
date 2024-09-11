@@ -101,7 +101,8 @@ class Florencev2(BaseMLModel):
 
         Args:
             task (PromptTask): The specific task to be performed.
-            images (Optional[Union[Image.Image, List[Image.Image]]]): A single image or a list of images for the model to process. None if using video.
+            image (Optional[Image.Image]): A single image for the model to process. None if using video or a list of images.
+            images (Optional[List[Image.Image]]): A list of images for the model to process. None if using video or a single image
             video (Optional[VideoNumpy]): A NumPy representation of the video for inference. None if using images.
             prompt (Optional[str]): An optional text prompt to complement the task.
 
@@ -126,8 +127,8 @@ class Florencev2(BaseMLModel):
             )
 
         if image is not None:
-            images = self._process_image(images)
-            return self._single_image_call(text_input, images, task, prompt)
+            image = self._process_image(image)
+            return self._single_image_call(text_input, image, task, prompt)
         if images is not None:
             results = []
             for image in images:

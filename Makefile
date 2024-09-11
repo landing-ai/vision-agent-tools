@@ -7,7 +7,7 @@ install:
 	bash ./scripts/install.sh
 
 test:
-	$(POETRY) run pytest -vvvv tests
+	$(POETRY) run pytest -x -vvvv tests
 
 serve/docs:
 	# Start the documentation server
