@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, Optional, List, Union
+from typing import Any, List, Optional, Union
 
-from pydantic import BaseModel, Field
 import torch
 from PIL import Image
+from pydantic import BaseModel, Field
 from transformers import AutoModelForCausalLM, AutoProcessor
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
