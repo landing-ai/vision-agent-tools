@@ -81,6 +81,13 @@ class Florence2SAM2(BaseMLModel):
 
         return iou
 
+    def _mask_to_bbox(self, mask: np.ndarray):
+        rows, cols = np.where(mask)
+        if len(rows) > 0 and len(cols) > 0:
+            x_min, x_max = np.min(cols), np.max(cols)
+            y_min, y_max = np.min(rows), np.max(rows)
+            return [x_min, y_min, x_max, y_max]
+
     def _update_reference_predictions(
         self,
         last_predictions: dict[int, ImageBboxAndMaskLabel],
@@ -104,7 +111,7 @@ class Florence2SAM2(BaseMLModel):
         Returns:
         float: IoU value.
         """
-        updated_predictions: dict[int, ImageBboxAndMaskLabel] = {}
+        new_prediction_objects: dict[int, ImageBboxAndMaskLabel] = {}
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
@@ -114,18 +121,14 @@ class Florence2SAM2(BaseMLModel):
                 )
                 if iou > iou_threshold:
                     new_obj_id = old_annotation_id
-                    updated_predictions[new_obj_id] = ImageBboxAndMaskLabel(
-                        bounding_box=new_predictions[new_annotation_id].bounding_box,
-                        mask=new_predictions[new_annotation_id].mask,
-                        label=new_predictions[new_annotation_id].label,
-                    )
                     break
 
             if not new_obj_id:
                 objects_count += 1
                 new_obj_id = objects_count
-                updated_predictions[new_obj_id] = new_predictions[new_annotation_id]
+                new_prediction_objects[new_obj_id] = new_predictions[new_annotation_id]
 
+        updated_predictions = {**last_predictions, **new_prediction_objects}
         return (updated_predictions, objects_count)
 
     @torch.inference_mode()
@@ -232,10 +235,12 @@ class Florence2SAM2(BaseMLModel):
 
                     for i, out_obj_id in enumerate(out_obj_ids):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
+                        if np.max(pred_mask) == 0:
+                            continue
                         video_segments[out_frame_idx][out_obj_id] = (
                             ImageBboxAndMaskLabel(
                                 label=annotation_id_to_label[out_obj_id],
-                                bounding_box=None,
+                                bounding_box=self._mask_to_bbox(pred_mask),
                                 mask=pred_mask,
                             )
                         )
