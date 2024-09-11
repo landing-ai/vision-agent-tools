@@ -184,13 +184,11 @@ class Florence2SAM2(BaseMLModel):
         video: VideoNumpy,
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
-    ) -> tuple[dict[int, dict[int, ImageBboxAndMaskLabel]], dict[int, dict[int, ImageBboxAndMaskLabel]], dict[int, dict[int, ImageBboxAndMaskLabel]]]:
+    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         video_shape = video.shape
         num_frames = video_shape[0]
         video_segments = {}
         objects_count = 0
-        sam2_preds: dict[int, dict[int, ImageBboxAndMaskLabel]] = {}
-        florence2_preds: dict[int, dict[int, ImageBboxAndMaskLabel]] = {}
         last_chunk_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
 
         if chunk_length is None:
@@ -200,20 +198,16 @@ class Florence2SAM2(BaseMLModel):
 
             for start_frame_idx in range(0, num_frames, chunk_length):
                 self.image_predictor.reset_predictor()
-                # fl_frame_idx = 0 if len(last_chunk_frame_pred.keys()) == 0 else start_frame_idx - 1
-                print("start_frame_idx: ", start_frame_idx)
                 objs = self._get_bbox_and_mask(
                     prompt,
                     Image.fromarray(video[start_frame_idx]).convert("RGB"),
                 )
-                florence2_preds[start_frame_idx] = objs
                 # Compare the IOU between the predicted label 'objs' and the 'last_chunk_frame_pred'
                 # and update the object prediction id, to match the previous id.
                 # Also add the new objects in case they didn't exist before.
                 updated_objs, objects_count = self._update_reference_predictions(
                     last_chunk_frame_pred, objs, objects_count, iou_threshold
                 )
-                print("objects_count: ", objects_count)
                 self.video_predictor.reset_state(inference_state)
 
                 # Add new label points to the video predictor coming from the FlorenceV2 object predictions
@@ -257,10 +251,9 @@ class Florence2SAM2(BaseMLModel):
                 )
                 # Save the last frame predictions to later update the newly found FlorenceV2 object ids
                 last_chunk_frame_pred = video_segments[index]
-                sam2_preds[index] = video_segments[index]
                 self.video_predictor.reset_state(inference_state)
 
-        return (video_segments, sam2_preds, florence2_preds)
+        return video_segments
 
     @validate_call(config={"arbitrary_types_allowed": True})
     @torch.inference_mode()
