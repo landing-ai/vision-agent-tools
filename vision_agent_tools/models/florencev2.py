@@ -96,6 +96,8 @@ class Florencev2(BaseMLModel):
 
         Florence-2 is a sequence-to-sequence architecture excelling in both zero-shot and fine-tuned settings, making it a competitive vision foundation model.
 
+        For more examples and details, refer to the [Florence-2 sample usage](https://huggingface.co/microsoft/Florence-2-large/blob/main/sample_inference.ipynb).
+
         Args:
             task (PromptTask): The specific task to be performed.
             images (Optional[Union[Image.Image, List[Image.Image]]]): A single image or a list of images for the model to process. None if using video.
