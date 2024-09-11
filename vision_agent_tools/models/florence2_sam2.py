@@ -111,7 +111,7 @@ class Florence2SAM2(BaseMLModel):
         Returns:
         float: IoU value.
         """
-        updated_predictions: dict[int, ImageBboxAndMaskLabel] = {}
+        new_prediction_objects: dict[int, ImageBboxAndMaskLabel] = {}
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
@@ -121,18 +121,14 @@ class Florence2SAM2(BaseMLModel):
                 )
                 if iou > iou_threshold:
                     new_obj_id = old_annotation_id
-                    updated_predictions[new_obj_id] = ImageBboxAndMaskLabel(
-                        bounding_box=last_predictions[new_obj_id].bounding_box,
-                        mask=last_predictions[new_obj_id].mask,
-                        label=last_predictions[new_obj_id].label,
-                    )
                     break
 
             if not new_obj_id:
                 objects_count += 1
                 new_obj_id = objects_count
-                updated_predictions[new_obj_id] = new_predictions[new_annotation_id]
+                new_prediction_objects[new_obj_id] = new_predictions[new_annotation_id]
 
+        updated_predictions = {**last_predictions, **new_prediction_objects}
         return (updated_predictions, objects_count)
 
     @torch.inference_mode()
@@ -217,6 +213,7 @@ class Florence2SAM2(BaseMLModel):
                 updated_objs, objects_count = self._update_reference_predictions(
                     last_chunk_frame_pred, objs, objects_count, iou_threshold
                 )
+                print("objects_count: ", objects_count)
                 self.video_predictor.reset_state(inference_state)
 
                 # Add new label points to the video predictor coming from the FlorenceV2 object predictions
@@ -244,6 +241,8 @@ class Florence2SAM2(BaseMLModel):
 
                     for i, out_obj_id in enumerate(out_obj_ids):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
+                        if np.max(pred_mask) == 0:
+                            continue
                         video_segments[out_frame_idx][out_obj_id] = (
                             ImageBboxAndMaskLabel(
                                 label=annotation_id_to_label[out_obj_id],
