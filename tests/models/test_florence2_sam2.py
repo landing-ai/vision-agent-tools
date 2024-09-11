@@ -36,13 +36,12 @@ def test_successful_florence2_sam2_video():
     """
     This test verifies that Florence2SAM2 returns a valid iresponse when passed a video
     """
-    tomatoes_image = np.array(
-        Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB"), dtype=np.uint8
-    )
+    tomatoes_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
     img_size = tomatoes_image.size
-    np_test_img = np.array(tomatoes_image)
+    np_test_img = np.array(tomatoes_image, dtype=np.uint8)
     zeros = np.zeros((img_size[1], img_size[0], 3), dtype=np.uint8)
-    test_video = np.array(np_test_img, zeros)
+
+    test_video = np.array([np_test_img, zeros])
 
     florence2_sam2 = Florence2SAM2()
 
@@ -57,7 +56,7 @@ def test_successful_florence2_sam2_video():
     # First frame
     for instance in results[0].values():
         assert isinstance(instance.mask, np.ndarray)
-        assert instance.mask.shape == tomatoes_image.shape[:2]
+        assert instance.mask.shape == np_test_img.shape[:2]
         assert instance.label == "tomato"
 
 
