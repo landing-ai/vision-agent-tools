@@ -87,10 +87,10 @@ class Florencev2(BaseMLModel):
     def __call__(
         self,
         task: PromptTask,
-        image: Optional[Image.Image] = None,
-        images: Optional[List[Image.Image]] = None,
-        video: Optional[VideoNumpy] = None,
-        prompt: Optional[str] = "",
+        image: Image.Image | None = None,
+        images: List[Image.Image] | None = None,
+        video: VideoNumpy | None = None,
+        prompt: str | None = "",
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
@@ -101,10 +101,10 @@ class Florencev2(BaseMLModel):
 
         Args:
             task (PromptTask): The specific task to be performed.
-            image (Optional[Image.Image]): A single image for the model to process. None if using video or a list of images.
-            images (Optional[List[Image.Image]]): A list of images for the model to process. None if using video or a single image
-            video (Optional[VideoNumpy]): A NumPy representation of the video for inference. None if using images.
-            prompt (Optional[str]): An optional text prompt to complement the task.
+            image (Image.Image): A single image for the model to process. None if using video or a list of images.
+            images (List[Image.Image]): A list of images for the model to process. None if using video or a single image
+            video (VideoNumpy): A NumPy representation of the video for inference. None if using images.
+            prompt (str): An optional text prompt to complement the task.
 
         Returns:
             Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
