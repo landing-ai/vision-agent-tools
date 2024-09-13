@@ -59,7 +59,6 @@ clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy"]
 florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 
-
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]
 build-backend = "poetry.core.masonry.api"

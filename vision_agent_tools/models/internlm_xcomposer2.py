@@ -1,11 +1,12 @@
-import torch
-from PIL import Image
-from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy
-from pydantic import Field, validate_call
 from typing import Annotated
 
+import torch
+from PIL import Image
+from pydantic import Field, validate_call
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
-from transformers.dynamic_module_utils import get_class_from_dynamic_module
+
+from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy
+from vision_agent_tools.helpers.ixc_utils import frame2img, Video_transform, get_font
 
 
 MAX_NUMBER_OF_FRAMES = 32
@@ -47,16 +48,9 @@ class InternLMXComposer2(BaseMLModel):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
-        )
-        self._frame2img = get_class_from_dynamic_module(
-            "ixc_utils.frame2img", self._HF_MODEL
-        )
-        self._video_transform = get_class_from_dynamic_module(
-            "ixc_utils.Video_transform", self._HF_MODEL
-        )
-        self._get_font = get_class_from_dynamic_module(
-            "ixc_utils.get_font", self._HF_MODEL
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
         )
         self._gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         engine_config = TurbomindEngineConfig(
@@ -106,8 +100,8 @@ class InternLMXComposer2(BaseMLModel):
             for i in range(0, num_frames, chunk_length):
                 chunk = video[i : i + chunk_length, :, :, :]
                 chunk = self._process_video(chunk, frames)
-                image_frames = self._frame2img(chunk, self._get_font())
-                media = self._video_transform(image_frames)
+                image_frames = frame2img(chunk, get_font())
+                media = Video_transform(image_frames)
                 sess = self._pipe.chat((prompt, media), gen_config=self._gen_config)
                 response = sess.response.text
                 answers.append(response)
