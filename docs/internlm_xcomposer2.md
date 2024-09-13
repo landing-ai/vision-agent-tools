@@ -5,18 +5,22 @@ This example demonstrates how to use the InternLM-XComposer-2.5 tool to   to ans
 __NOTE__: The InternLM-XComposer-2.5 model should be used in GPU environments.
 
 ```python
-from decord import VideoReader
-from decord import cpu
+import cv2
+
 from vision_agent_tools.models.internlm_xcomposer2 import InternLMXComposer2
 
 # (replace this path with your own!)
 video_path = "path/to/your/my_video.mp4"
 
-# Load the video
-vr = VideoReader(video_path, ctx=cpu(0))
-# - subsample frames
-frame_idxs = range(0, len(vr) - 1, 2)
-p_video = vr.get_batch(frame_idxs).asnumpy()
+# Load the video into frames
+cap = cv2.VideoCapture(video_path)
+frames = []
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    frames.append(frame)
+cap.release()
 
 # Initialize the InternLMXComposer2 model
 run_inference = InternLMXComposer2()

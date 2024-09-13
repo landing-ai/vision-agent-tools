@@ -3,10 +3,10 @@
 ## Video similarity
 
 ```python
-from vision_agent_tools.models.clip_media_sim import CLIPMediaSim
-from decord import VideoReader
-from decord import cpu
+import cv2
 from PIL import Image
+
+from vision_agent_tools.models.clip_media_sim import CLIPMediaSim
 
 # Path to your target image
 image_path = "path/to/your/image.jpg"
@@ -17,15 +17,19 @@ video_path = "path/to/your/video.mp4"
 # Load the image
 target_image = Image.open(image_path)
 
-# Load the video
-vr = VideoReader(video_path, ctx=cpu(0))
-
-# Subsample frames
-frame_idxs = range(0, len(vr) - 1, 20)
-frames = vr.get_batch(frame_idxs).asnumpy()
+# Load the video into frames
+cap = cv2.VideoCapture(video_path)
+fps = cap.get(cv2.CAP_PROP_FPS)
+frames = []
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    frames.append(frame)
+cap.release()
 
 # Calculate video timestamps
-video_time = len(vr) / vr.get_avg_fps()
+video_time = len(frames) / fps
 
 # Create the CLIPMediaSim instance
 clip_media_sim = CLIPMediaSim()

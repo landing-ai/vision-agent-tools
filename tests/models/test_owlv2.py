@@ -1,6 +1,4 @@
-import io
-
-from decord import VideoReader, cpu
+import cv2
 from PIL import Image
 
 from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
@@ -25,19 +23,19 @@ def test_successful_image_detection():
 def test_successful_video_detection():
     test_video = "test_video_5_frames.mp4"
     file_path = f"tests/tools/data/owlv2/{test_video}"
-
-    with open(file_path, "rb") as f:
-        video_bytes = f.read()
     prompts = ["a car", "a tree"]
 
-    video = io.BytesIO(video_bytes)
-    video_reader = VideoReader(video, ctx=cpu(0))
-    frames = video_reader.get_batch(range(len(video_reader))).asnumpy()
+    cap = cv2.VideoCapture(file_path)
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frames.append(frame)
+    cap.release()
 
     owlv2 = Owlv2()
-
     results = owlv2(prompts=prompts, video=frames)
-
     assert len(results) > 0
 
 
