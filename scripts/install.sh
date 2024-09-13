@@ -11,7 +11,7 @@ poetry run pip install --upgrade pip setuptools toml
 if [[ "$(uname)" == "Darwin" ]]; then
 	brew install zbar
 else
-	sudo apt-get update && sudo apt-get upgrade
+	sudo apt-get update && sudo apt-get upgrade -y
 	sudo apt-get install -y libzbar0
 fi
 
