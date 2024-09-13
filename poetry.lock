@@ -611,6 +611,23 @@ files = [
 ]
 
 [[package]]
+name = "decord"
+version = "0.6.0"
+description = "Decord Video Loader"
+optional = true
+python-versions = "*"
+files = [
+    {file = "decord-0.6.0-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:85ef90d2f872384657d7774cc486c237c5b12df62d4ac5cb5c8d6001fa611323"},
+    {file = "decord-0.6.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:9c20674964fb1490c677bd911d2023d2a09fec7a58a4bb0b7ddf1ccc269f107a"},
+    {file = "decord-0.6.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:a0eb1258beade34dceb29d97856a7764d179db1b5182899b61874f3418a1abc8"},
+    {file = "decord-0.6.0-py3-none-manylinux2010_x86_64.whl", hash = "sha256:51997f20be8958e23b7c4061ba45d0efcd86bffd5fe81c695d0befee0d442976"},
+    {file = "decord-0.6.0-py3-none-win_amd64.whl", hash = "sha256:02665d7c4f1193a330205a791bc128f7e108eb6ae5b67144437a02f700943bad"},
+]
+
+[package.dependencies]
+numpy = ">=1.14.0"
+
+[[package]]
 name = "depth_anything_v2"
 version = "0.0.1"
 description = ""
@@ -2129,13 +2146,13 @@ files = [
 
 [[package]]
 name = "narwhals"
-version = "1.7.0"
+version = "1.8.0"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "narwhals-1.7.0-py3-none-any.whl", hash = "sha256:40d8c0457743540276d6e8b2add31affa1c8936035d378838000c281d8f5921f"},
-    {file = "narwhals-1.7.0.tar.gz", hash = "sha256:2d769c9dd23bd355632a813eb65d5cae6bad595c4058387acfb7fa86db50a0e9"},
+    {file = "narwhals-1.8.0-py3-none-any.whl", hash = "sha256:73bde7b1721e1d95f749f6aacec12bc616fcccae5a926064d641c93e133fd548"},
+    {file = "narwhals-1.8.0.tar.gz", hash = "sha256:b1572b8781273e5712ee76144b9b6f412f2b71f39d63053853322cc98201eeaa"},
 ]
 
 [package.extras]
@@ -5183,7 +5200,7 @@ depth-anything-v2-model = ["depth-anything-v2"]
 florence2-sam2 = ["einops", "sam-2", "scipy", "timm", "transformers"]
 florencev2 = ["einops", "scipy", "timm", "transformers"]
 florencev2-qa = ["einops", "scipy", "timm", "transformers"]
-ixc-25 = ["lmdeploy", "transformers"]
+ixc-25 = ["decord", "lmdeploy", "transformers"]
 loca-model = ["loca"]
 nsfw-classification = ["scipy", "transformers"]
 owlv2 = ["scipy", "transformers"]
@@ -5192,4 +5209,4 @@ qr-reader = ["qreader"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "2af3fe4f316956524a36199926458ad8c54abe790e5e8149715c5595c64695ca"
+content-hash = "29df9be67296d7e38425ad13f75a0b2822f9f7e94457daa60bf08983740f93d7"
