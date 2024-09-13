@@ -3,20 +3,23 @@
 This tool uses FlorenceV2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
 
 ```python
+import cv2
+
 from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
-from decord import VideoReader
-from decord import cpu
 
 
 # Path to your video
 video_path = "path/to/your/video.mp4"
 
-# Load the video
-vr = VideoReader(video_path, ctx=cpu(0))
-
-# Subsample frames
-frame_idxs = range(0, len(vr) - 1, 20)
-frames = vr.get_batch(frame_idxs).asnumpy()
+# Load the video into frames
+cap = cv2.VideoCapture(video_path)
+frames = []
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    frames.append(frame)
+cap.release()
 
 # Create the Florence2SAM2 instance
 florence2_sam2 = Florence2SAM2()

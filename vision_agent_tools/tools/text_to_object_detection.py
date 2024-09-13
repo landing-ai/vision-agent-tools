@@ -1,5 +1,7 @@
-from typing import List
 from enum import Enum
+from typing import List
+from typing import Annotated
+from annotated_types import Len
 
 import numpy as np
 from PIL import Image
@@ -8,10 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
 from vision_agent_tools.models.model_registry import get_model_class
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy
-
 from vision_agent_tools.models.owlv2 import OWLV2Config
-from typing import Annotated
-from annotated_types import Len
+
 
 BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
 
@@ -26,15 +26,15 @@ class ODResponseData(BaseModel):
     )
 
 
-class TextToObjectDetectionRes(BaseModel):
+class TextToObjectDetectionResponse(BaseModel):
     """This can be a list of lists of ODResponseData objects,
     each list can be the frame of a video or the image of a batch of images,
     then inside the list it is the list of ODResponseData objects for each object detected in the frame or image.
 
-    Downstream usage example, later the playground-tools (baseten model APIs) can wrap this 2-d list in the datafield of BaseReponse.
+    Downstream usage example, later the playground-tools (baseten model APIs) can wrap this 2-d list in the datafield of BaseResponse.
     """
 
-    res: list[list[ODResponseData]]
+    output: list[list[ODResponseData]]
 
 
 class TextToObjectDetectionModel(str, Enum):
@@ -132,7 +132,7 @@ class TextToObjectDetection(BaseTool):
         prompts: List[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> List[TextToObjectDetectionRes]:
+    ) -> List[TextToObjectDetectionResponse]:
         """
         Run object detection on the image based on text prompts.
 
@@ -143,25 +143,6 @@ class TextToObjectDetection(BaseTool):
         Returns:
             List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
-        # results = []
-
-        # if image is None and video is None:
-        #     raise ValueError("Either 'image' or 'video' must be provided.")
-        # if image is not None and video is not None:
-        #     raise ValueError("Only one of 'image' or 'video' can be provided.")
-
-        # if image is not None:
-        #     prediction = self.model(image=image, prompts=prompts)
-        # if video is not None:
-        #     prediction = self.model(video=video, prompts=prompts)
-
-        # output = TextToObjectDetectionOutput(
-        #     output=self._convert_owlv2_output(prediction)
-        # )
-        # results.append(output)
-
-        # return results
-
         results = []
         prediction: list[list[ODResponseData]] = []
         if image is None and video is None:
@@ -201,7 +182,7 @@ class TextToObjectDetection(BaseTool):
                 )
             prediction = fv2_pred_output
 
-        res = TextToObjectDetectionRes(res=prediction)
+        res = TextToObjectDetectionResponse(output=prediction)
         results.append(res)
 
         return results
