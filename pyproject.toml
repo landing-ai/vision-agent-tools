@@ -61,10 +61,11 @@ all = [
     "controlnet-aux",
     "lmdeploy",
     "sam-2",
+    "decord"
 ]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
-florencev2 = ["transformers", "scipy", "timm", "einops", "flash_attn"]
+florencev2 = ["transformers", "scipy", "timm", "einops"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
