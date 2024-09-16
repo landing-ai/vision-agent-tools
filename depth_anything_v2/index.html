@@ -741,7 +741,7 @@
 
 
 <h3 id="vision_agent_tools.models.depth_anything_v2.DepthAnythingV2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">grayscale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.depth_anything_v2.DepthAnythingV2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -765,15 +765,32 @@
           <tr class="doc-section-item">
             <td><code>image</code></td>
             <td>
-                  <code><span title="PIL.Image.Image">Image</span></code>
+                  <code><span title="typing.Union">Union</span>[str, <span title="PIL.Image.Image">Image</span>, <span title="numpy.ndarray">ndarray</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The input image for object detection.</p>
+                <p>The input image for depth estimation.
+Can be a file path, a PIL Image, or a NumPy array.</p>
               </div>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>grayscale</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to return the depth map as a grayscale image.
+If True, the depth map will be normalized to the range [0, 255] and converted
+to uint8. Defaults to False.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
       </tbody>
