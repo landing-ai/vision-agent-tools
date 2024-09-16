@@ -72,7 +72,7 @@ class DepthAnythingV2(BaseMLModel):
 
     @torch.inference_mode()
     def __call__(self, image: Union[str, Image.Image], grayscale: bool | None = False) -> DepthMap:
-        """Performs depth estimation on the input image.
+        """Depth-Anything-V2 is a highly practical solution for robust monocular depth estimation.
 
         Args:
             image (Union[str, Image.Image, np.ndarray]): The input image for depth estimation.
@@ -82,7 +82,7 @@ class DepthAnythingV2(BaseMLModel):
                 to uint8. Defaults to False.
 
         Returns:
-            DepthMap: An object containing the HxW depth map of the image.
+            DepthMap: An object type containing a numpy array with the HxW depth map of the image.
         """
         if isinstance(image, str):
             image = np.array(Image.open(image).convert("RGB"))
