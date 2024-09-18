@@ -34,33 +34,30 @@ async def test_add_model(model_pool: SharedModelManager):
     assert model_id3 != model_id
 
 @pytest.mark.asyncio
-async def test_get_model_cpu(model_pool):
-    def model_creation_fn():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+async def test_get_model_cpu(model_pool: SharedModelManager):
+    model = MockBaseModel()
+    model.to = MagicMock()
 
-    model_pool.add(model_creation_fn)
+    model_id = model_pool.add(model)
 
-    model_to_get = await model_pool.fetch_model(model_creation_fn.__name__)
+    model_to_get = await model_pool.fetch_model(model_id)
 
     assert model_to_get is not None
     assert model_to_get.to.call_count == 0  # No device change for CPU
 
 
 @pytest.mark.asyncio
-async def test_get_model_gpu(model_pool):
-    def model_creation_fn():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+async def test_get_model_gpu(model_pool: SharedModelManager):
+    model = MockBaseModel()
+    model.to = MagicMock()
 
-    model_pool.add(model_creation_fn, device=Device.GPU)
+    model_id = model_pool.add(model, device=Device.GPU)
 
-    model_to_get = await model_pool.fetch_model(model_creation_fn.__name__)
+    model_to_get = await model_pool.fetch_model(model_id)
 
     assert model_to_get.to.call_count == 1
     model_to_get.to.assert_called_once_with(Device.GPU)  # Verify to was called with GPU
+
 
 
 @pytest.mark.asyncio
