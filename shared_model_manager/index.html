@@ -736,7 +736,7 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
 
 
 <h3 id="vision_agent_tools.tools.shared_model_manager.SharedModelManager.add" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">add</span><span class="p">(</span><span class="n">model_creation_fn</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">Device</span><span class="o">.</span><span class="n">CPU</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">Device</span><span class="o">.</span><span class="n">CPU</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.tools.shared_model_manager.SharedModelManager.add" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -758,13 +758,13 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model_creation_fn</code></td>
+            <td><code>model</code></td>
             <td>
-                  <code>callable</code>
+                  <code>Basetool</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A function that creates the model.</p>
+                <p>The modal instance to be added to the pool, it should implement the BaseTool interface.</p>
               </div>
             </td>
             <td>
@@ -788,6 +788,29 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
       </tbody>
     </table>
 
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The model ID to be used for fetching the model.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
     </div>
 
 </div>
@@ -796,7 +819,7 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
 
 
 <h3 id="vision_agent_tools.tools.shared_model_manager.SharedModelManager.fetch_model" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">fetch_model</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">fetch_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -822,13 +845,13 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>class_name</code></td>
+            <td><code>model_id</code></td>
             <td>
                   <code>str</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Name of the model class.</p>
+                <p>Id to access the model in the pool.</p>
               </div>
             </td>
             <td>
