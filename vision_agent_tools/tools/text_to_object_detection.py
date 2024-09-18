@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List
 from typing import Annotated
 from annotated_types import Len
 
@@ -66,6 +66,14 @@ class TextToObjectDetection(BaseTool):
             pass  # Note we don't need model config for FlorenceV2
         else:
             raise ValueError(f"Model is not supported: '{model}'")
+
+        self.model_class = get_model_class(model_name=model)
+        model_instance = self.model_class()
+        if model == TextToObjectDetectionModel.OWLV2:
+            super().__init__(model=model_instance(self.owlv2_config))
+        elif model == TextToObjectDetectionModel.FLORENCEV2:
+            super().__init__(model=model_instance())
+
 
     def _convert_florencev2_res(self, res: FlorenceV2ODRes) -> list[ODResponseData]:
         """
