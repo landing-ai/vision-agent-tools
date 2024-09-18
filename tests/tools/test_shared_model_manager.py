@@ -16,49 +16,48 @@ class MockBaseModel(AsyncMock, BaseTool):
 
 
 @pytest.mark.asyncio
-async def test_add_model(model_pool):
-    def model_creation_fn():
-        return MockBaseModel()
+async def test_add_model(model_pool: SharedModelManager):
 
-    model_pool.add(model_creation_fn)
-
+    test_model = MockBaseModel()
+    model_id = model_pool.add(test_model)
     assert len(model_pool.models) == 1
-    assert model_creation_fn.__name__ in model_pool.models
+    assert model_id in model_pool.models
 
-    model_pool.add(model_creation_fn)  # Duplicate addition
-
+    model_id2 = model_pool.add(test_model)  # Duplicate addition
     assert len(model_pool.models) == 1
-    assert model_creation_fn.__name__ in model_pool.models
+    assert model_id2 in model_pool.models
+    assert model_id2 == model_id
 
+    model_id3 = model_pool.add(MockBaseModel())  # Not duplicate addition
+    assert len(model_pool.models) == 2
+    assert model_id3 in model_pool.models
+    assert model_id3 != model_id
 
 @pytest.mark.asyncio
-async def test_get_model_cpu(model_pool):
-    def model_creation_fn():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+async def test_get_model_cpu(model_pool: SharedModelManager):
+    model = MockBaseModel()
+    model.to = MagicMock()
 
-    model_pool.add(model_creation_fn)
+    model_id = model_pool.add(model)
 
-    model_to_get = await model_pool.fetch_model(model_creation_fn.__name__)
+    model_to_get = await model_pool.fetch_model(model_id)
 
     assert model_to_get is not None
     assert model_to_get.to.call_count == 0  # No device change for CPU
 
 
 @pytest.mark.asyncio
-async def test_get_model_gpu(model_pool):
-    def model_creation_fn():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+async def test_get_model_gpu(model_pool: SharedModelManager):
+    model = MockBaseModel()
+    model.to = MagicMock()
 
-    model_pool.add(model_creation_fn, device=Device.GPU)
+    model_id = model_pool.add(model, device=Device.GPU)
 
-    model_to_get = await model_pool.fetch_model(model_creation_fn.__name__)
+    model_to_get = await model_pool.fetch_model(model_id)
 
     assert model_to_get.to.call_count == 1
     model_to_get.to.assert_called_once_with(Device.GPU)  # Verify to was called with GPU
+
 
 
 @pytest.mark.asyncio
@@ -68,29 +67,23 @@ async def test_get_model_not_found(model_pool):
 
 
 @pytest.mark.asyncio
-async def test_swap_model_in_gpu(model_pool):
+async def test_swap_model_in_gpu(model_pool: SharedModelManager):
 
-    def model_creation_fn_a():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+    model_a = MockBaseModel()
+    model_a.to = MagicMock()
 
-    def model_creation_fn_b():
-        model = MockBaseModel()
-        model.to = MagicMock()
-        return model
+    model_b = MockBaseModel()
+    model_b.to = MagicMock()
 
-    model_pool.add(model_creation_fn_a, device=Device.GPU)
-    model_pool.add(model_creation_fn_b, device=Device.GPU)
+    model_a_id = model_pool.add(model_a, device=Device.GPU)
+    model_b_id = model_pool.add(model_b, device=Device.GPU)
 
     # Get Model1 first, should use GPU
-    model1_to_get = await model_pool.fetch_model(model_creation_fn_a.__name__)
+    model1_to_get = await model_pool.fetch_model(model_a_id)
     assert model1_to_get is not None
-    assert model_pool._get_current_gpu_model() == model_creation_fn_a.__name__
+    assert model_pool._get_current_gpu_model() == model_a_id
 
     # Get Model2, should move Model1 to CPU and use GPU
-    model2_to_get = await model_pool.fetch_model(model_creation_fn_b.__name__)
+    model2_to_get = await model_pool.fetch_model(model_b_id)
     assert model2_to_get is not None
-    assert model_pool._get_current_gpu_model() == model_creation_fn_b.__name__
-
-    # Also 
+    assert model_pool._get_current_gpu_model() == model_b_id

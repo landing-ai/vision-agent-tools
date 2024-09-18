@@ -74,6 +74,7 @@ class TextToObjectDetection(BaseTool):
         elif model == TextToObjectDetectionModel.FLORENCEV2:
             super().__init__(model=model_instance())
 
+
     def _convert_florencev2_res(self, res: FlorenceV2ODRes) -> list[ODResponseData]:
         """
 
