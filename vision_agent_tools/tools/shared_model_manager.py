@@ -1,8 +1,10 @@
 import asyncio
+import logging
 from typing import Any, Callable, Dict, Optional
 
 from vision_agent_tools.shared_types import BaseTool, Device
 
+_LOGGER = logging.getLogger(__name__)
 
 class SharedModelManager:
     def __init__(self) -> None:
@@ -17,31 +19,38 @@ class SharedModelManager:
         self.gpu_semaphore = asyncio.Semaphore(1)
 
     def add(
-        self, model_creation_fn: Callable[[], BaseTool], device: Device = Device.CPU
-    ) -> None:
+        self, model: BaseTool, device: Device = Device.CPU,
+    ) -> str:
         """
         Adds a model to the pool with a device preference.
 
         Args:
-            model_creation_fn (callable): A function that creates the model.
+            model (Basetool): The modal instance to be added to the pool, it should implement the BaseTool interface.
             device (Device): The preferred device for the model.
+
+        Returns:
+            str: The model ID to be used for fetching the model.
         """
 
-        class_name = model_creation_fn.__name__  # Get class name from function
-        if class_name in self.models:
-            print(f"Model '{class_name}' already exists in the pool.")
-        else:
-            model = model_creation_fn()
-            self.models[class_name] = model
-            self.model_locks[class_name] = asyncio.Lock()
-            self.devices[class_name] = device
+        class_name = model.__class__.__name__  # Tool name
+        model_name = model.model    # Model name used by the tool
+        model_id = f"{class_name}.{model_name}"
 
-    async def fetch_model(self, class_name: str) -> BaseTool:
+        if model_id in self.models:
+            _LOGGER.warning(f"Model '{model_id}' already exists in the pool.")
+        else:
+            self.models[model_id] = model
+            self.model_locks[model_id] = asyncio.Lock()
+            self.devices[model_id] = device
+
+        return model_id
+
+    async def fetch_model(self, model_id: str) -> BaseTool:
         """
         Retrieves a model from the pool for safe execution.
 
         Args:
-            class_name (str): Name of the model class.
+            model_id (str): Id to access the model in the pool.
 
         Returns:
             Any: The retrieved model instance.

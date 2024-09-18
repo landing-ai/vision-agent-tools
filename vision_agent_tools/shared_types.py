@@ -34,7 +34,7 @@ class BaseTool:
     Tools are responsible for interfacing with one or more ML models to perform specific tasks.
     """
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, ):
         self.model = model
 
     def __call__(self):
