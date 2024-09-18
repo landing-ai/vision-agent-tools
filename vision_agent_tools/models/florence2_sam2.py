@@ -66,6 +66,70 @@ class Florence2SAM2(BaseMLModel):
         )
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
+    def _box_iou(self, box1, box2):
+        """
+        Calculate the Intersection over Union (IoU) between two bounding boxes.
+
+        Parameters:
+        box1 (numpy.ndarray): Bounding box in the format [x_min, y_min, x_max, y_max].
+        box2 (numpy.ndarray): Bounding box in the format [x_min, y_min, x_max, y_max].
+
+        Returns:
+        float: IoU value.
+        """
+        x_min1, y_min1, x_max1, y_max1 = box1
+        x_min2, y_min2, x_max2, y_max2 = box2
+
+        # Calculate the coordinates of the intersection rectangle
+        x_min_inter = max(x_min1, x_min2)
+        y_min_inter = max(y_min1, y_min2)
+        x_max_inter = min(x_max1, x_max2)
+        y_max_inter = min(y_max1, y_max2)
+
+        # Calculate the area of the intersection rectangle
+        inter_width = max(0, x_max_inter - x_min_inter)
+        inter_height = max(0, y_max_inter - y_min_inter)
+        inter_area = inter_width * inter_height
+
+        # Calculate the area of both bounding boxes
+        box1_area = (x_max1 - x_min1) * (y_max1 - y_min1)
+        box2_area = (x_max2 - x_min2) * (y_max2 - y_min2)
+
+        # Calculate the area of the union
+        union_area = box1_area + box2_area - inter_area
+
+        # Calculate the IoU
+        iou = inter_area / union_area if union_area != 0 else 0
+
+        return iou
+
+    def _agnostic_non_max_suppression(self, predictions, nms_threshold):
+        """
+        Apply agnostic Non-Maximum Suppression (NMS) to filter overlapping predictions.
+
+        Parameters:
+        predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary of predictions.
+        nms_threshold (float): The IoU threshold value used for NMS.
+
+        Returns:
+        dict[int, ImageBboxAndMaskLabel]: Filtered predictions after applying NMS.
+        """
+        filtered_predictions = {}
+        prediction_items = list(sorted(predictions).items()).reverse()
+
+        while prediction_items:
+            best_prediction = prediction_items.pop(0)
+            filtered_predictions[best_prediction[0]] = best_prediction[1]
+
+            prediction_items = [
+                pred
+                for pred in prediction_items
+                if self._box_iou(best_prediction[1].bounding_box, pred[1].bounding_box)
+                < nms_threshold
+            ]
+
+        return filtered_predictions
+
     def _calculate_iou(
         self, mask1: SegmentationBitMask, mask2: SegmentationBitMask
     ) -> float:
@@ -105,6 +169,7 @@ class Florence2SAM2(BaseMLModel):
         new_predictions: dict[int, ImageBboxAndMaskLabel],
         objects_count: int,
         iou_threshold: float = 0.8,
+        nms_threshold: float = 0.3,
     ) -> tuple[dict[int, ImageBboxAndMaskLabel], int]:
         """
         Updates the object prediction ids of the 'new_predictions' input to match
@@ -126,9 +191,9 @@ class Florence2SAM2(BaseMLModel):
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
-                iou = self._calculate_iou(
-                    new_predictions[new_annotation_id].mask,
-                    last_predictions[old_annotation_id].mask,
+                iou = self._box_iou(
+                    new_predictions[new_annotation_id].bounding_box,
+                    last_predictions[old_annotation_id].bounding_box,
                 )
                 if iou > iou_threshold:
                     new_obj_id = old_annotation_id
@@ -139,7 +204,9 @@ class Florence2SAM2(BaseMLModel):
                 new_obj_id = objects_count
                 new_prediction_objects[new_obj_id] = new_predictions[new_annotation_id]
 
-        updated_predictions = {**last_predictions, **new_prediction_objects}
+        updated_predictions = self._agnostic_non_max_suppression(
+            {**last_predictions, **new_prediction_objects}, nms_threshold
+        )
         return (updated_predictions, objects_count)
 
     @torch.inference_mode()
