@@ -16,20 +16,22 @@ class MockBaseModel(AsyncMock, BaseTool):
 
 
 @pytest.mark.asyncio
-async def test_add_model(model_pool):
-    def model_creation_fn():
-        return MockBaseModel()
+async def test_add_model(model_pool: SharedModelManager):
 
-    model_pool.add(model_creation_fn)
-
+    test_model = MockBaseModel()
+    model_id = model_pool.add(test_model)
     assert len(model_pool.models) == 1
-    assert model_creation_fn.__name__ in model_pool.models
+    assert model_id in model_pool.models
 
-    model_pool.add(model_creation_fn)  # Duplicate addition
-
+    model_id2 = model_pool.add(test_model)  # Duplicate addition
     assert len(model_pool.models) == 1
-    assert model_creation_fn.__name__ in model_pool.models
+    assert model_id2 in model_pool.models
+    assert model_id2 == model_id
 
+    model_id3 = model_pool.add(MockBaseModel())  # Not duplicate addition
+    assert len(model_pool.models) == 2
+    assert model_id3 in model_pool.models
+    assert model_id3 != model_id
 
 @pytest.mark.asyncio
 async def test_get_model_cpu(model_pool):
@@ -93,4 +95,4 @@ async def test_swap_model_in_gpu(model_pool):
     assert model2_to_get is not None
     assert model_pool._get_current_gpu_model() == model_creation_fn_b.__name__
 
-    # Also 
+    # Also

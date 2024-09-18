@@ -56,12 +56,12 @@ class SharedModelManager:
             Any: The retrieved model instance.
         """
 
-        if class_name not in self.models:
-            raise ValueError(f"Model '{class_name}' not found in the pool.")
+        if model_id not in self.models:
+            raise ValueError(f"Model '{model_id}' not found in the pool.")
 
-        model = self.models[class_name]
-        lock = self.model_locks[class_name]
-        device = self.devices[class_name]
+        model = self.models[model_id]
+        lock = self.model_locks[model_id]
+        device = self.devices[model_id]
 
         async def get_model_with_lock() -> Any:
             async with lock:
@@ -74,7 +74,7 @@ class SharedModelManager:
                             await self._move_to_cpu(exisitng)
 
                         # Update current GPU model
-                        self.current_gpu_model = class_name
+                        self.current_gpu_model = model_id
                         model.to(Device.GPU)
                 return model
 
