@@ -139,11 +139,12 @@ class Florencev2(BaseMLModel):
                 results.append(result)
             return results
         if video is not None:
+            results = []
             images = self._process_video(video)
-            return [
-                self._single_image_call(text_input, image, task, prompt)
-                for image in images
-            ]
+            for image in images:
+                result = self._single_image_call(text_input, image, task, prompt)
+                results.append(result)
+            return results
 
     def _single_image_call(
         self,
