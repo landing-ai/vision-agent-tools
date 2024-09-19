@@ -62,7 +62,7 @@ class Florencev2(BaseMLModel):
     def _process_video(self, images: VideoNumpy) -> list[Image.Image]:
         return [self._process_image(Image.fromarray(arr)) for arr in images]
 
-    def __init__(self):
+    def __init__(self, device: Optional[Device] = Device.GPU) -> None:
         """
         Initializes the Florence-2 model.
         """
@@ -73,13 +73,16 @@ class Florencev2(BaseMLModel):
             PROCESSOR_NAME, trust_remote_code=True
         )
 
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
-        )
+        if device == None:
+            self.device = (
+                "cuda"
+                if torch.cuda.is_available()
+                else "mps"
+                if torch.backends.mps.is_available()
+                else "cpu"
+            )
+        else:
+            self.device = device.value
         self._model.to(self.device)
         self._model.eval()
 
