@@ -11,13 +11,15 @@ Models are only loaded into memory when needed using the `fetch_model` function.
 
 The usage example demonstrates adding models and then using them with their respective functionalities.
 
+⚠️ ❕: we should ALWAYS **add model instance to CPU** , and model pool will automatically put it in GPU.
+
 
 ```python
 model_pool = SharedModelManager()
 
-# Add models to the pool
-model_pool.add(QRReader)
-model_pool.add(Owlv2)
+# Add models instance to the pool
+model_pool.add(QRReader())
+model_pool.add(Owlv2(model_config=OWLV2Config(device=Device.CPU)))
 
 # Read image
 image = Image.open("path/to/your/image.jpg")

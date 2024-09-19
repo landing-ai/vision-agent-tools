@@ -254,4 +254,3 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
             results.append({"scores": score, "labels": label, "boxes": box})
 
         return results
-
