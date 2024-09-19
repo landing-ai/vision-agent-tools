@@ -76,9 +76,7 @@ class Florencev2(BaseMLModel):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
+            else "mps" if torch.backends.mps.is_available() else "cpu"
         )
         self._model.to(self.device)
         self._model.eval()
@@ -86,11 +84,11 @@ class Florencev2(BaseMLModel):
     @torch.inference_mode()
     def __call__(
         self,
-        task: PromptTask,
+        task: PromptTask | list[PromptTask],
         image: Image.Image | None = None,
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
-        prompt: str | None = "",
+        prompt: str | list[str] | None = "",
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
@@ -109,10 +107,22 @@ class Florencev2(BaseMLModel):
         Returns:
             Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
         """
-        if prompt is None:
-            text_input = task
+
+        if isinstance(task, PromptTask):
+            task_list = [task.value]
+        elif isinstance(task, list):
+            task_list = task.value
         else:
-            text_input = task + prompt
+            raise ValueError("task must be a PromptTask or list of PromptTask.")
+
+        if isinstance(prompt, str):
+            prompt_list = [prompt]
+        elif isinstance(prompt, list):
+            prompt_list = prompt
+        elif prompt is None:
+            prompt_list = [""]
+        else:
+            raise ValueError("prompt must be a string, list of strings, or None.")
 
         # Validate input parameters
         if image is None and images is None and video is None:
@@ -127,36 +137,68 @@ class Florencev2(BaseMLModel):
             )
 
         if image is not None:
+            # Single image processing
+            text_input = str(task_list[0]) + prompt_list[0]
+
             image = self._process_image(image)
-            return self._single_image_call(text_input, image, task, prompt)
-        if images is not None:
-            results = []
-            for image in images:
-                processed_image = self._process_image(image)
-                result = self._single_image_call(
-                    text_input, processed_image, task, prompt
+            results = self._batch_image_call([text_input], [image], [task_list[0]])
+
+            return results[0]
+        elif images is not None:
+            # Batch processing
+            images_list = [self._process_image(img) for img in images]
+            num_images = len(images_list)
+            # Expand task_list and prompt_list to match number of images
+            if len(task_list) == 1:
+                task_list = task_list * num_images
+            elif len(task_list) != num_images:
+                raise ValueError(
+                    "Length of task list must be 1 or match number of images."
                 )
-                results.append(result)
-            return results
-        if video is not None:
-            images = self._process_video(video)
-            return [
-                self._single_image_call(text_input, image, task, prompt)
-                for image in images
-            ]
+            if len(prompt_list) == 1:
+                prompt_list = prompt_list * num_images
+            elif len(prompt_list) != num_images:
+                raise ValueError(
+                    "Length of prompt list must be 1 or match number of images."
+                )
+            text_inputs = [str(t) + p for t, p in zip(task_list, prompt_list)]
+            return self._batch_image_call(text_inputs, images_list, task_list)
+        elif video is not None:
+            # Process video frames
+            images_list = self._process_video(video)
+            num_images = len(images_list)
+            if len(task_list) == 1:
+                task_list = task_list * num_images
+            elif len(task_list) != num_images:
+                raise ValueError(
+                    "Length of task list must be 1 or match number of video frames."
+                )
+            if len(prompt_list) == 1:
+                prompt_list = prompt_list * num_images
+            elif len(prompt_list) != num_images:
+                raise ValueError(
+                    "Length of prompt list must be 1 or match number of video frames."
+                )
+            text_inputs = [str(t) + p for t, p in zip(task_list, prompt_list)]
+            return self._batch_image_call(text_inputs, images_list, task_list)
 
-    def _single_image_call(
+    def _batch_image_call(
         self,
-        text_input: str,
-        image: Image.Image,
-        task: PromptTask,
-        prompt: str,
+        text_inputs: List[str],
+        images: List[Image.Image],
+        tasks: List[PromptTask],
     ):
-        inputs = self._processor(text=text_input, images=image, return_tensors="pt").to(
-            self.device
-        )
 
-        with torch.autocast(self.device):
+        inputs = self._processor(
+            text=text_inputs,
+            images=images,
+            return_tensors="pt",
+            padding=False,
+            truncation=True,
+            max_length=900,
+        ).to(self.device)
+
+        with torch.autocast(device_type=self.device):
             generated_ids = self._model.generate(
                 input_ids=inputs["input_ids"],
                 pixel_values=inputs["pixel_values"],
@@ -165,26 +207,26 @@ class Florencev2(BaseMLModel):
                 early_stopping=False,
                 do_sample=False,
             )
-        generated_text = self._processor.batch_decode(
+        generated_texts = self._processor.batch_decode(
             generated_ids, skip_special_tokens=False
-        )[0]
-
-        parsed_answer = self._processor.post_process_generation(
-            generated_text, task=task, image_size=(image.width, image.height)
         )
-
-        return parsed_answer
+        results = []
+        for text, img, task in zip(generated_texts, images, tasks):
+            parsed_answer = self._processor.post_process_generation(
+                text, task=task, image_size=(img.width, img.height)
+            )
+            print(parsed_answer)
+            results.append(parsed_answer)
+        return results
 
     def to(self, device: Device):
         self._model.to(device=device.value)
 
     def predict(
-        self, image: Image.Image, prompts: Optional[List[str]] = None, **kwargs
+        self, images: list[Image.Image], prompts: List[str] | None = None, **kwargs
     ) -> Any:
         task = kwargs.get("task", "")
-        results = []
-        for prompt in prompts:
-            results.append(self.__call__(images=image, task=task, prompt=prompt))
+        results = self.__call__(task=task, images=images, prompt=prompts)
         return results
 
 
