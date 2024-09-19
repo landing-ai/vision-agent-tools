@@ -66,7 +66,7 @@ class Florence2SAM2(BaseMLModel):
         )
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
-    def _agnostic_non_max_suppression(self, predictions, nms_threshold):
+    def _dummy_agnostic_non_max_suppression(self, predictions, nms_threshold):
         """
         Apply agnostic Non-Maximum Suppression (NMS) to filter overlapping predictions.
 
@@ -167,7 +167,7 @@ class Florence2SAM2(BaseMLModel):
                 new_obj_id = objects_count
                 new_prediction_objects[new_obj_id] = new_predictions[new_annotation_id]
 
-        updated_predictions = self._agnostic_non_max_suppression(
+        updated_predictions = self._dummy_agnostic_non_max_suppression(
             {**last_predictions, **new_prediction_objects}, nms_threshold
         )
         return (updated_predictions, objects_count)
@@ -227,6 +227,7 @@ class Florence2SAM2(BaseMLModel):
         video: VideoNumpy,
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
+        nms_threshold: float = 0.3,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         video_shape = video.shape
         num_frames = video_shape[0]
@@ -251,7 +252,7 @@ class Florence2SAM2(BaseMLModel):
                 # and update the object prediction id, to match the previous id.
                 # Also add the new objects in case they didn't exist before.
                 updated_objs, objects_count = self._update_reference_predictions(
-                    last_chunk_frame_pred, objs, objects_count, iou_threshold
+                    last_chunk_frame_pred, objs, objects_count, iou_threshold, nms_threshold
                 )
                 self.video_predictor.reset_state(inference_state)
 
@@ -309,6 +310,7 @@ class Florence2SAM2(BaseMLModel):
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
+        nms_threshold: float = 0.3,
     ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
@@ -343,5 +345,5 @@ class Florence2SAM2(BaseMLModel):
             return self.handle_image(prompt, image)
         elif video is not None:
             assert video.ndim == 4, "Video should have 4 dimensions"
-            return self.handle_video(prompt, video, chunk_length, iou_threshold)
+            return self.handle_video(prompt, video, chunk_length, iou_threshold, nms_threshold)
         # No need to raise an error here, the validatie_call decorator will take care of it
