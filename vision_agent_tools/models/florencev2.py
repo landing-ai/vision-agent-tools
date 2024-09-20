@@ -86,11 +86,11 @@ class Florencev2(BaseMLModel):
     @torch.inference_mode()
     def __call__(
         self,
-        task: PromptTask | list[PromptTask],
+        task: PromptTask,
         image: Image.Image | None = None,
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
-        prompt: str | list[str] | None = "",
+        prompt: str | None = "",
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
