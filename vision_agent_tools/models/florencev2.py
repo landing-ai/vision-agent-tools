@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Optional
+from typing import Any, List
 
 import torch
 from PIL import Image
@@ -76,7 +76,9 @@ class Florencev2(BaseMLModel):
         self.device = (
             "cuda"
             if torch.cuda.is_available()
-            else "mps" if torch.backends.mps.is_available() else "cpu"
+            else "mps"
+            if torch.backends.mps.is_available()
+            else "cpu"
         )
         self._model.to(self.device)
         self._model.eval()
@@ -188,14 +190,10 @@ class Florencev2(BaseMLModel):
         images: List[Image.Image],
         tasks: List[PromptTask],
     ):
-
         inputs = self._processor(
             text=text_inputs,
             images=images,
             return_tensors="pt",
-            padding=False,
-            truncation=True,
-            max_length=900,
         ).to(self.device)
 
         with torch.autocast(device_type=self.device):
@@ -208,14 +206,13 @@ class Florencev2(BaseMLModel):
                 do_sample=False,
             )
         generated_texts = self._processor.batch_decode(
-            generated_ids, skip_special_tokens=False
+            generated_ids, skip_special_tokens=True
         )
         results = []
         for text, img, task in zip(generated_texts, images, tasks):
             parsed_answer = self._processor.post_process_generation(
                 text, task=task, image_size=(img.width, img.height)
             )
-            print(parsed_answer)
             results.append(parsed_answer)
         return results
 
