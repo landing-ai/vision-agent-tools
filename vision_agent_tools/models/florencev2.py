@@ -110,21 +110,11 @@ class Florencev2(BaseMLModel):
             Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
         """
 
-        if isinstance(task, PromptTask):
-            task_list = [task.value]
-        elif isinstance(task, list):
-            task_list = task.value
-        else:
-            raise ValueError("task must be a PromptTask or list of PromptTask.")
-
-        if isinstance(prompt, str):
-            prompt_list = [prompt]
-        elif isinstance(prompt, list):
-            prompt_list = prompt
-        elif prompt is None:
-            prompt_list = [""]
-        else:
-            raise ValueError("prompt must be a string, list of strings, or None.")
+        # Ensure that prompt is a string
+        if prompt is None:
+            prompt = ""
+        elif not isinstance(prompt, str):
+            raise ValueError("prompt must be a string or None.")
 
         # Validate input parameters
         if image is None and images is None and video is None:
@@ -140,55 +130,36 @@ class Florencev2(BaseMLModel):
 
         if image is not None:
             # Single image processing
-            text_input = str(task_list[0]) + prompt_list[0]
-
+            text_input = str(task.value) + prompt
             image = self._process_image(image)
-            results = self._batch_image_call([text_input], [image], [task_list[0]])
-
+            results = self._batch_image_call([text_input], [image], task)
             return results[0]
         elif images is not None:
             # Batch processing
             images_list = [self._process_image(img) for img in images]
             num_images = len(images_list)
-            # Expand task_list and prompt_list to match number of images
-            if len(task_list) == 1:
-                task_list = task_list * num_images
-            elif len(task_list) != num_images:
-                raise ValueError(
-                    "Length of task list must be 1 or match number of images."
-                )
-            if len(prompt_list) == 1:
-                prompt_list = prompt_list * num_images
-            elif len(prompt_list) != num_images:
-                raise ValueError(
-                    "Length of prompt list must be 1 or match number of images."
-                )
-            text_inputs = [str(t) + p for t, p in zip(task_list, prompt_list)]
-            return self._batch_image_call(text_inputs, images_list, task_list)
+
+            # Create text_inputs by repeating the task and prompt for each image
+            text_input = str(task.value) + prompt
+            text_inputs = [text_input] * num_images
+
+            return self._batch_image_call(text_inputs, images_list, task)
         elif video is not None:
             # Process video frames
             images_list = self._process_video(video)
             num_images = len(images_list)
-            if len(task_list) == 1:
-                task_list = task_list * num_images
-            elif len(task_list) != num_images:
-                raise ValueError(
-                    "Length of task list must be 1 or match number of video frames."
-                )
-            if len(prompt_list) == 1:
-                prompt_list = prompt_list * num_images
-            elif len(prompt_list) != num_images:
-                raise ValueError(
-                    "Length of prompt list must be 1 or match number of video frames."
-                )
-            text_inputs = [str(t) + p for t, p in zip(task_list, prompt_list)]
-            return self._batch_image_call(text_inputs, images_list, task_list)
+
+            # Create text_inputs by repeating the task and prompt for each frame
+            text_input = str(task.value) + prompt
+            text_inputs = [text_input] * num_images
+
+            return self._batch_image_call(text_inputs, images_list, task)
 
     def _batch_image_call(
         self,
         text_inputs: List[str],
         images: List[Image.Image],
-        tasks: List[PromptTask],
+        task: PromptTask,
     ):
         inputs = self._processor(
             text=text_inputs,
@@ -205,11 +176,19 @@ class Florencev2(BaseMLModel):
                 early_stopping=False,
                 do_sample=False,
             )
+
+        # Set skip_special_tokens based on the task
+        if task == PromptTask.OCR:
+            skip_special_tokens = True
+        else:
+            skip_special_tokens = False
+
         generated_texts = self._processor.batch_decode(
-            generated_ids, skip_special_tokens=True
+            generated_ids, skip_special_tokens=skip_special_tokens
         )
+
         results = []
-        for text, img, task in zip(generated_texts, images, tasks):
+        for text, img in zip(generated_texts, images):
             parsed_answer = self._processor.post_process_generation(
                 text, task=task, image_size=(img.width, img.height)
             )
