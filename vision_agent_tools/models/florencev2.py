@@ -110,7 +110,12 @@ class Florencev2(BaseMLModel):
             Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
         """
 
-        # Ensure that prompt is a string
+        if isinstance(task, str):
+            try:
+                task = PromptTask(task)
+            except ValueError:
+                raise ValueError(f"Invalid task string: {task}")
+
         if prompt is None:
             prompt = ""
         elif not isinstance(prompt, str):
