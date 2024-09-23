@@ -10,7 +10,6 @@ class SharedModelManager:
     def __init__(self) -> None:
         self.models: Dict[str, BaseTool] = {}  # store models with class name as key
         self.model_locks: Dict[str, asyncio.Lock] = {}  # store locks for each model
-        self.devices: Dict[str, Device] = {}  # store device preference for each model
         self.current_gpu_model: Optional[str] = (
             None  # Track the model currently using GPU
         )
@@ -19,7 +18,7 @@ class SharedModelManager:
         self.gpu_semaphore = asyncio.Semaphore(1)
 
     def add(
-        self, model: BaseTool, device: Device = Device.CPU,
+        self, model: BaseTool
     ) -> str:
         """
         Adds a model to the pool with a device preference.
@@ -41,11 +40,10 @@ class SharedModelManager:
         else:
             self.models[model_id] = model
             self.model_locks[model_id] = asyncio.Lock()
-            self.devices[model_id] = device
 
         return model_id
 
-    async def fetch_model(self, model_id: str) -> BaseTool:
+    def fetch_model(self, model_id: str) -> BaseTool:
         """
         Retrieves a model from the pool for safe execution.
 
@@ -60,25 +58,16 @@ class SharedModelManager:
             raise ValueError(f"Model '{model_id}' not found in the pool.")
 
         model = self.models[model_id]
-        lock = self.model_locks[model_id]
-        device = self.devices[model_id]
 
-        async def get_model_with_lock() -> Any:
-            async with lock:
-                if device == Device.GPU:
-                    # Acquire semaphore if needed
-                    async with self.gpu_semaphore:
-                        # Move existing GPU model to CPU
-                        exisitng = self._get_current_gpu_model()
-                        if exisitng:
-                            await self._move_to_cpu(exisitng)
+        # Move existing GPU model to CPU
+        exisitng = self._get_current_gpu_model()
+        if exisitng:
+            self._move_to_cpu(exisitng)
 
-                        # Update current GPU model
-                        self.current_gpu_model = model_id
-                        model.to(Device.GPU)
-                return model
-
-        return await get_model_with_lock()
+        # Update current GPU model
+        self.current_gpu_model = model_id
+        model.to(Device.GPU)
+        return model
 
     def _get_current_gpu_model(self) -> Optional[str]:
         """
@@ -86,11 +75,11 @@ class SharedModelManager:
         """
         return self.current_gpu_model
 
-    async def _move_to_cpu(self, class_name: str) -> None:
+    def _move_to_cpu(self, model_id: str) -> None:
         """
         Moves a model to CPU and releases the GPU semaphore (if held).
         """
-        model = self.models[class_name]
+        model = self.models[model_id]
         model.to(Device.CPU)
-        if self.current_gpu_model == class_name:
+        if self.current_gpu_model == model_id:
             self.current_gpu_model = None
