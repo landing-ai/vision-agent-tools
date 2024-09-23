@@ -60,8 +60,8 @@ class SharedModelManager:
         model = self.models[model_id]
 
         # Move existing GPU model to CPU
-        exisitng = self._get_current_gpu_model()
-        if exisitng:
+        existing = self._get_current_gpu_model()
+        if existing:
             model = self.models[model_id]
             model.to(Device.CPU)
             if self.current_gpu_model == model_id:
