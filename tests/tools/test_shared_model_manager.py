@@ -51,7 +51,7 @@ async def test_get_model_gpu(model_pool: SharedModelManager):
     model = MockBaseModel()
     model.to = MagicMock()
 
-    model_id = model_pool.add(model, device=Device.GPU)
+    model_id = model_pool.add(model)
 
     model_to_get = model_pool.fetch_model(model_id)
 
@@ -75,8 +75,8 @@ async def test_swap_model_in_gpu(model_pool: SharedModelManager):
     model_b = MockBaseModel()
     model_b.to = MagicMock()
 
-    model_a_id = model_pool.add(model_a, device=Device.GPU)
-    model_b_id = model_pool.add(model_b, device=Device.GPU)
+    model_a_id = model_pool.add(model_a)
+    model_b_id = model_pool.add(model_b)
 
     # Get Model1 first, should use GPU
     model1_to_get = model_pool.fetch_model(model_a_id)
