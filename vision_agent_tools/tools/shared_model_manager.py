@@ -67,7 +67,6 @@ class SharedModelManager:
             if self.current_gpu_model == model_id:
                 self.current_gpu_model = None
 
-
         # Update current GPU model
         self.current_gpu_model = model_id
         model.to(Device.GPU)
