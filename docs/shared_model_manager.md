@@ -11,7 +11,7 @@ Models are only loaded into memory when needed using the `fetch_model` function.
 
 The usage example demonstrates adding models and then using them with their respective functionalities.
 
-⚠️ ❕: we should ALWAYS **add model instance to CPU** , and model pool will automatically put it in GPU.
+⚠️ ❕: We should ALWAYS **add model instance on CPU** to the pool. This avoids overwhelming the GPU memory, and model pool will automatically put it in GPU when the model is fetched..
 
 
 ```python

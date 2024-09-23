@@ -62,7 +62,7 @@ class Florencev2(BaseMLModel):
     def _process_video(self, images: VideoNumpy) -> list[Image.Image]:
         return [self._process_image(Image.fromarray(arr)) for arr in images]
 
-    def __init__(self, device: Optional[Device] = Device.GPU) -> None:
+    def __init__(self, device: Device | None = Device.GPU) -> None:
         """
         Initializes the Florence-2 model.
         """
