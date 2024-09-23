@@ -62,7 +62,11 @@ class SharedModelManager:
         # Move existing GPU model to CPU
         exisitng = self._get_current_gpu_model()
         if exisitng:
-            self._move_to_cpu(exisitng)
+            model = self.models[model_id]
+            model.to(Device.CPU)
+            if self.current_gpu_model == model_id:
+                self.current_gpu_model = None
+
 
         # Update current GPU model
         self.current_gpu_model = model_id
@@ -74,12 +78,3 @@ class SharedModelManager:
         Returns the class name of the model currently using the GPU (if any).
         """
         return self.current_gpu_model
-
-    def _move_to_cpu(self, model_id: str) -> None:
-        """
-        Moves a model to CPU and releases the GPU semaphore (if held).
-        """
-        model = self.models[model_id]
-        model.to(Device.CPU)
-        if self.current_gpu_model == model_id:
-            self.current_gpu_model = None
