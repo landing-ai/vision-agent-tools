@@ -1,7 +1,5 @@
 from enum import Enum
 from typing import List
-from typing import Annotated
-from annotated_types import Len
 
 import numpy as np
 from PIL import Image
@@ -9,11 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
 from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy
+from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy, BoundingBox
 from vision_agent_tools.models.owlv2 import OWLV2Config
-
-
-BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
 
 
 class ODResponseData(BaseModel):
@@ -73,7 +68,6 @@ class TextToObjectDetection(BaseTool):
             super().__init__(model=model_instance(self.owlv2_config))
         elif model == TextToObjectDetectionModel.FLORENCEV2:
             super().__init__(model=model_instance())
-
 
     def _convert_florencev2_res(self, res: FlorenceV2ODRes) -> list[ODResponseData]:
         """

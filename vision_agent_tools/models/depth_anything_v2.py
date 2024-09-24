@@ -71,7 +71,9 @@ class DepthAnythingV2(BaseMLModel):
         self._model.eval()
 
     @torch.inference_mode()
-    def __call__(self, image: Union[str, Image.Image], grayscale: bool | None = False) -> DepthMap:
+    def __call__(
+        self, image: Union[str, Image.Image], grayscale: bool | None = False
+    ) -> DepthMap:
         """Depth-Anything-V2 is a highly practical solution for robust monocular depth estimation.
 
         Args:
@@ -89,16 +91,18 @@ class DepthAnythingV2(BaseMLModel):
         elif isinstance(image, Image.Image):
             image = np.array(image.convert("RGB"))
 
-        depth_map  = self._model.infer_image(image)  # HxW raw depth map
+        depth_map = self._model.infer_image(image)  # HxW raw depth map
 
         if grayscale:
             # Normalize depth map to [0, 255] and convert to uint8
             depth_min = depth_map.min()
             depth_max = depth_map.max()
-            depth_map_normalized = (depth_map - depth_min) / (depth_max - depth_min + 1e-8)
+            depth_map_normalized = (depth_map - depth_min) / (
+                depth_max - depth_min + 1e-8
+            )
             depth_map = (255 * depth_map_normalized).astype(np.uint8)
 
-        return DepthMap(map=depth_map )
+        return DepthMap(map=depth_map)
 
     def to(self, device: Device):
         self._model.to(device=device.value)

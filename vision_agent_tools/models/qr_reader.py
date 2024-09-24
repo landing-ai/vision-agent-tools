@@ -73,12 +73,12 @@ class QRReader(BaseMLModel):
                 polygon=Polygon(
                     points=[Point(x=point[0], y=point[1]) for point in meta["quad_xy"]]
                 ),
-                bounding_box=BoundingBox(
-                    x_min=meta["bbox_xyxy"][0],
-                    y_min=meta["bbox_xyxy"][1],
-                    x_max=meta["bbox_xyxy"][2],
-                    y_max=meta["bbox_xyxy"][3],
-                ),
+                bounding_box=[
+                    meta["bbox_xyxy"][0],  # x_min
+                    meta["bbox_xyxy"][1],  # y_min
+                    meta["bbox_xyxy"][2],  # x_max
+                    meta["bbox_xyxy"][3],  # y_max
+                ],
                 center=Point(x=meta["cxcy"][0], y=meta["cxcy"][1]),
             )
             for text, meta in zip(all_text, all_meta)

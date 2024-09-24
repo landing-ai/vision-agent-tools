@@ -6,7 +6,14 @@ from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field, validate_arguments
 from transformers import AutoModelForCausalLM, AutoProcessor
 
-from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
+from vision_agent_tools.shared_types import (
+    BaseMLModel,
+    Device,
+    VideoNumpy,
+    ImageBboxLabel,
+)
+from vision_agent_tools.models.utils import calculate_bbox_iou
+
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"
@@ -64,6 +71,35 @@ class Florencev2(BaseMLModel):
     def _process_video(self, images: VideoNumpy) -> list[Image.Image]:
         return [self._process_image(Image.fromarray(arr)) for arr in images]
 
+    def _dummy_agnostic_nms(
+        self, predictions: list[ImageBboxLabel], nms_threshold: float
+    ) -> list[ImageBboxLabel]:
+        """
+        Applies a dummy agnostic Non-Maximum Suppression (NMS) to filter overlapping predictions.
+
+        Parameters:
+            predictions (list[ImageBboxLabel]): Dictionary of predictions.
+            nms_threshold (float): The IoU threshold value used for NMS.
+
+        Returns:
+            list[ImageBboxLabel]: Filtered predictions after applying NMS.
+        """
+        filtered_predictions: list[ImageBboxLabel] = []
+        prediction_items = predictions
+
+        while prediction_items:
+            best_prediction = prediction_items.pop(0)
+            filtered_predictions.append(best_prediction)
+
+            prediction_items = [
+                pred
+                for pred in prediction_items
+                if calculate_bbox_iou(best_prediction.bounding_box, pred.bounding_box)
+                < nms_threshold
+            ]
+
+        return filtered_predictions
+
     def __init__(self, device: Device | None = Device.GPU) -> None:
         """
         Initializes the Florence-2 model.
@@ -98,6 +134,7 @@ class Florencev2(BaseMLModel):
         video: VideoNumpy | None = None,
         prompt: str | None = "",
         batch_size: Annotated[int, Field(ge=1, le=10)] = 5,
+        nms_threshold: float = 1.0,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
@@ -112,6 +149,8 @@ class Florencev2(BaseMLModel):
             images (List[Image.Image]): A list of images for the model to process. None if using video or a single image
             video (VideoNumpy): A NumPy representation of the video for inference. None if using images.
             prompt (str): An optional text prompt to complement the task.
+            batch_size (int): The batch size used for processing multiple images or video frames.
+            nms_threshold (float): The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
 
         Returns:
             Any: The output of the Florence-2 model based on the provided task, images/video, and prompt. The output type can vary depending on the chosen task.
@@ -144,7 +183,7 @@ class Florencev2(BaseMLModel):
             # Single image processing
             text_input = str(task.value) + prompt
             image = self._process_image(image)
-            results = self._batch_image_call([text_input], [image], task)
+            results = self._batch_image_call([text_input], [image], task, nms_threshold)
             return results[0]
         elif images is not None:
             # Batch processing
@@ -195,6 +234,7 @@ class Florencev2(BaseMLModel):
         text_inputs: List[str],
         images: List[Image.Image],
         task: PromptTask,
+        nms_threshold: float = 1.0,
     ):
         inputs = self._processor(
             text=text_inputs,
@@ -227,6 +267,29 @@ class Florencev2(BaseMLModel):
             parsed_answer = self._processor.post_process_generation(
                 text, task=task, image_size=(img.width, img.height)
             )
+            if (
+                task == PromptTask.OBJECT_DETECTION
+                or task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
+            ):
+                preds = [
+                    ImageBboxLabel(
+                        bounding_box=parsed_answer["bboxes"][i],
+                        label=parsed_answer["labels"][i],
+                    )
+                    for i in range(len(parsed_answer["labels"]))
+                ]
+                filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
+                # format the output to match the original format
+                parsed_answer = {
+                    "bboxes": [
+                        filtered_preds[i].bounding_box
+                        for i in range(len(filtered_preds))
+                    ],
+                    "labels": [
+                        filtered_preds[i].label for i in range(len(filtered_preds))
+                    ],
+                }
+
             results.append(parsed_answer)
         return results
 

@@ -6,6 +6,7 @@ from vision_agent_tools.shared_types import BaseTool, Device
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class SharedModelManager:
     def __init__(self) -> None:
         self.models: Dict[str, BaseTool] = {}  # store models with class name as key
@@ -18,7 +19,9 @@ class SharedModelManager:
         self.gpu_semaphore = asyncio.Semaphore(1)
 
     def add(
-        self, model: BaseTool
+        self,
+        model: BaseTool,
+        device: Device = Device.CPU,
     ) -> str:
         """
         Adds a model to the pool with a device preference.
@@ -32,7 +35,7 @@ class SharedModelManager:
         """
 
         class_name = model.__class__.__name__  # Tool name
-        model_name = model.model    # Model name used by the tool
+        model_name = model.model  # Model name used by the tool
         model_id = f"{class_name}.{model_name}"
 
         if model_id in self.models:
