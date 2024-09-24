@@ -737,7 +737,7 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
 
 
 <h3 id="vision_agent_tools.tools.shared_model_manager.SharedModelManager.add" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">Device</span><span class="o">.</span><span class="n">CPU</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">add</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.tools.shared_model_manager.SharedModelManager.add" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -783,7 +783,7 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
               </div>
             </td>
             <td>
-                  <code><span title="vision_agent_tools.shared_types.Device.CPU">CPU</span></code>
+                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -821,10 +821,6 @@ Models are only loaded into memory when needed using the <code>fetch_model</code
 
 <h3 id="vision_agent_tools.tools.shared_model_manager.SharedModelManager.fetch_model" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">fetch_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
 
 <a href="#vision_agent_tools.tools.shared_model_manager.SharedModelManager.fetch_model" class="headerlink" title="Permanent link">#</a></h3>
 
