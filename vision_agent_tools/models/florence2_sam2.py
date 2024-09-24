@@ -7,10 +7,15 @@ from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
     Device,
-    ImageBboxAndMaskLabel,
+    BboxAndMaskLabel,
+    BboxLabel,
 )
 from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
-from vision_agent_tools.models.utils import calculate_mask_iou, mask_to_bbox
+from vision_agent_tools.models.utils import (
+    calculate_mask_iou,
+    mask_to_bbox,
+    convert_florence_bboxes_to_bbox_labels,
+)
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
@@ -51,28 +56,28 @@ class Florence2SAM2(BaseMLModel):
 
     def _update_reference_predictions(
         self,
-        last_predictions: dict[int, ImageBboxAndMaskLabel],
-        new_predictions: dict[int, ImageBboxAndMaskLabel],
+        last_predictions: dict[int, BboxAndMaskLabel],
+        new_predictions: dict[int, BboxAndMaskLabel],
         objects_count: int,
         iou_threshold: float = 0.8,
-    ) -> tuple[dict[int, ImageBboxAndMaskLabel], int]:
+    ) -> tuple[dict[int, BboxAndMaskLabel], int]:
         """
         Updates the object prediction ids of the 'new_predictions' input to match
         the ids coming from the 'last_predictions' input, by comparing the IoU between
         the two elements.
 
         Parameters:
-        last_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
+        last_predictions (dict[int, BboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the last frame's prediction
             of the video propagation.
-        new_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
+        new_predictions (dict[int, BboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the FlorenceV2 model prediction.
         iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
 
         Returns:
         float: IoU value.
         """
-        new_prediction_objects: dict[int, ImageBboxAndMaskLabel] = {}
+        new_prediction_objects: dict[int, BboxAndMaskLabel] = {}
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
@@ -99,7 +104,7 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image,
         return_mask: bool = True,
         nms_threshold: float = 0.3,
-    ) -> dict[int, ImageBboxAndMaskLabel]:
+    ) -> dict[int, BboxAndMaskLabel]:
         objs = {}
         self.image_predictor.set_image(np.array(image, dtype=np.uint8))
         annotation_id = 0
@@ -110,10 +115,7 @@ class Florence2SAM2(BaseMLModel):
                 prompt=prompt,
                 nms_threshold=nms_threshold,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
-        preds = [
-            {"bbox": preds["bboxes"][i], "label": preds["labels"][i]}
-            for i in range(len(preds["labels"]))
-        ]
+        preds = convert_florence_bboxes_to_bbox_labels(preds)
         if return_mask:
             with torch.autocast(
                 device_type=self._model_config.device, dtype=torch.bfloat16
@@ -121,16 +123,16 @@ class Florence2SAM2(BaseMLModel):
                 masks, _, _ = self.image_predictor.predict(
                     point_coords=None,
                     point_labels=None,
-                    box=[elt["bbox"] for elt in preds],
+                    box=[elt.bbox for elt in preds],
                     multimask_output=False,
                 )
-        for i in range(len(preds)):
-            objs[annotation_id] = ImageBboxAndMaskLabel(
-                bounding_box=preds[i]["bbox"],
+        for i, pred in enumerate(preds):
+            objs[annotation_id] = BboxAndMaskLabel(
+                bbox=pred.bbox,
                 mask=(masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :])
                 if return_mask
                 else None,
-                label=preds[i]["label"],
+                label=pred.label,
             )
             annotation_id += 1
         return objs
@@ -141,7 +143,7 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         image: Image.Image,
         nms_threshold: float = 0.3,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
         objs = self._get_bbox_and_mask(
             prompt, image.convert("RGB"), nms_threshold=nms_threshold
@@ -156,12 +158,12 @@ class Florence2SAM2(BaseMLModel):
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
         nms_threshold: float = 0.3,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         video_shape = video.shape
         num_frames = video_shape[0]
         video_segments = {}
         objects_count = 0
-        last_chunk_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
+        last_chunk_frame_pred: dict[int, BboxAndMaskLabel] = {}
 
         if chunk_length is None:
             chunk_length = num_frames
@@ -185,7 +187,6 @@ class Florence2SAM2(BaseMLModel):
                     objs,
                     objects_count,
                     iou_threshold,
-                    nms_threshold,
                 )
                 self.video_predictor.reset_state(inference_state)
 
@@ -199,7 +200,7 @@ class Florence2SAM2(BaseMLModel):
                         inference_state=inference_state,
                         frame_idx=start_frame_idx,
                         obj_id=annotation_id,
-                        box=updated_objs[annotation_id].bounding_box,
+                        box=updated_objs[annotation_id].bbox,
                     )
                 # Propagate the predictions on the given video segment (chunk)
                 for (
@@ -216,12 +217,10 @@ class Florence2SAM2(BaseMLModel):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
                         if np.max(pred_mask) == 0:
                             continue
-                        video_segments[out_frame_idx][out_obj_id] = (
-                            ImageBboxAndMaskLabel(
-                                label=annotation_id_to_label[out_obj_id],
-                                bounding_box=mask_to_bbox(pred_mask),
-                                mask=pred_mask,
-                            )
+                        video_segments[out_frame_idx][out_obj_id] = BboxAndMaskLabel(
+                            label=annotation_id_to_label[out_obj_id],
+                            bbox=mask_to_bbox(pred_mask),
+                            mask=pred_mask,
                         )
                 index = (
                     start_frame_idx + chunk_length
@@ -244,7 +243,7 @@ class Florence2SAM2(BaseMLModel):
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
         nms_threshold: float = 0.3,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
 

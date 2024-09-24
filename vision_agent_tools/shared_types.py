@@ -3,7 +3,7 @@ from typing import Annotated, Literal, Optional, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from annotated_types import Len
 
 
@@ -69,10 +69,16 @@ class Polygon(BaseModel):
 BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
 
 
-class ImageBboxLabel(BaseModel):
+class BboxLabel(BaseModel):
     label: str
-    bounding_box: BoundingBox = Field(alias="bbox")
+    bbox: BoundingBox
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
-class ImageBboxAndMaskLabel(ImageBboxLabel):
+class BboxAndMaskLabel(BboxLabel):
     mask: SegmentationBitMask | None
+
+    class Config:
+        arbitrary_types_allowed = True

@@ -2,8 +2,9 @@ import os
 import wget
 import gdown
 import os.path as osp
-from vision_agent_tools.shared_types import SegmentationBitMask, BoundingBox
+from vision_agent_tools.shared_types import BoundingBox, SegmentationBitMask, BboxLabel
 import numpy as np
+
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
 CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
@@ -85,3 +86,30 @@ def mask_to_bbox(mask: np.ndarray) -> list[int] | None:
         x_min, x_max = np.min(cols), np.max(cols)
         y_min, y_max = np.min(rows), np.max(rows)
         return [x_min, y_min, x_max, y_max]
+
+
+def convert_florence_bboxes_to_bbox_labels(predictions: dict) -> list[BboxLabel]:
+    """
+    Converts the output of the Florecev2 OD and CAPTION_TO_PHRASE_GROUNDING
+    to a much simpler list of BboxLabel labels
+    """
+    preds = [
+        BboxLabel(
+            bbox=predictions["bboxes"][i],
+            label=predictions["labels"][i],
+        )
+        for i in range(len(predictions["labels"]))
+    ]
+    return preds
+
+
+def convert_bbox_labels_to_florence_bboxes(predictions: list[BboxLabel]) -> dict:
+    """
+    Converts the simpler list of BboxLabel labels  format to the format
+    of Florecev2 OD and CAPTION_TO_PHRASE_GROUNDING task output.
+    """
+    preds = {
+        "bboxes": [predictions[i].bbox for i in range(len(predictions))],
+        "labels": [predictions[i].label for i in range(len(predictions))],
+    }
+    return preds
