@@ -34,19 +34,6 @@ async def test_add_model(model_pool: SharedModelManager):
 
 
 @pytest.mark.asyncio
-async def test_get_model_cpu(model_pool: SharedModelManager):
-    model = MockBaseModel()
-    model.to = MagicMock()
-
-    model_id = model_pool.add(model)
-
-    model_to_get = await model_pool.fetch_model(model_id)
-
-    assert model_to_get is not None
-    assert model_to_get.to.call_count == 0  # No device change for CPU
-
-
-@pytest.mark.asyncio
 async def test_get_model_gpu(model_pool: SharedModelManager):
     model = MockBaseModel()
     model.to = MagicMock()

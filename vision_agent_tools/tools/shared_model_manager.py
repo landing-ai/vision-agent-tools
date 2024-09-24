@@ -18,11 +18,7 @@ class SharedModelManager:
         # Semaphore for exclusive GPU access
         self.gpu_semaphore = asyncio.Semaphore(1)
 
-    def add(
-        self,
-        model: BaseTool,
-        device: Device = Device.CPU,
-    ) -> str:
+    def add(self, model: BaseTool) -> str:
         """
         Adds a model to the pool with a device preference.
 
