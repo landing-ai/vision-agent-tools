@@ -33,27 +33,15 @@ async def test_add_model(model_pool: SharedModelManager):
     assert model_id3 in model_pool.models
     assert model_id3 != model_id
 
-@pytest.mark.asyncio
-async def test_get_model_cpu(model_pool: SharedModelManager):
-    model = MockBaseModel()
-    model.to = MagicMock()
-
-    model_id = model_pool.add(model)
-
-    model_to_get = await model_pool.fetch_model(model_id)
-
-    assert model_to_get is not None
-    assert model_to_get.to.call_count == 0  # No device change for CPU
-
 
 @pytest.mark.asyncio
 async def test_get_model_gpu(model_pool: SharedModelManager):
     model = MockBaseModel()
     model.to = MagicMock()
 
-    model_id = model_pool.add(model, device=Device.GPU)
+    model_id = model_pool.add(model)
 
-    model_to_get = await model_pool.fetch_model(model_id)
+    model_to_get = model_pool.fetch_model(model_id)
 
     assert model_to_get.to.call_count == 1
     model_to_get.to.assert_called_once_with(Device.GPU)  # Verify to was called with GPU
@@ -63,7 +51,7 @@ async def test_get_model_gpu(model_pool: SharedModelManager):
 @pytest.mark.asyncio
 async def test_get_model_not_found(model_pool):
     with pytest.raises(ValueError):
-        await model_pool.fetch_model("NonexistentModel")
+        model_pool.fetch_model("NonexistentModel")
 
 
 @pytest.mark.asyncio
@@ -75,15 +63,15 @@ async def test_swap_model_in_gpu(model_pool: SharedModelManager):
     model_b = MockBaseModel()
     model_b.to = MagicMock()
 
-    model_a_id = model_pool.add(model_a, device=Device.GPU)
-    model_b_id = model_pool.add(model_b, device=Device.GPU)
+    model_a_id = model_pool.add(model_a)
+    model_b_id = model_pool.add(model_b)
 
     # Get Model1 first, should use GPU
-    model1_to_get = await model_pool.fetch_model(model_a_id)
+    model1_to_get = model_pool.fetch_model(model_a_id)
     assert model1_to_get is not None
     assert model_pool._get_current_gpu_model() == model_a_id
 
     # Get Model2, should move Model1 to CPU and use GPU
-    model2_to_get = await model_pool.fetch_model(model_b_id)
+    model2_to_get = model_pool.fetch_model(model_b_id)
     assert model2_to_get is not None
     assert model_pool._get_current_gpu_model() == model_b_id
