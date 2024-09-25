@@ -19,6 +19,22 @@ def test_successful_florencev2_detection():
     assert caption == "A green car parked in front of a yellow building."
 
 
+def test_successful_florencev2_od_detection_with_nms():
+    test_image = "car.jpg"
+    task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+
+    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+
+    florencev2 = Florencev2()
+
+    results = florencev2(image=image, task=task, prompt="car", nms_threshold=0.1)
+    prediction = results[task]
+
+    assert len(prediction["labels"]) == 1
+    assert len(prediction["bboxes"]) == 1
+    assert len(prediction["bboxes"][0]) == 4
+
+
 def test_successful_florencev2_detection_video(random_video_generator):
     video_np = random_video_generator()
     task = PromptTask.CAPTION
