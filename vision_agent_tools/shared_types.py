@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Literal, TypeVar
+from typing import Annotated, Literal, Optional, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -18,7 +18,7 @@ class BaseMLModel:
     This class serves as a common interface for all ML models that can be used within tools.
     """
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, config: Optional[dict] = None):
         self.model = model
 
     def __call__(self):
@@ -34,7 +34,7 @@ class BaseTool:
     Tools are responsible for interfacing with one or more ML models to perform specific tasks.
     """
 
-    def __init__(self, model: str, ):
+    def __init__(self, model: str | BaseMLModel, ):
         self.model = model
 
     def __call__(self):
