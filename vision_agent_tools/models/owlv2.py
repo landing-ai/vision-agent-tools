@@ -2,7 +2,7 @@ from typing import Optional
 import numpy as np
 import torch
 from PIL import Image
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from transformers.utils import TensorType
@@ -30,7 +30,9 @@ class OWLV2Config(BaseModel):
         default=(
             Device.GPU
             if torch.cuda.is_available()
-            else Device.MPS if torch.backends.mps.is_available() else Device.CPU
+            else Device.MPS
+            if torch.backends.mps.is_available()
+            else Device.CPU
         ),
         description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
     )
@@ -66,38 +68,52 @@ class Owlv2(BaseMLModel):
     and bounding boxes for detected objects with confidence exceeding a threshold.
     """
 
-    def __run_inference(self, image, texts, confidence, nms_threshold):
+    def __run_inference(self, images, prompts, confidence, nms_threshold):
+        # Prepare texts for each image
+        texts = [prompts for _ in images]  # List of lists of prompts
+
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
+        inputs = self._processor(text=texts, images=images, return_tensors="pt").to(
             self.model_config.device
         )
+
         # Forward pass
-        with torch.autocast(self.model_config.device):
+        with torch.autocast(device_type=self.model_config.device.value):
             outputs = self._model(**inputs)
 
-        target_sizes = torch.Tensor([image.size[::-1]])
+        # Prepare target_sizes
+        target_sizes = torch.tensor(
+            [img.size[::-1] for img in images], device=self.model_config.device
+        )
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
         results = self._processor.post_process_object_detection_with_nms(
-            outputs=outputs, threshold=confidence, nms_threshold=nms_threshold, target_sizes=target_sizes
-        )
-        i = 0  # given that we are predicting on only one image
-        boxes, scores, labels = (
-            results[i]["boxes"],
-            results[i]["scores"],
-            results[i]["labels"],
+            outputs=outputs,
+            threshold=confidence,
+            nms_threshold=nms_threshold,
+            target_sizes=target_sizes,
         )
 
-        inferences: list[Owlv2InferenceData] = []
-        for box, score, label in zip(boxes, scores, labels):
-            box = [round(i, 2) for i in box.tolist()]
-            inferences.append(
-                Owlv2InferenceData(
-                    label=texts[i][label.item()], score=score.item(), bbox=box
-                )
+        inferences_batch = []
+
+        for i, result in enumerate(results):
+            boxes, scores, labels = (
+                result["boxes"],
+                result["scores"],
+                result["labels"],
             )
 
-        return inferences
+            inferences = []
+            for box, score, label in zip(boxes, scores, labels):
+                box = [round(b.item(), 2) for b in box]
+                inferences.append(
+                    Owlv2InferenceData(
+                        label=prompts[label.item()], score=score.item(), bbox=box
+                    )
+                )
+            inferences_batch.append(inferences)
+
+        return inferences_batch
 
     def __init__(self, model_config: Optional[OWLV2Config] = None):
         """
@@ -137,7 +153,6 @@ class Owlv2(BaseMLModel):
                                                with confidence exceeding the threshold. Returns None if no objects
                                                are detected above the confidence threshold.
         """
-        texts = [prompts]
 
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
@@ -146,29 +161,23 @@ class Owlv2(BaseMLModel):
 
         if image is not None:
             image = image.convert("RGB")
-            inferences = []
-            inferences.append(
-                self.__run_inference(
-                    image=image,
-                    texts=texts,
-                    confidence=self.model_config.confidence,
-                    nms_threshold=self.model_config.nms_threshold,
-                )
+            images = [image]
+            inferences = self.__run_inference(
+                images=images,
+                prompts=prompts,
+                confidence=self.model_config.confidence,
+                nms_threshold=self.model_config.nms_threshold,
             )
+            return inferences  # Return the inference data for the single image
         if video is not None:
-            inferences = []
-            for frame in video:
-                image = Image.fromarray(frame).convert("RGB")
-                inferences.append(
-                    self.__run_inference(
-                        image=image,
-                        texts=texts,
-                        confidence=self.model_config.confidence,
-                        nms_threshold=self.model_config.nms_threshold,
-                    )
-                )
-
-        return inferences
+            images = [Image.fromarray(frame).convert("RGB") for frame in video]
+            inferences = self.__run_inference(
+                images=images,
+                prompts=prompts,
+                confidence=self.model_config.confidence,
+                nms_threshold=self.model_config.nms_threshold,
+            )
+            return inferences
 
     def to(self, device: Device):
         self._model.to(device=device.value)
@@ -176,7 +185,11 @@ class Owlv2(BaseMLModel):
 
 class Owlv2ProcessorWithNMS(Owlv2Processor):
     def post_process_object_detection_with_nms(
-        self, outputs, threshold: float = 0.1,  nms_threshold: float = 0.3,  target_sizes: Union[TensorType, List[Tuple]] = None
+        self,
+        outputs,
+        threshold: float = 0.1,
+        nms_threshold: float = 0.3,
+        target_sizes: Union[TensorType, List[Tuple]] = None,
     ):
         """
         Converts the raw output of [`OwlViTForObjectDetection`] into final bounding boxes in (top_left_x, top_left_y,
@@ -199,21 +212,21 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
         logits, boxes = outputs.logits, outputs.pred_boxes
 
         if target_sizes is not None:
-            if len(logits) != len(target_sizes):
-                raise ValueError(
-                    "Make sure that you pass in as many target sizes as the batch dimension of the logits"
-                )
+            if isinstance(target_sizes, list):
+                img_h = torch.Tensor([i[0] for i in target_sizes]).to(boxes.device)
+                img_w = torch.Tensor([i[1] for i in target_sizes]).to(boxes.device)
+            else:
+                img_h, img_w = target_sizes.unbind(1)
 
+        # Get the max logits and corresponding labels
         probs = torch.max(logits, dim=-1)
         scores = torch.sigmoid(probs.values)
         labels = probs.indices
 
-        # Convert to [x0, y0, x1, y1] format
+        # Convert boxes from center format to corner format ([x0, y0, x1, y1])
         boxes = center_to_corners_format(boxes)
 
         # Apply non-maximum suppression (NMS)
-        # borrowed the implementation from HuggingFace Owlv2 post_process_image_guided_detection()
-        # https://github.com/huggingface/transformers/blob/main/src/transformers/models/owlv2/image_processing_owlv2.py#L563-L573
         if nms_threshold < 1.0:
             for idx in range(boxes.shape[0]):
                 for i in torch.argsort(-scores[idx]):
@@ -223,34 +236,20 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
                     ious[i] = -1.0  # Mask self-IoU.
                     scores[idx][ious > nms_threshold] = 0.0
 
-        # Convert from relative [0, 1] to absolute [0, height] coordinates
+        # Scale boxes to absolute coordinates
         if target_sizes is not None:
-            if isinstance(target_sizes, List):
-                img_h = torch.Tensor([i[0] for i in target_sizes])
-                img_w = torch.Tensor([i[1] for i in target_sizes])
-            else:
-                img_h, img_w = target_sizes.unbind(1)
-
-            # rescale coordinates
-            width_ratio = 1
-            height_ratio = 1
-
-            if img_w < img_h:
-                width_ratio = img_w / img_h
-            elif img_h < img_w:
-                height_ratio = img_h / img_w
-
-            img_w = img_w / width_ratio
-            img_h = img_h / height_ratio
-
-            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(boxes.device)
+            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(
+                boxes.device
+            )
             boxes = boxes * scale_fct[:, None, :]
 
         results = []
-        for s, l, b in zip(scores, labels, boxes):
-            score = s[s > threshold]
-            label = l[s > threshold]
-            box = b[s > threshold]
+        for score, label, box in zip(scores, labels, boxes):
+            valid_mask = score > threshold
+            score = score[valid_mask]
+            label = label[valid_mask]
+            box = box[valid_mask]
+
             results.append({"scores": score, "labels": label, "boxes": box})
 
         return results
