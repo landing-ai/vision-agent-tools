@@ -73,7 +73,7 @@ class Florencev2(BaseMLModel):
             PROCESSOR_NAME, trust_remote_code=True
         )
 
-        if device == None:
+        if device is None:
             self.device = (
                 "cuda"
                 if torch.cuda.is_available()
@@ -94,6 +94,7 @@ class Florencev2(BaseMLModel):
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         prompt: str | None = "",
+        batch_size: int = 5,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
@@ -151,7 +152,19 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             text_inputs = [text_input] * num_images
 
-            return self._batch_image_call(text_inputs, images_list, task)
+            results = []
+
+            # Split images and text_inputs into batches
+            for i in range(0, num_images, batch_size):
+                batch_images = images_list[i : i + batch_size]
+                batch_text_inputs = text_inputs[i : i + batch_size]
+                batch_results = self._batch_image_call(
+                    batch_text_inputs, batch_images, task
+                )
+                results.extend(batch_results)
+
+            return results
+
         elif video is not None:
             # Process video frames
             images_list = self._process_video(video)
@@ -161,7 +174,18 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             text_inputs = [text_input] * num_images
 
-            return self._batch_image_call(text_inputs, images_list, task)
+            results = []
+
+            # Split frames and text_inputs into batches
+            for i in range(0, num_images, batch_size):
+                batch_images = images_list[i : i + batch_size]
+                batch_text_inputs = text_inputs[i : i + batch_size]
+                batch_results = self._batch_image_call(
+                    batch_text_inputs, batch_images, task
+                )
+                results.extend(batch_results)
+
+            return results
 
     def _batch_image_call(
         self,
