@@ -34,7 +34,7 @@ def test_successful_video_detection():
         frames.append(frame)
     cap.release()
 
-    owlv2 = Owlv2()
+    owlv2 = Owlv2(model_config=OWLV2Config(max_batch_size=2))
     results = owlv2(prompts=prompts, video=frames)
     assert len(results) > 0
 

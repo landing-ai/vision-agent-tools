@@ -153,6 +153,7 @@ class Owlv2(BaseMLModel):
             prompts (list[str]): A list of prompts to be used during inference.
                                   Currently, only one prompt is supported (list length of 1).
             video (Optional[VideoNumpy]: The input video for object detection.
+            batch_size (Optional[int]): Number of frames to process in a single batch. Defaults to model's max_batch_size.
 
         Returns:
             Optional[list[Owlv2InferenceData]]: A list of `Owlv2InferenceData` objects containing the predicted
@@ -160,6 +161,8 @@ class Owlv2(BaseMLModel):
                                                with confidence exceeding the threshold. Returns None if no objects
                                                are detected above the confidence threshold.
         """
+        if batch_size is None:
+            batch_size = self.model_config.max_batch_size
 
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
