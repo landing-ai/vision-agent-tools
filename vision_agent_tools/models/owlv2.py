@@ -1,3 +1,5 @@
+import logging
+import time
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -10,6 +12,9 @@ from transformers.models.owlv2.image_processing_owlv2 import box_iou
 from transformers.utils import TensorType
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class OWLV2Config(BaseModel):
@@ -136,6 +141,9 @@ class Owlv2(BaseMLModel):
         )
         self._model.to(self.model_config.device)
         self._model.eval()
+        logger.info(
+            f"Initialized Owlv2 model '{self.model_config.model_name}' on device '{self.model_config.device.value}'."
+        )
 
     @torch.inference_mode()
     def __call__(
@@ -172,6 +180,7 @@ class Owlv2(BaseMLModel):
         if image is not None:
             image = image.convert("RGB")
             images = [image]
+            logger.info(f"Processing a single image with prompts: {prompts}")
             inferences = self.__run_inference(
                 images=images,
                 prompts=prompts,
@@ -181,19 +190,33 @@ class Owlv2(BaseMLModel):
             return inferences  # Return the inference data for the single image
         if video is not None:
             images = [Image.fromarray(frame).convert("RGB") for frame in video]
+            total_frames = len(images)
+            logger.info(
+                f"Processing video with {total_frames} frames using batch size {batch_size}."
+            )
             inferences = []
 
             # Split images into batches
-            for i in range(0, len(images), batch_size):
+            for batch_index, i in enumerate(range(0, total_frames, batch_size)):
                 batch_images = images[i : i + batch_size]
+                logger.info(
+                    f"Processing batch {batch_index + 1}/{(total_frames + batch_size - 1) // batch_size} with {len(batch_images)} frames."
+                )
+                start_time = time.time()
                 batch_inferences = self.__run_inference(
                     images=batch_images,
                     prompts=prompts,
                     confidence=self.model_config.confidence,
                     nms_threshold=self.model_config.nms_threshold,
                 )
+                end_time = time.time()
+                batch_time = end_time - start_time
+                logger.info(
+                    f"Processed batch {batch_index + 1} in {batch_time:.2f} seconds."
+                )
                 inferences.extend(batch_inferences)
 
+            logger.info(f"Completed processing of {total_frames} frames.")
             return inferences  # Return a list of inference data for each frame
 
     def to(self, device: Device):

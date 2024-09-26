@@ -7,7 +7,7 @@ install:
 	bash ./scripts/install.sh
 
 test:
-	$(POETRY) run pytest -x -vvvv tests
+	$(POETRY) run pytest -x -vvvv --log-cli-level=INFO tests
 
 serve/docs:
 	# Start the documentation server
