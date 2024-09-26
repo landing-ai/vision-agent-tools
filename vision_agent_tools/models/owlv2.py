@@ -1,13 +1,14 @@
-from typing import Optional
+from typing import List, Optional, Tuple, Union
+
 import numpy as np
 import torch
 from PIL import Image
-from typing import List, Tuple, Union
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
-from transformers.utils import TensorType
 from transformers.image_transforms import center_to_corners_format
 from transformers.models.owlv2.image_processing_owlv2 import box_iou
+from transformers.utils import TensorType
+
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 
 
@@ -41,6 +42,11 @@ class OWLV2Config(BaseModel):
         ge=0.0,
         le=1.0,
         description="IoU threshold for non-maximum suppression of overlapping boxes",
+    )
+    max_batch_size: int = Field(
+        default=3,
+        ge=1,
+        description="Maximum number of images to process in a single batch.",
     )
 
 
@@ -137,6 +143,7 @@ class Owlv2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
+        batch_size: int = 3,
     ) -> list[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
@@ -171,13 +178,20 @@ class Owlv2(BaseMLModel):
             return inferences  # Return the inference data for the single image
         if video is not None:
             images = [Image.fromarray(frame).convert("RGB") for frame in video]
-            inferences = self.__run_inference(
-                images=images,
-                prompts=prompts,
-                confidence=self.model_config.confidence,
-                nms_threshold=self.model_config.nms_threshold,
-            )
-            return inferences
+            inferences = []
+
+            # Split images into batches
+            for i in range(0, len(images), batch_size):
+                batch_images = images[i : i + batch_size]
+                batch_inferences = self.__run_inference(
+                    images=batch_images,
+                    prompts=prompts,
+                    confidence=self.model_config.confidence,
+                    nms_threshold=self.model_config.nms_threshold,
+                )
+                inferences.extend(batch_inferences)
+
+            return inferences  # Return a list of inference data for each frame
 
     def to(self, device: Device):
         self._model.to(device=device.value)

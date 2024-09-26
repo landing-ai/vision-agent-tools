@@ -1,18 +1,7 @@
-import gc
-
 import cv2
-import pytest
-import torch
 from PIL import Image
 
 from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
-
-
-@pytest.fixture(autouse=True)
-def clear_gpu_memory():
-    yield
-    torch.cuda.empty_cache()
-    gc.collect()
 
 
 def test_successful_image_detection():
