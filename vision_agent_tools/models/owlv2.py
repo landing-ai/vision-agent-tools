@@ -151,7 +151,7 @@ class Owlv2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-        batch_size: int = 3,
+        batch_size: int | None = None,
     ) -> list[list[Owlv2InferenceData]]:
         """
         Performs object detection on an image using the Owlv2 model.
