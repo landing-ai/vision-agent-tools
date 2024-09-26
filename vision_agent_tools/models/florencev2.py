@@ -94,7 +94,7 @@ class Florencev2(BaseMLModel):
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         prompt: str | None = "",
-        batch_size: int = 3,
+        batch_size: int = 5,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
