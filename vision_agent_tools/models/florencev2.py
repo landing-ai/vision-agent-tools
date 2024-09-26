@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, List
+from typing import Annotated, Any, List
 
 import torch
 from PIL import Image
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, validate_arguments
 from transformers import AutoModelForCausalLM, AutoProcessor
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
@@ -56,6 +56,8 @@ class Florencev2(BaseMLModel):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
+    config = ConfigDict(arbitrary_types_allowed=True)
+
     def _process_image(self, image: Image.Image) -> Image.Image:
         return image.convert("RGB")
 
@@ -87,6 +89,7 @@ class Florencev2(BaseMLModel):
         self._model.eval()
 
     @torch.inference_mode()
+    @validate_arguments(config=config)
     def __call__(
         self,
         task: PromptTask,
@@ -94,7 +97,7 @@ class Florencev2(BaseMLModel):
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         prompt: str | None = "",
-        batch_size: int = 5,
+        batch_size: Annotated[int, Field(ge=1, le=10)] = 5,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.

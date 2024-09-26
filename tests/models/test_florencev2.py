@@ -1,4 +1,6 @@
+import pytest
 from PIL import Image
+from pydantic import ValidationError
 
 from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
@@ -43,3 +45,17 @@ def test_batch_ocr():
     assert results[0][task] == "HOWARD JACOBSONREDBACK"
     assert results[1][task] == "Panasync E70"
     assert results[2][task] == "conditions"
+
+
+def test_batch_size_validation():
+    model = Florencev2()
+    task = PromptTask.OCR
+    image = Image.new("RGB", (224, 224))
+
+    # List of invalid batch_size values (less than 1 and greater than 10)
+    invalid_batch_sizes = [0, -1, 11, 15]
+
+    for invalid_batch_size in invalid_batch_sizes:
+        with pytest.raises(ValidationError):
+            res = model(task=task, image=image, batch_size=invalid_batch_size)
+            print(res)
