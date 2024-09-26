@@ -77,3 +77,7 @@ class SharedModelManager:
         Returns the class name of the model currently using the GPU (if any).
         """
         return self.current_gpu_model
+
+    def to(self, device: Device):
+        self.model.to(device)
+        return self

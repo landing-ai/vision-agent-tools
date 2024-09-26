@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
 from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.shared_types import BaseTool, VideoNumpy
+from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
 
@@ -187,3 +187,7 @@ class TextToObjectDetection(BaseTool):
         results.append(res)
 
         return results
+
+    def to(self, device: Device):
+        self.model.to(device)
+        return self
