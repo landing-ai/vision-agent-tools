@@ -34,6 +34,10 @@ def test_successful_video_detection():
         frames.append(frame)
     cap.release()
 
+    # Set the batch size to 2 for testing in GitHub Actions to prevent
+    # exceeding GPU memory limits.
+    # Larger batch sizes may cause memory allocation errors due to limited GPU
+    # resources in the CI environment.
     owlv2 = Owlv2(model_config=OWLV2Config(max_batch_size=2))
     results = owlv2(prompts=prompts, video=frames)
     assert len(results) > 0
