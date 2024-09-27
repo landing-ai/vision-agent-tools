@@ -6,7 +6,7 @@ from vision_agent_tools.tools.text_to_object_detection import (
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
 
-def test_successful_text_to_object_detection():
+def test_successful_text_to_object_detection_owlv2():
     test_image = "000000039769.jpg"
     prompts = ["a photo of a cat", "a photo of a dog"]
 
@@ -19,6 +19,28 @@ def test_successful_text_to_object_detection():
 
     for pred in output[0]:
         assert pred.label == "a photo of a cat"
+
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
+    output = tool(image=image, prompts=prompts)[0].output
+
+    assert len(output) > 0
+
+    assert "cat" in [pred.label for pred in output[0]]
+
+
+def test_successful_text_to_object_detection_florencev2():
+    test_image = "000000039769.jpg"
+    prompts = ["cat", "dog"]
+
+    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
+
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
+    output = tool(image=image, prompts=prompts)[0].output
+
+    assert len(output) > 0
+
+    for pred in output[0]:
+        assert pred.label == "cat"
 
     tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
     output = tool(image=image, prompts=prompts)[0].output
