@@ -2,13 +2,13 @@ import torch
 import numpy as np
 from PIL import Image
 from pydantic import BaseModel, validate_call, Field
+from typing import Annotated
 
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
     Device,
     BboxAndMaskLabel,
-    BboxLabel,
 )
 from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.models.utils import (
@@ -103,7 +103,7 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         image: Image.Image,
         return_mask: bool = True,
-        nms_threshold: float = 0.3,
+        nms_threshold: float = 1.0,
     ) -> dict[int, BboxAndMaskLabel]:
         objs = {}
         self.image_predictor.set_image(np.array(image, dtype=np.uint8))
@@ -142,7 +142,7 @@ class Florence2SAM2(BaseMLModel):
         self,
         prompt: str,
         image: Image.Image,
-        nms_threshold: float = 0.3,
+        nms_threshold: float = 1.0,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
         objs = self._get_bbox_and_mask(
@@ -157,7 +157,7 @@ class Florence2SAM2(BaseMLModel):
         video: VideoNumpy,
         chunk_length: int | None = 20,
         iou_threshold: float = 0.8,
-        nms_threshold: float = 0.3,
+        nms_threshold: float = 1.0,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         video_shape = video.shape
         num_frames = video_shape[0]
@@ -241,8 +241,8 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
-        iou_threshold: float = 0.8,
-        nms_threshold: float = 0.3,
+        iou_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 0.8,
+        nms_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 1.0,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.

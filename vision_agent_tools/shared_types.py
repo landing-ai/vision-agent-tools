@@ -3,7 +3,7 @@ from typing import Annotated, Literal, Optional, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from annotated_types import Len
 
 
@@ -71,10 +71,13 @@ BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
 
 class BboxLabel(BaseModel):
     label: str
-    bbox: BoundingBox
+    score: float
+    bbox: BoundingBox = Field(alias="bounding_box")
+
 
     class Config:
         arbitrary_types_allowed = True
+        populate_by_name = True
 
 
 class BboxAndMaskLabel(BboxLabel):
@@ -82,3 +85,4 @@ class BboxAndMaskLabel(BboxLabel):
 
     class Config:
         arbitrary_types_allowed = True
+        populate_by_name = True

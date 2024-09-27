@@ -138,7 +138,7 @@ class Florencev2(BaseMLModel):
         video: VideoNumpy | None = None,
         prompt: str | None = "",
         batch_size: Annotated[int, Field(ge=1, le=10)] = 5,
-        nms_threshold: float = 1.0,
+        nms_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 1.0,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
