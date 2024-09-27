@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List
 from typing import Annotated
 from annotated_types import Len
 
@@ -133,16 +132,16 @@ class TextToObjectDetection(BaseTool):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> List[TextToObjectDetectionResponse]:
+    ) -> list[TextToObjectDetectionResponse]:
         """
         Run object detection on the image based on text prompts.
 
         Args:
             image (Image.Image): The input image for object detection.
-            prompts (List[str]): List of text prompts for object detection.
+            prompts (list[str]): list of text prompts for object detection.
 
         Returns:
-            List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
+            list[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
         results = []
         prediction: list[list[ODResponseData]] = []
