@@ -20,13 +20,6 @@ def test_successful_text_to_object_detection_owlv2():
     for pred in output[0]:
         assert pred.label == "a photo of a cat"
 
-    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
-    output = tool(image=image, prompts=prompts)[0].output
-
-    assert len(output) > 0
-
-    assert "cat" in [pred.label for pred in output[0]]
-
 
 def test_successful_text_to_object_detection_florencev2():
     test_image = "000000039769.jpg"
@@ -42,12 +35,6 @@ def test_successful_text_to_object_detection_florencev2():
     for pred in output[0]:
         assert pred.label == "cat"
 
-    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
-    output = tool(image=image, prompts=prompts)[0].output
-
-    assert len(output) > 0
-
-    assert "cat" in [pred.label for pred in output[0]]
 
 
 def test_successful_text_to_object_detection_custom_confidence():
