@@ -130,7 +130,7 @@ class TextToObjectDetection(BaseTool):
 
     def __call__(
         self,
-        prompts: List[str],
+        prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
     ) -> List[TextToObjectDetectionResponse]:
