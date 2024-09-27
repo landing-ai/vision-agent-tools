@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Any, List
+from typing import Annotated, Any, List
 
 import torch
 from PIL import Image
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, validate_arguments
 from transformers import AutoModelForCausalLM, AutoProcessor
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
@@ -56,6 +56,8 @@ class Florencev2(BaseMLModel):
     NOTE: The Florence-2 model can only be used in GPU environments.
     """
 
+    config = ConfigDict(arbitrary_types_allowed=True)
+
     def _process_image(self, image: Image.Image) -> Image.Image:
         return image.convert("RGB")
 
@@ -73,7 +75,7 @@ class Florencev2(BaseMLModel):
             PROCESSOR_NAME, trust_remote_code=True
         )
 
-        if device == None:
+        if device is None:
             self.device = (
                 "cuda"
                 if torch.cuda.is_available()
@@ -87,6 +89,7 @@ class Florencev2(BaseMLModel):
         self._model.eval()
 
     @torch.inference_mode()
+    @validate_arguments(config=config)
     def __call__(
         self,
         task: PromptTask,
@@ -94,6 +97,7 @@ class Florencev2(BaseMLModel):
         images: List[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         prompt: str | None = "",
+        batch_size: Annotated[int, Field(ge=1, le=10)] = 5,
     ) -> Any:
         """
         Performs inference on the Florence-2 model based on the provided task, images, video (optional), and prompt.
@@ -151,7 +155,19 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             text_inputs = [text_input] * num_images
 
-            return self._batch_image_call(text_inputs, images_list, task)
+            results = []
+
+            # Split images and text_inputs into batches
+            for i in range(0, num_images, batch_size):
+                batch_images = images_list[i : i + batch_size]
+                batch_text_inputs = text_inputs[i : i + batch_size]
+                batch_results = self._batch_image_call(
+                    batch_text_inputs, batch_images, task
+                )
+                results.extend(batch_results)
+
+            return results
+
         elif video is not None:
             # Process video frames
             images_list = self._process_video(video)
@@ -161,7 +177,18 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             text_inputs = [text_input] * num_images
 
-            return self._batch_image_call(text_inputs, images_list, task)
+            results = []
+
+            # Split frames and text_inputs into batches
+            for i in range(0, num_images, batch_size):
+                batch_images = images_list[i : i + batch_size]
+                batch_text_inputs = text_inputs[i : i + batch_size]
+                batch_results = self._batch_image_call(
+                    batch_text_inputs, batch_images, task
+                )
+                results.extend(batch_results)
+
+            return results
 
     def _batch_image_call(
         self,
