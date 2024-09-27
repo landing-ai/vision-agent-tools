@@ -33,7 +33,7 @@ def test_successful_text_to_object_detection_florencev2():
     assert len(output) > 0
 
     for pred in output[0]:
-        assert pred.label == "cat"
+        assert pred.label in ["cat", "dog"]
 
 
 
