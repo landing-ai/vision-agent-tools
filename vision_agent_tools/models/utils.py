@@ -97,6 +97,7 @@ def convert_florence_bboxes_to_bbox_labels(predictions: dict) -> list[BboxLabel]
         BboxLabel(
             bbox=predictions["bboxes"][i],
             label=predictions["labels"][i],
+            score=1.0
         )
         for i in range(len(predictions["labels"]))
     ]

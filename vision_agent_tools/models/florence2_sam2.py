@@ -59,7 +59,7 @@ class Florence2SAM2(BaseMLModel):
         last_predictions: dict[int, BboxAndMaskLabel],
         new_predictions: dict[int, BboxAndMaskLabel],
         objects_count: int,
-        iou_threshold: float = 0.8,
+        iou_threshold: float = 0.6,
     ) -> tuple[dict[int, BboxAndMaskLabel], int]:
         """
         Updates the object prediction ids of the 'new_predictions' input to match
@@ -133,6 +133,7 @@ class Florence2SAM2(BaseMLModel):
                 if return_mask
                 else None,
                 label=pred.label,
+                score=1.0,
             )
             annotation_id += 1
         return objs
@@ -156,7 +157,7 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         video: VideoNumpy,
         chunk_length: int | None = 20,
-        iou_threshold: float = 0.8,
+        iou_threshold: float = 0.6,
         nms_threshold: float = 1.0,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         video_shape = video.shape
@@ -221,6 +222,7 @@ class Florence2SAM2(BaseMLModel):
                             label=annotation_id_to_label[out_obj_id],
                             bbox=mask_to_bbox(pred_mask),
                             mask=pred_mask,
+                            score=1.0,
                         )
                 index = (
                     start_frame_idx + chunk_length
@@ -241,7 +243,7 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
-        iou_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 0.8,
+        iou_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 0.6,
         nms_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 1.0,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         """

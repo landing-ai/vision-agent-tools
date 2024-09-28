@@ -23,7 +23,7 @@ class TextToInstanceSegmentationTool(BaseTool):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
-        iou_threshold: float = 0.8,
+        iou_threshold: float = 0.6,
     ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
