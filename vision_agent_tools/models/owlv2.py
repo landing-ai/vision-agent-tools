@@ -1,5 +1,3 @@
-import torch
-import torch.profiler
 import logging
 import time
 from typing import List, Optional, Tuple, Union
@@ -10,6 +8,7 @@ from PIL import Image
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from transformers.image_transforms import center_to_corners_format
+from transformers.models.owlv2.image_processing_owlv2 import box_iou
 from transformers.utils import TensorType
 
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
@@ -82,26 +81,16 @@ class Owlv2(BaseMLModel):
 
     def __run_inference(self, images, prompts, confidence, nms_threshold):
         # Prepare texts for each image
-        prep_start = time.time()
-        texts = [prompts] * len(images)  # List of lists of prompts
+        texts = [prompts for _ in images]  # List of lists of prompts
 
         # Run model inference here
-        inputs = self._processor(
-            text=texts, images=images, return_tensors="pt", padding=True
-        ).to(self.model_config.device)
-        prep_end = time.time()
-        logger.info(f"Input preparation time: {prep_end - prep_start:.4f} seconds")
-
-        logger.info(f"Input pixel_values shape: {inputs['pixel_values'].shape}")
-        logger.info(f"Input input_ids shape: {inputs['input_ids'].shape}")
-        logger.info(f"Input attention_mask shape: {inputs['attention_mask'].shape}")
+        inputs = self._processor(text=texts, images=images, return_tensors="pt").to(
+            self.model_config.device
+        )
 
         # Forward pass
-        infer_start = time.time()
         with torch.autocast(device_type=self.model_config.device.value):
             outputs = self._model(**inputs)
-        infer_end = time.time()
-        logger.info(f"Model inference time: {infer_end - infer_start:.4f} seconds")
 
         # Prepare target_sizes
         target_sizes = torch.tensor(
@@ -109,15 +98,12 @@ class Owlv2(BaseMLModel):
         )
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
-        post_start = time.time()
         results = self._processor.post_process_object_detection_with_nms(
             outputs=outputs,
             threshold=confidence,
             nms_threshold=nms_threshold,
             target_sizes=target_sizes,
         )
-        post_end = time.time()
-        logger.info(f"Post-processing time: {post_end - post_start:.4f} seconds")
 
         inferences_batch = []
 
@@ -137,9 +123,6 @@ class Owlv2(BaseMLModel):
                     )
                 )
             inferences_batch.append(inferences)
-
-        total_time = post_end - prep_start
-        logger.info(f"Total inference time: {total_time:.4f} seconds")
 
         return inferences_batch
 
@@ -213,45 +196,27 @@ class Owlv2(BaseMLModel):
             )
             inferences = []
 
-            start_time = time.time()
-
             # Split images into batches
-            # with torch.profiler.profile(
-            #         activities=[
-            #             torch.profiler.ProfilerActivity.CPU,
-            #             torch.profiler.ProfilerActivity.CUDA,
-            #         ],
-            #         record_shapes=True,
-            #         profile_memory=True,
-            #         with_stack=True,
-            #     ) as prof:
-
             for batch_index, i in enumerate(range(0, total_frames, batch_size)):
                 batch_images = images[i : i + batch_size]
-                logger.debug(
+                logger.info(
                     f"Processing batch {batch_index + 1}/{(total_frames + batch_size - 1) // batch_size} with {len(batch_images)} frames."
                 )
-                batch_start_time = time.time()
-
+                start_time = time.time()
                 batch_inferences = self.__run_inference(
                     images=batch_images,
                     prompts=prompts,
                     confidence=self.model_config.confidence,
                     nms_threshold=self.model_config.nms_threshold,
                 )
-
                 end_time = time.time()
-                batch_time = end_time - batch_start_time
-                logger.debug(
+                batch_time = end_time - start_time
+                logger.info(
                     f"Processed batch {batch_index + 1} in {batch_time:.2f} seconds."
                 )
                 inferences.extend(batch_inferences)
-            # logger.info(prof.key_averages().table(sort_by="cuda_time_total", row_limit=20))
 
-            total_time = time.time() - start_time
-            logger.info(
-                f"Completed processing of {total_frames} frames in {total_time}s."
-            )
+            logger.info(f"Completed processing of {total_frames} frames.")
             return inferences  # Return a list of inference data for each frame
 
     def to(self, device: Device):
@@ -259,63 +224,6 @@ class Owlv2(BaseMLModel):
 
 
 class Owlv2ProcessorWithNMS(Owlv2Processor):
-    def nms(self, boxes, scores, iou_threshold):
-        """
-        Performs Non-Maximum Suppression (NMS) on the bounding boxes.
-
-        Args:
-            boxes (Tensor[N, 4]): Bounding boxes in (x1, y1, x2, y2) format.
-            scores (Tensor[N]): Scores for each bounding box.
-            iou_threshold (float): IoU threshold for suppression.
-
-        Returns:
-            keep (Tensor): Indices of bounding boxes to keep.
-        """
-        # Ensure boxes and scores are tensors
-        boxes = boxes.to(device=boxes.device)
-        scores = scores.to(device=boxes.device)
-
-        # Compute areas of boxes
-        x1 = boxes[:, 0]  # xmin
-        y1 = boxes[:, 1]  # ymin
-        x2 = boxes[:, 2]  # xmax
-        y2 = boxes[:, 3]  # ymax
-
-        areas = (x2 - x1) * (y2 - y1)
-
-        # Sort the detections by score in descending order
-        order = scores.argsort(descending=True)
-
-        keep = []
-
-        while order.numel() > 0:
-            idx_self = order[0].item()
-            keep.append(idx_self)
-
-            if order.numel() == 1:
-                break
-
-            idx_other = order[1:]
-
-            # Compute IoU between the highest-scoring box and the rest
-            xx1 = torch.max(x1[idx_self], x1[idx_other])
-            yy1 = torch.max(y1[idx_self], y1[idx_other])
-            xx2 = torch.min(x2[idx_self], x2[idx_other])
-            yy2 = torch.min(y2[idx_self], y2[idx_other])
-
-            inter_w = (xx2 - xx1).clamp(min=0)
-            inter_h = (yy2 - yy1).clamp(min=0)
-            inter_area = inter_w * inter_h
-
-            union_area = areas[idx_self] + areas[idx_other] - inter_area
-            iou = inter_area / union_area
-
-            # Keep boxes with IoU less than the threshold
-            mask = iou <= iou_threshold
-            order = order[1:][mask]
-
-        return torch.tensor(keep, device=boxes.device)
-
     def post_process_object_detection_with_nms(
         self,
         outputs,
@@ -323,49 +231,64 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
         nms_threshold: float = 0.3,
         target_sizes: Union[TensorType, List[Tuple]] = None,
     ):
+        """
+        Converts the raw output of [`OwlViTForObjectDetection`] into final bounding boxes in (top_left_x, top_left_y,
+        bottom_right_x, bottom_right_y) format.
+
+        Args:
+            outputs ([`OwlViTObjectDetectionOutput`]):
+                Raw outputs of the model.
+            threshold (`float`, *optional*):
+                Score threshold to keep object detection predictions.
+            nms_threshold (`float`, *optional*):
+                IoU threshold to filter overlapping objects the raw detections.
+            target_sizes (`torch.Tensor` or `List[Tuple[int, int]]`, *optional*):
+                Tensor of shape `(batch_size, 2)` or list of tuples (`Tuple[int, int]`) containing the target size
+                `(height, width)` of each image in the batch. If unset, predictions will not be resized.
+        Returns:
+            `List[Dict]`: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
+            in the batch as predicted by the model.
+        """
         logits, boxes = outputs.logits, outputs.pred_boxes
 
-        # Compute probabilities and labels
+        if target_sizes is not None:
+            if isinstance(target_sizes, list):
+                img_h = torch.Tensor([i[0] for i in target_sizes]).to(boxes.device)
+                img_w = torch.Tensor([i[1] for i in target_sizes]).to(boxes.device)
+            else:
+                img_h, img_w = target_sizes.unbind(1)
+
+        # Get the max logits and corresponding labels
         probs = torch.max(logits, dim=-1)
         scores = torch.sigmoid(probs.values)
         labels = probs.indices
 
-        # Convert boxes from center format to corner format
+        # Convert boxes from center format to corner format ([x0, y0, x1, y1])
         boxes = center_to_corners_format(boxes)
+
+        # Apply non-maximum suppression (NMS)
+        if nms_threshold < 1.0:
+            for idx in range(boxes.shape[0]):
+                for i in torch.argsort(-scores[idx]):
+                    if not scores[idx][i]:
+                        continue
+                    ious = box_iou(boxes[idx][i, :].unsqueeze(0), boxes[idx])[0][0]
+                    ious[i] = -1.0  # Mask self-IoU.
+                    scores[idx][ious > nms_threshold] = 0.0
 
         # Scale boxes to absolute coordinates
         if target_sizes is not None:
-            if isinstance(target_sizes, list):
-                target_sizes = torch.tensor(target_sizes, device=boxes.device)
-            img_h, img_w = target_sizes.unbind(1)
-            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1)[:, None, :]
-            boxes = boxes * scale_fct
+            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(
+                boxes.device
+            )
+            boxes = boxes * scale_fct[:, None, :]
 
         results = []
-        batch_size = logits.shape[0]
-        for idx in range(batch_size):
-            score = scores[idx]
-            label = labels[idx]
-            box = boxes[idx]
-
-            # Apply confidence threshold
+        for score, label, box in zip(scores, labels, boxes):
             valid_mask = score > threshold
             score = score[valid_mask]
             label = label[valid_mask]
             box = box[valid_mask]
-
-            if box.numel() == 0:
-                results.append({"scores": score, "labels": label, "boxes": box})
-                continue
-
-            # Apply NMS per image
-            nms_start = time.time()
-            keep = self.nms(box, score, nms_threshold)
-            score = score[keep]
-            label = label[keep]
-            box = box[keep]
-            nms_end = time.time()
-            logger.info(f"NMS time: {nms_end - nms_start:.4f} second")
 
             results.append({"scores": score, "labels": label, "boxes": box})
 
