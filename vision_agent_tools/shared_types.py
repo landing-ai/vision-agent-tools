@@ -3,7 +3,8 @@ from typing import Annotated, Literal, Optional, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from annotated_types import Len
 
 
 class Device(str, Enum):
@@ -64,8 +65,24 @@ class Polygon(BaseModel):
     points: list[Point]
 
 
-class BoundingBox(BaseModel):
-    x_min: float
-    y_min: float
-    x_max: float
-    y_max: float
+# [x_min, y_min, x_max, y_max] bounding box
+BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
+
+
+class BboxLabel(BaseModel):
+    label: str
+    score: float
+    bbox: BoundingBox = Field(alias="bounding_box")
+
+
+    class Config:
+        arbitrary_types_allowed = True
+        populate_by_name = True
+
+
+class BboxAndMaskLabel(BboxLabel):
+    mask: SegmentationBitMask | None
+
+    class Config:
+        arbitrary_types_allowed = True
+        populate_by_name = True

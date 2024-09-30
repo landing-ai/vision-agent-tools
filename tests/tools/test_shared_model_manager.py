@@ -17,7 +17,6 @@ class MockBaseModel(AsyncMock, BaseTool):
 
 @pytest.mark.asyncio
 async def test_add_model(model_pool: SharedModelManager):
-
     test_model = MockBaseModel()
     model_id = model_pool.add(test_model)
     assert len(model_pool.models) == 1
@@ -47,7 +46,6 @@ async def test_get_model_gpu(model_pool: SharedModelManager):
     model_to_get.to.assert_called_once_with(Device.GPU)  # Verify to was called with GPU
 
 
-
 @pytest.mark.asyncio
 async def test_get_model_not_found(model_pool):
     with pytest.raises(ValueError):
@@ -56,7 +54,6 @@ async def test_get_model_not_found(model_pool):
 
 @pytest.mark.asyncio
 async def test_swap_model_in_gpu(model_pool: SharedModelManager):
-
     model_a = MockBaseModel()
     model_a.to = MagicMock()
 
