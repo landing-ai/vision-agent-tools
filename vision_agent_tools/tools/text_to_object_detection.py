@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List
 
 import numpy as np
 from PIL import Image
@@ -124,19 +123,19 @@ class TextToObjectDetection(BaseTool):
 
     def __call__(
         self,
-        prompts: List[str],
+        prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> List[TextToObjectDetectionResponse]:
+    ) -> list[TextToObjectDetectionResponse]:
         """
         Run object detection on the image based on text prompts.
 
         Args:
             image (Image.Image): The input image for object detection.
-            prompts (List[str]): List of text prompts for object detection.
+            prompts (list[str]): list of text prompts for object detection.
 
         Returns:
-            List[TextToObjectDetectionOutput]: A list of detection results for each prompt.
+            list[TextToObjectDetectionOutput]: A list of detection results for each prompt.
         """
         results = []
         prediction: list[list[ODResponseData]] = []
@@ -152,18 +151,20 @@ class TextToObjectDetection(BaseTool):
                 prediction = self.model(video=video, prompts=prompts)
 
             prediction = self._convert_owlv2_res(prediction)
-
         elif self.modelname == TextToObjectDetectionModel.FLORENCEV2:
-            od_task = PromptTask.OBJECT_DETECTION
+            od_task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+            prompt = ", ".join(prompts)
             if image is not None:
                 prediction = self.model(
                     image=image,
                     task=od_task,
+                    prompt=prompt,
                 )
             elif video is not None:
                 prediction = self.model(
                     video=video,
                     task=od_task,
+                    prompt=prompt,
                 )
 
             # Prediction should be a list of lists of ODResponseData objects
