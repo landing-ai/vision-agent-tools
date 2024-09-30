@@ -89,8 +89,11 @@ class Owlv2(BaseMLModel):
         )
 
         # Forward pass
+        infer_start = time.time()
         with torch.autocast(device_type=self.model_config.device.value):
             outputs = self._model(**inputs)
+        infer_end = time.time()
+        logger.info(f"Model inference time: {infer_end - infer_start:.4f} seconds")
 
         # Prepare target_sizes
         target_sizes = torch.tensor(
@@ -98,12 +101,15 @@ class Owlv2(BaseMLModel):
         )
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
+        post_start = time.time()
         results = self._processor.post_process_object_detection_with_nms(
             outputs=outputs,
             threshold=confidence,
             nms_threshold=nms_threshold,
             target_sizes=target_sizes,
         )
+        post_end = time.time()
+        logger.info(f"Post-processing time: {post_end - post_start:.4f} seconds")
 
         inferences_batch = []
 
@@ -195,11 +201,12 @@ class Owlv2(BaseMLModel):
                 f"Processing video with {total_frames} frames using batch size {batch_size}."
             )
             inferences = []
+            start_time = time.time()
 
             # Split images into batches
             for batch_index, i in enumerate(range(0, total_frames, batch_size)):
                 batch_images = images[i : i + batch_size]
-                logger.info(
+                logger.debug(
                     f"Processing batch {batch_index + 1}/{(total_frames + batch_size - 1) // batch_size} with {len(batch_images)} frames."
                 )
                 start_time = time.time()
@@ -211,12 +218,15 @@ class Owlv2(BaseMLModel):
                 )
                 end_time = time.time()
                 batch_time = end_time - start_time
-                logger.info(
+                logger.debug(
                     f"Processed batch {batch_index + 1} in {batch_time:.2f} seconds."
                 )
                 inferences.extend(batch_inferences)
 
-            logger.info(f"Completed processing of {total_frames} frames.")
+            total_time = time.time() - start_time
+            logger.info(
+                f"Completed processing of {total_frames} frames in {total_time}s."
+            )
             return inferences  # Return a list of inference data for each frame
 
     def to(self, device: Device):
