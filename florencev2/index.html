@@ -1066,7 +1066,7 @@ text prompts to perform tasks like captioning, object detection, and segmentatio
 
 
 <h3 id="vision_agent_tools.models.florencev2.Florencev2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florencev2.Florencev2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -1157,6 +1157,34 @@ text prompts to perform tasks like captioning, object detection, and segmentatio
             </td>
             <td>
                   <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>batch_size</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The batch size used for processing multiple images or video frames.</p>
+              </div>
+            </td>
+            <td>
+                  <code>5</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>nms_threshold</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).</p>
+              </div>
+            </td>
+            <td>
+                  <code>1.0</code>
             </td>
           </tr>
       </tbody>

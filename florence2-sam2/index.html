@@ -748,7 +748,7 @@ returns the instance segmentation for the text prompts in each frame.</p>
 
 
 <h3 id="vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chunk_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chunk_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -840,7 +840,7 @@ returns the instance segmentation for the text prompts in each frame.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -850,7 +850,7 @@ returns the instance segmentation for the text prompts in each frame.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -860,7 +860,7 @@ returns the instance segmentation for the text prompts in each frame.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.models.florence2_sam2.ImageBboxAndMaskLabel">ImageBboxAndMaskLabel</span>]]</code>
+                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
