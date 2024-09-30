@@ -22,11 +22,11 @@ def test_successful_image_detection_segmentation():
     assert len(results[0]) == 23
 
     for instance in results[0].values():
-        assert len(instance.bounding_box) == 4
+        assert len(instance.bbox) == 4
         assert np.all(
             [
                 0 <= coord <= np.max(test_image.size[:2])
-                for coord in instance.bounding_box
+                for coord in instance.bbox
             ]
         )
         assert isinstance(instance.mask, np.ndarray)

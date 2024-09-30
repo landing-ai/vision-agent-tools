@@ -30,7 +30,9 @@ class OWLV2Config(BaseModel):
         default=(
             Device.GPU
             if torch.cuda.is_available()
-            else Device.MPS if torch.backends.mps.is_available() else Device.CPU
+            else Device.MPS
+            if torch.backends.mps.is_available()
+            else Device.CPU
         ),
         description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
     )
@@ -79,7 +81,10 @@ class Owlv2(BaseMLModel):
 
         # Convert outputs (bounding boxes and class logits) to the final predictions type
         results = self._processor.post_process_object_detection_with_nms(
-            outputs=outputs, threshold=confidence, nms_threshold=nms_threshold, target_sizes=target_sizes
+            outputs=outputs,
+            threshold=confidence,
+            nms_threshold=nms_threshold,
+            target_sizes=target_sizes,
         )
         i = 0  # given that we are predicting on only one image
         boxes, scores, labels = (
@@ -176,7 +181,11 @@ class Owlv2(BaseMLModel):
 
 class Owlv2ProcessorWithNMS(Owlv2Processor):
     def post_process_object_detection_with_nms(
-        self, outputs, threshold: float = 0.1,  nms_threshold: float = 0.3,  target_sizes: Union[TensorType, List[Tuple]] = None
+        self,
+        outputs,
+        threshold: float = 0.1,
+        nms_threshold: float = 0.3,
+        target_sizes: Union[TensorType, List[Tuple]] = None,
     ):
         """
         Converts the raw output of [`OwlViTForObjectDetection`] into final bounding boxes in (top_left_x, top_left_y,
@@ -243,7 +252,9 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
             img_w = img_w / width_ratio
             img_h = img_h / height_ratio
 
-            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(boxes.device)
+            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(
+                boxes.device
+            )
             boxes = boxes * scale_fct[:, None, :]
 
         results = []

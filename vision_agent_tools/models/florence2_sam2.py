@@ -1,18 +1,21 @@
-from dataclasses import dataclass
-from typing_extensions import Annotated
-
 import torch
 import numpy as np
 from PIL import Image
 from pydantic import BaseModel, validate_call, Field
+from typing import Annotated
 
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
-    SegmentationBitMask,
     Device,
+    BboxAndMaskLabel,
 )
 from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.utils import (
+    calculate_mask_iou,
+    mask_to_bbox,
+    convert_florence_bboxes_to_bbox_labels,
+)
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.sam2_image_predictor import SAM2ImagePredictor
@@ -33,21 +36,6 @@ class Florence2SAM2Config(BaseModel):
     )
 
 
-@dataclass
-class ImageBboxAndMaskLabel:
-    label: str
-    bounding_box: (
-        list[
-            Annotated[float, "x_min"],
-            Annotated[float, "y_min"],
-            Annotated[float, "x_max"],
-            Annotated[float, "y_max"],
-        ]
-        | None
-    )
-    mask: SegmentationBitMask | None
-
-
 class Florence2SAM2(BaseMLModel):
     """
     A class that receives a video or an image plus a list of text prompts and
@@ -66,95 +54,34 @@ class Florence2SAM2(BaseMLModel):
         )
         self.image_predictor = SAM2ImagePredictor(self.video_predictor)
 
-    def _dummy_agnostic_non_max_suppression(self, predictions, nms_threshold):
-        """
-        Apply agnostic Non-Maximum Suppression (NMS) to filter overlapping predictions.
-
-        Parameters:
-        predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary of predictions.
-        nms_threshold (float): The IoU threshold value used for NMS.
-
-        Returns:
-        dict[int, ImageBboxAndMaskLabel]: Filtered predictions after applying NMS.
-        """
-        filtered_predictions = {}
-        prediction_items = list(predictions.items())
-
-        while prediction_items:
-            best_prediction = prediction_items.pop(0)
-            filtered_predictions[best_prediction[0]] = best_prediction[1]
-
-            prediction_items = [
-                pred
-                for pred in prediction_items
-                if self._calculate_iou(best_prediction[1].mask, pred[1].mask)
-                < nms_threshold
-            ]
-
-        return filtered_predictions
-
-    def _calculate_iou(
-        self, mask1: SegmentationBitMask, mask2: SegmentationBitMask
-    ) -> float:
-        """
-        Calculate the Intersection over Union (IoU) between two masks.
-
-        Parameters:
-        mask1 (numpy.ndarray): First mask.
-        mask2 (numpy.ndarray): Second mask.
-
-        Returns:
-        float: IoU value.
-        """
-        # Ensure the masks are binary
-        mask1 = mask1.astype(bool)
-        mask2 = mask2.astype(bool)
-
-        # Calculate the intersection and union
-        intersection = np.sum(np.logical_and(mask1, mask2))
-        union = np.sum(np.logical_or(mask1, mask2))
-
-        # Calculate the IoU
-        iou = intersection / union if union != 0 else 0
-
-        return iou
-
-    def _mask_to_bbox(self, mask: np.ndarray):
-        rows, cols = np.where(mask)
-        if len(rows) > 0 and len(cols) > 0:
-            x_min, x_max = np.min(cols), np.max(cols)
-            y_min, y_max = np.min(rows), np.max(rows)
-            return [x_min, y_min, x_max, y_max]
-
     def _update_reference_predictions(
         self,
-        last_predictions: dict[int, ImageBboxAndMaskLabel],
-        new_predictions: dict[int, ImageBboxAndMaskLabel],
+        last_predictions: dict[int, BboxAndMaskLabel],
+        new_predictions: dict[int, BboxAndMaskLabel],
         objects_count: int,
-        iou_threshold: float = 0.8,
-        nms_threshold: float = 0.3,
-    ) -> tuple[dict[int, ImageBboxAndMaskLabel], int]:
+        iou_threshold: float = 0.6,
+    ) -> tuple[dict[int, BboxAndMaskLabel], int]:
         """
         Updates the object prediction ids of the 'new_predictions' input to match
         the ids coming from the 'last_predictions' input, by comparing the IoU between
         the two elements.
 
         Parameters:
-        last_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
+        last_predictions (dict[int, BboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the last frame's prediction
             of the video propagation.
-        new_predictions (dict[int, ImageBboxAndMaskLabel]): Dictionary containing the
+        new_predictions (dict[int, BboxAndMaskLabel]): Dictionary containing the
             id of the object as the key and the prediction as the value of the FlorenceV2 model prediction.
         iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
 
         Returns:
         float: IoU value.
         """
-        new_prediction_objects: dict[int, ImageBboxAndMaskLabel] = {}
+        new_prediction_objects: dict[int, BboxAndMaskLabel] = {}
         for new_annotation_id in new_predictions:
             new_obj_id: int = 0
             for old_annotation_id in last_predictions:
-                iou = self._calculate_iou(
+                iou = calculate_mask_iou(
                     new_predictions[new_annotation_id].mask,
                     last_predictions[old_annotation_id].mask,
                 )
@@ -167,15 +94,17 @@ class Florence2SAM2(BaseMLModel):
                 new_obj_id = objects_count
                 new_prediction_objects[new_obj_id] = new_predictions[new_annotation_id]
 
-        updated_predictions = self._dummy_agnostic_non_max_suppression(
-            {**last_predictions, **new_prediction_objects}, nms_threshold
-        )
+        updated_predictions = {**last_predictions, **new_prediction_objects}
         return (updated_predictions, objects_count)
 
     @torch.inference_mode()
     def _get_bbox_and_mask(
-        self, prompt: str, image: Image.Image, return_mask: bool = True
-    ) -> dict[int, ImageBboxAndMaskLabel]:
+        self,
+        prompt: str,
+        image: Image.Image,
+        return_mask: bool = True,
+        nms_threshold: float = 1.0,
+    ) -> dict[int, BboxAndMaskLabel]:
         objs = {}
         self.image_predictor.set_image(np.array(image, dtype=np.uint8))
         annotation_id = 0
@@ -184,11 +113,9 @@ class Florence2SAM2(BaseMLModel):
                 image=image,
                 task=PromptTask.CAPTION_TO_PHRASE_GROUNDING,
                 prompt=prompt,
+                nms_threshold=nms_threshold,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
-        preds = [
-            {"bbox": preds["bboxes"][i], "label": preds["labels"][i]}
-            for i in range(len(preds["labels"]))
-        ]
+        preds = convert_florence_bboxes_to_bbox_labels(preds)
         if return_mask:
             with torch.autocast(
                 device_type=self._model_config.device, dtype=torch.bfloat16
@@ -196,16 +123,17 @@ class Florence2SAM2(BaseMLModel):
                 masks, _, _ = self.image_predictor.predict(
                     point_coords=None,
                     point_labels=None,
-                    box=[elt["bbox"] for elt in preds],
+                    box=[elt.bbox for elt in preds],
                     multimask_output=False,
                 )
-        for i in range(len(preds)):
-            objs[annotation_id] = ImageBboxAndMaskLabel(
-                bounding_box=preds[i]["bbox"],
+        for i, pred in enumerate(preds):
+            objs[annotation_id] = BboxAndMaskLabel(
+                bbox=pred.bbox,
                 mask=(masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :])
                 if return_mask
                 else None,
-                label=preds[i]["label"],
+                label=pred.label,
+                score=1.0,
             )
             annotation_id += 1
         return objs
@@ -215,9 +143,12 @@ class Florence2SAM2(BaseMLModel):
         self,
         prompt: str,
         image: Image.Image,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+        nms_threshold: float = 1.0,
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         self.image_predictor.reset_predictor()
-        objs = self._get_bbox_and_mask(prompt, image.convert("RGB"))
+        objs = self._get_bbox_and_mask(
+            prompt, image.convert("RGB"), nms_threshold=nms_threshold
+        )
         return {0: objs}
 
     @torch.inference_mode()
@@ -226,14 +157,14 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         video: VideoNumpy,
         chunk_length: int | None = 20,
-        iou_threshold: float = 0.8,
-        nms_threshold: float = 0.3,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+        iou_threshold: float = 0.6,
+        nms_threshold: float = 1.0,
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         video_shape = video.shape
         num_frames = video_shape[0]
         video_segments = {}
         objects_count = 0
-        last_chunk_frame_pred: dict[int, ImageBboxAndMaskLabel] = {}
+        last_chunk_frame_pred: dict[int, BboxAndMaskLabel] = {}
 
         if chunk_length is None:
             chunk_length = num_frames
@@ -247,12 +178,16 @@ class Florence2SAM2(BaseMLModel):
                 objs = self._get_bbox_and_mask(
                     prompt,
                     Image.fromarray(video[start_frame_idx]).convert("RGB"),
+                    nms_threshold=nms_threshold,
                 )
                 # Compare the IOU between the predicted label 'objs' and the 'last_chunk_frame_pred'
                 # and update the object prediction id, to match the previous id.
                 # Also add the new objects in case they didn't exist before.
                 updated_objs, objects_count = self._update_reference_predictions(
-                    last_chunk_frame_pred, objs, objects_count, iou_threshold, nms_threshold
+                    last_chunk_frame_pred,
+                    objs,
+                    objects_count,
+                    iou_threshold,
                 )
                 self.video_predictor.reset_state(inference_state)
 
@@ -266,7 +201,7 @@ class Florence2SAM2(BaseMLModel):
                         inference_state=inference_state,
                         frame_idx=start_frame_idx,
                         obj_id=annotation_id,
-                        box=updated_objs[annotation_id].bounding_box,
+                        box=updated_objs[annotation_id].bbox,
                     )
                 # Propagate the predictions on the given video segment (chunk)
                 for (
@@ -283,12 +218,11 @@ class Florence2SAM2(BaseMLModel):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
                         if np.max(pred_mask) == 0:
                             continue
-                        video_segments[out_frame_idx][out_obj_id] = (
-                            ImageBboxAndMaskLabel(
-                                label=annotation_id_to_label[out_obj_id],
-                                bounding_box=self._mask_to_bbox(pred_mask),
-                                mask=pred_mask,
-                            )
+                        video_segments[out_frame_idx][out_obj_id] = BboxAndMaskLabel(
+                            label=annotation_id_to_label[out_obj_id],
+                            bbox=mask_to_bbox(pred_mask),
+                            mask=pred_mask,
+                            score=1.0,
                         )
                 index = (
                     start_frame_idx + chunk_length
@@ -309,9 +243,9 @@ class Florence2SAM2(BaseMLModel):
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
-        iou_threshold: float = 0.8,
-        nms_threshold: float = 0.3,
-    ) -> dict[int, dict[int, ImageBboxAndMaskLabel]]:
+        iou_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 0.6,
+        nms_threshold: Annotated[float, Field(ge=0.1, le=1.0)] = 1.0,
+    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
 
@@ -345,5 +279,7 @@ class Florence2SAM2(BaseMLModel):
             return self.handle_image(prompt, image)
         elif video is not None:
             assert video.ndim == 4, "Video should have 4 dimensions"
-            return self.handle_video(prompt, video, chunk_length, iou_threshold, nms_threshold)
+            return self.handle_video(
+                prompt, video, chunk_length, iou_threshold, nms_threshold
+            )
         # No need to raise an error here, the validatie_call decorator will take care of it
