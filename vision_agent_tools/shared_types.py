@@ -82,6 +82,7 @@ class BboxLabel(BaseModel):
 
 
 class BboxAndMaskLabel(BboxLabel):
+    id: int | str
     mask: SegmentationBitMask | None
 
     class Config:
