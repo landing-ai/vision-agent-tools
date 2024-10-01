@@ -24,7 +24,8 @@ class TextToInstanceSegmentationTool(BaseTool):
         video: VideoNumpy | None = None,
         chunk_length: int | None = 20,
         iou_threshold: float = 0.6,
-    ) -> dict[int, dict[int, BboxAndMaskLabel]]:
+        nms_threshold: float = 1.0,
+    ) -> list[list[BboxAndMaskLabel]]:
         """
         Florence2Sam2 model find objects in an image and track objects in a video.
         Args:
@@ -32,18 +33,20 @@ class TextToInstanceSegmentationTool(BaseTool):
             image (Image.Image | None): The image to be analyzed.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
+            iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
+            nms_threshold (float): The non-maximum suppression threshold value used to filter the Florencev2 predictions.
+
         Returns:
-            dict[int, ImageBboxMaskLabel]: a dictionary where the first key is the frame index
-            then an annotation ID, then an object with the mask, label and possibly bbox (for images)
-            for each annotation ID. For example:
-                {
-                    0:
-                        {
-                            0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
-                            1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
-                        },
-                    1: ...
-                }
+            list[list[ImageBboxMaskLabel]]: a list where the first list contains the frames predictions,
+            then the second list contains the annotation, where the annotations are objects with the mask,
+            label and bbox (for images) for each annotation. For example:
+                [
+                    [
+                        BboxAndMaskLabel({"mask": np.ndarray, "label": "car", score: 0.9}),
+                        BboxAndMaskLabel({"mask", np.ndarray, "label": "person", score: 0.8}),
+                    ],
+                    ...
+                ]
         """
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
@@ -59,5 +62,6 @@ class TextToInstanceSegmentationTool(BaseTool):
                 video=video,
                 chunk_length=chunk_length,
                 iou_threshold=iou_threshold,
+                nms_threshold=nms_threshold,
             )
         return result

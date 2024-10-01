@@ -11,7 +11,7 @@ from vision_agent_tools.shared_types import (
     Device,
     VideoNumpy,
     BboxLabel,
-    FlorenceV2ODRes
+    FlorenceV2ODRes,
 )
 from vision_agent_tools.models.utils import (
     calculate_bbox_iou,
@@ -189,7 +189,7 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             image = self._process_image(image)
             results = self._batch_image_call([text_input], [image], task, nms_threshold)
-            return results[0]  # TODO: check if this is output format is correct
+            return results[0]
         elif images is not None:
             # Batch processing
             images_list = [self._process_image(img) for img in images]
@@ -282,7 +282,7 @@ class Florencev2(BaseMLModel):
                     filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
                     # format the output to match the original format and update the output predictions
                     parsed_answer[task] = convert_bbox_labels_to_florence_bboxes(
-                        filtered_preds
+                        FlorenceV2ODRes(**parsed_answer[task])
                     )
                 results.append(parsed_answer)
             return results

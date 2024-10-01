@@ -92,22 +92,21 @@ class TextToObjectDetection(BaseTool):
                     task=od_task,
                     prompt=prompt,
                 )
+                fl_prediction = [FlorenceV2ODRes(**fl_prediction[od_task])]
             elif video is not None:
                 fl_prediction = self.model(
                     video=video,
                     task=od_task,
                     prompt=prompt,
                 )
-
+                fl_prediction = [
+                    FlorenceV2ODRes(**pred[od_task]) for pred in fl_prediction
+                ]
             # Prediction should be a list of lists of BboxLabel objects
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output = []
             for pred in fl_prediction:
-                fv2_pred_output.append(
-                    convert_florence_bboxes_to_bbox_labels(
-                        FlorenceV2ODRes(**pred[od_task])
-                    )
-                )
+                fv2_pred_output.append(convert_florence_bboxes_to_bbox_labels(pred))
             prediction = fv2_pred_output
         return prediction
 

@@ -287,7 +287,7 @@ class Florence2SAM2(BaseMLModel):
             raise ValueError("Only one of 'image' or 'video' can be provided.")
 
         if image is not None:
-            return self.handle_image(prompt, image)
+            return self.handle_image(prompt, image, nms_threshold)
         elif video is not None:
             assert video.ndim == 4, "Video should have 4 dimensions"
             return self.handle_video(
