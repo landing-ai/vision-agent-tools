@@ -2,13 +2,13 @@ from typing import Optional
 import numpy as np
 import torch
 from PIL import Image
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from transformers.utils import TensorType
 from transformers.image_transforms import center_to_corners_format
 from transformers.models.owlv2.image_processing_owlv2 import box_iou
-from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
+from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy, BboxLabel
 
 
 class OWLV2Config(BaseModel):
@@ -44,31 +44,19 @@ class OWLV2Config(BaseModel):
     )
 
 
-class Owlv2InferenceData(BaseModel):
-    """
-    Represents an inference result from the Owlv2 model.
-    """
-
-    label: str = Field(description="The predicted label for the detected object")
-    score: float = Field(
-        description="TThe confidence score associated with the prediction (between 0 and 1)"
-    )
-    bbox: list[float] = Field(
-        description=" A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax) of the detected object in the image"
-    )
-
-
 class Owlv2(BaseMLModel):
     """
     Tool for object detection using the pre-trained Owlv2 model from
     [Transformers](https://github.com/huggingface/transformers).
 
     This tool takes an image and a list of prompts as input, performs object detection using the Owlv2 model,
-    and returns a list of `Owlv2InferenceData` objects containing the predicted labels, confidence scores,
+    and returns a list of `BboxLabel` objects containing the predicted labels, confidence scores,
     and bounding boxes for detected objects with confidence exceeding a threshold.
     """
 
-    def __run_inference(self, image, texts, confidence, nms_threshold):
+    def __run_inference(
+        self, image, texts, confidence, nms_threshold
+    ) -> list[BboxLabel]:
         # Run model inference here
         inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
             self.model_config.device
@@ -93,13 +81,11 @@ class Owlv2(BaseMLModel):
             results[i]["labels"],
         )
 
-        inferences: list[Owlv2InferenceData] = []
+        inferences: list[BboxLabel] = []
         for box, score, label in zip(boxes, scores, labels):
             box = [round(i, 2) for i in box.tolist()]
             inferences.append(
-                Owlv2InferenceData(
-                    label=texts[i][label.item()], score=score.item(), bbox=box
-                )
+                BboxLabel(label=texts[i][label.item()], score=score.item(), bbox=box)
             )
 
         return inferences
@@ -126,21 +112,21 @@ class Owlv2(BaseMLModel):
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> list[list[Owlv2InferenceData]]:
+    ) -> list[list[BboxLabel]]:
         """
         Performs object detection on an image using the Owlv2 model.
 
         Args:
             image (Image.Image): The input image for object detection.
             prompts (list[str]): A list of prompts to be used during inference.
-                                  Currently, only one prompt is supported (list length of 1).
+                Currently, only one prompt is supported (list length of 1).
             video (Optional[VideoNumpy]: The input video for object detection.
 
         Returns:
-            Optional[list[Owlv2InferenceData]]: A list of `Owlv2InferenceData` objects containing the predicted
-                                               labels, confidence scores, and bounding boxes for detected objects
-                                               with confidence exceeding the threshold. Returns None if no objects
-                                               are detected above the confidence threshold.
+            list[list[BboxLabel]]: A list of `BboxLabel` objects containing the predicted
+                labels, confidence scores, and bounding boxes for detected objects
+                with confidence exceeding the threshold. Returns None if no objects
+                are detected above the confidence threshold.
         """
         texts = [prompts]
 
@@ -202,7 +188,7 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
                 Tensor of shape `(batch_size, 2)` or list of tuples (`Tuple[int, int]`) containing the target size
                 `(height, width)` of each image in the batch. If unset, predictions will not be resized.
         Returns:
-            `List[Dict]`: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
+            `List[dict]`: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
             in the batch as predicted by the model.
         """
         logits, boxes = outputs.logits, outputs.pred_boxes

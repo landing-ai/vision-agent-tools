@@ -2,7 +2,12 @@ import os
 import wget
 import gdown
 import os.path as osp
-from vision_agent_tools.shared_types import BoundingBox, SegmentationBitMask, BboxLabel
+from vision_agent_tools.shared_types import (
+    BoundingBox,
+    SegmentationBitMask,
+    BboxLabel,
+    FlorenceV2ODRes,
+)
 import numpy as np
 
 
@@ -88,20 +93,23 @@ def mask_to_bbox(mask: np.ndarray) -> list[int] | None:
         return [x_min, y_min, x_max, y_max]
 
 
-def convert_florence_bboxes_to_bbox_labels(predictions: dict) -> list[BboxLabel]:
+def convert_florence_bboxes_to_bbox_labels(
+    predictions: FlorenceV2ODRes,
+) -> list[BboxLabel]:
     """
-    Converts the output of the Florecev2 OD and CAPTION_TO_PHRASE_GROUNDING
+    Converts the output of the Florecev2 <OD> an
+    <CAPTION_TO_PHRASE_GROUNDING> tasks
     to a much simpler list of BboxLabel labels
     """
-    preds = [
+    od_response = [
         BboxLabel(
-            bbox=predictions["bboxes"][i],
-            label=predictions["labels"][i],
-            score=1.0
+            bbox=predictions.bboxes[i],
+            label=predictions.labels[i],
+            score=1.0,  # FlorenceV2 doesn't provide confidence score
         )
-        for i in range(len(predictions["labels"]))
+        for i in range(len(predictions.labels))
     ]
-    return preds
+    return od_response
 
 
 def convert_bbox_labels_to_florence_bboxes(predictions: list[BboxLabel]) -> dict:

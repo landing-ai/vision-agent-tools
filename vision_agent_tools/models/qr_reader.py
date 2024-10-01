@@ -24,7 +24,7 @@ class QRCodeDetection(BaseModel):
     polygon: Polygon = Field(
         description="A `Polygon` object representing the detected QR code's corner points"
     )
-    bounding_box: BoundingBox = Field(
+    bbox: BoundingBox = Field(
         description="A `BoundingBox` object representing the axis-aligned bounding box coordinates of the detected QR code"
     )
     center: Point = Field(
@@ -73,7 +73,7 @@ class QRReader(BaseMLModel):
                 polygon=Polygon(
                     points=[Point(x=point[0], y=point[1]) for point in meta["quad_xy"]]
                 ),
-                bounding_box=[
+                bbox=[
                     meta["bbox_xyxy"][0],  # x_min
                     meta["bbox_xyxy"][1],  # y_min
                     meta["bbox_xyxy"][2],  # x_max

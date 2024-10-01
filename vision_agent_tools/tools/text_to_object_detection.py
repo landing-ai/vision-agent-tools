@@ -1,34 +1,21 @@
-from enum import Enum
-
 import numpy as np
+from enum import Enum
 from PIL import Image
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 
-from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
+from vision_agent_tools.models.florencev2 import PromptTask
+from vision_agent_tools.models.utils import (
+    convert_florence_bboxes_to_bbox_labels,
+)
 from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy, BoundingBox
+from vision_agent_tools.shared_types import (
+    BaseTool,
+    Device,
+    VideoNumpy,
+    BboxLabel,
+    FlorenceV2ODRes,
+)
 from vision_agent_tools.models.owlv2 import OWLV2Config
-
-
-class ODResponseData(BaseModel):
-    label: str
-    score: float
-    bbox: BoundingBox = Field(alias="bounding_box")
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-
-
-class TextToObjectDetectionResponse(BaseModel):
-    """This can be a list of lists of ODResponseData objects,
-    each list can be the frame of a video or the image of a batch of images,
-    then inside the list it is the list of ODResponseData objects for each object detected in the frame or image.
-
-    Downstream usage example, later the playground-tools (baseten model APIs) can wrap this 2-d list in the datafield of BaseResponse.
-    """
-
-    output: list[list[ODResponseData]]
 
 
 class TextToObjectDetectionModel(str, Enum):
@@ -68,65 +55,12 @@ class TextToObjectDetection(BaseTool):
         elif model == TextToObjectDetectionModel.FLORENCEV2:
             super().__init__(model=model_instance())
 
-    def _convert_florencev2_res(self, res: FlorenceV2ODRes) -> list[ODResponseData]:
-        """
-
-        Returns:
-            ODResponse: the one we are using already in the playground-tools(baseten) ,that will be wrapped in the datafield of BaseReponse.
-        """
-        od_response = []
-        for i, label in enumerate(res.labels):
-            od_response.append(
-                ODResponseData(
-                    label=label,
-                    score=1.0,  # FlorenceV2 doesn't provide confidence score
-                    bbox=res.bboxes[i],
-                )
-            )
-        return od_response
-
-    def _convert_owlv2_res(
-        self, res: list[list[ODResponseData]]
-    ) -> list[ODResponseData]:
-        """
-        Convert the output of the OWLV2 model to the format used in the playground-tools.
-
-        Args:
-            output (list[Owlv2InferenceData]): The output from the OWLV2 model.
-        class Owlv2InferenceData(BaseModel):
-            label: str = Field(description="The predicted label for the detected object")
-            score: float = Field(
-                description="TThe confidence score associated with the prediction (between 0 and 1)"
-            )
-            bbox: list[float] = Field(
-                description=" A list of four floats representing the bounding box coordinates (xmin, ymin, xmax, ymax) of the detected object in the image"
-            )
-
-
-        Returns:
-            list[ODResponseData]: The converted output.
-        """
-        od_response = []
-        for pred in res:
-            single_img_od_response = []
-            od_response.append(single_img_od_response)
-            for box in pred:
-                single_img_od_response.append(
-                    ODResponseData(
-                        label=box.label,
-                        score=box.score,
-                        bbox=box.bbox,
-                    )
-                )
-
-        return od_response
-
     def __call__(
         self,
         prompts: list[str],
         image: Image.Image | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> list[TextToObjectDetectionResponse]:
+    ) -> list[list[BboxLabel]]:
         """
         Run object detection on the image based on text prompts.
 
@@ -135,10 +69,9 @@ class TextToObjectDetection(BaseTool):
             prompts (list[str]): list of text prompts for object detection.
 
         Returns:
-            list[TextToObjectDetectionOutput]: A list of detection results for each prompt.
+            list[list[BboxLabel]]: A list of detection results for each prompt.
         """
-        results = []
-        prediction: list[list[ODResponseData]] = []
+        prediction: list[list[BboxLabel]] = []
         if image is None and video is None:
             raise ValueError("Either 'image' or 'video' must be provided.")
         if image is not None and video is not None:
@@ -150,38 +83,32 @@ class TextToObjectDetection(BaseTool):
             elif video is not None:
                 prediction = self.model(video=video, prompts=prompts)
 
-            prediction = self._convert_owlv2_res(prediction)
         elif self.modelname == TextToObjectDetectionModel.FLORENCEV2:
             od_task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
             prompt = ", ".join(prompts)
             if image is not None:
-                prediction = self.model(
+                fl_prediction = self.model(
                     image=image,
                     task=od_task,
                     prompt=prompt,
                 )
+                fl_prediction = [FlorenceV2ODRes(**fl_prediction[od_task])]
             elif video is not None:
-                prediction = self.model(
+                fl_prediction = self.model(
                     video=video,
                     task=od_task,
                     prompt=prompt,
                 )
-
-            # Prediction should be a list of lists of ODResponseData objects
+                fl_prediction = [
+                    FlorenceV2ODRes(**pred[od_task]) for pred in fl_prediction
+                ]
+            # Prediction should be a list of lists of BboxLabel objects
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output = []
-            if not isinstance(prediction, list):
-                prediction = [prediction]
-            for pred in prediction:
-                fv2_pred_output.append(
-                    self._convert_florencev2_res(FlorenceV2ODRes(**pred[od_task]))
-                )
+            for pred in fl_prediction:
+                fv2_pred_output.append(convert_florence_bboxes_to_bbox_labels(pred))
             prediction = fv2_pred_output
-
-        res = TextToObjectDetectionResponse(output=prediction)
-        results.append(res)
-
-        return results
+        return prediction
 
     def to(self, device: Device):
         self.model.to(device)

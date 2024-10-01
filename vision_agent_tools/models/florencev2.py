@@ -3,7 +3,7 @@ from typing import Annotated, Any, List
 
 import torch
 from PIL import Image
-from pydantic import BaseModel, ConfigDict, Field, validate_arguments, validate_call
+from pydantic import ConfigDict, Field, validate_arguments, validate_call
 from transformers import AutoModelForCausalLM, AutoProcessor
 
 from vision_agent_tools.shared_types import (
@@ -11,6 +11,7 @@ from vision_agent_tools.shared_types import (
     Device,
     VideoNumpy,
     BboxLabel,
+    FlorenceV2ODRes,
 )
 from vision_agent_tools.models.utils import (
     calculate_bbox_iou,
@@ -276,7 +277,7 @@ class Florencev2(BaseMLModel):
                     task == PromptTask.OBJECT_DETECTION
                     or task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
                 ):
-                    preds = convert_florence_bboxes_to_bbox_labels(parsed_answer[task])
+                    preds = convert_florence_bboxes_to_bbox_labels(FlorenceV2ODRes(**parsed_answer[task]))
                     # Run a dummy NMS to get rid of any overlapping predictions on the same object
                     filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
                     # format the output to match the original format and update the output predictions
@@ -302,57 +303,3 @@ class Florencev2(BaseMLModel):
         task = kwargs.get("task", "")
         results = self.__call__(task=task, images=images, prompt=prompts)
         return results
-
-
-class FlorenceV2ODRes(BaseModel):
-    """
-    Schema for the <OD> task.
-    """
-
-    bboxes: List[List[float]] = Field(
-        ..., description="List of bounding boxes, each represented as [x1, y1, x2, y2]"
-    )
-    labels: List[str] = Field(
-        ..., description="List of labels corresponding to each bounding box"
-    )
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "<OD>": {
-                    "bboxes": [
-                        [
-                            33.599998474121094,
-                            159.59999084472656,
-                            596.7999877929688,
-                            371.7599792480469,
-                        ],
-                        [
-                            454.0799865722656,
-                            96.23999786376953,
-                            580.7999877929688,
-                            261.8399963378906,
-                        ],
-                        [
-                            224.95999145507812,
-                            86.15999603271484,
-                            333.7599792480469,
-                            164.39999389648438,
-                        ],
-                        [
-                            449.5999755859375,
-                            276.239990234375,
-                            554.5599975585938,
-                            370.3199768066406,
-                        ],
-                        [
-                            91.19999694824219,
-                            280.0799865722656,
-                            198.0800018310547,
-                            370.3199768066406,
-                        ],
-                    ],
-                    "labels": ["car", "door", "door", "wheel", "wheel"],
-                }
-            }
-        }
