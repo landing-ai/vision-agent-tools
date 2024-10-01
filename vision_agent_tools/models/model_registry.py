@@ -62,6 +62,7 @@ MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
         model_name="depth_anything_v2",
         class_name="DepthAnythingV2",
     ),
+    "flux1": ModelRegistryEntry(model_name="flux1", class_name="Flux1"),
 }
 
 
