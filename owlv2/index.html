@@ -519,15 +519,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="md-nav__link">
-    <span class="md-ellipsis">
-      Owlv2InferenceData
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2ProcessorWithNMS
@@ -668,15 +659,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="md-nav__link">
-    <span class="md-ellipsis">
-      Owlv2InferenceData
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS" class="md-nav__link">
     <span class="md-ellipsis">
       Owlv2ProcessorWithNMS
@@ -779,7 +761,7 @@
       <p>Tool for object detection using the pre-trained Owlv2 model from
 <a href="https://github.com/huggingface/transformers">Transformers</a>.</p>
 <p>This tool takes an image and a list of prompts as input, performs object detection using the Owlv2 model,
-and returns a list of <code>Owlv2InferenceData</code> objects containing the predicted labels, confidence scores,
+and returns a list of <code>BboxLabel</code> objects containing the predicted labels, confidence scores,
 and bounding boxes for detected objects with confidence exceeding a threshold.</p>
 
 
@@ -842,7 +824,7 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
             <td>
               <div class="doc-md-description">
                 <p>A list of prompts to be used during inference.
-                  Currently, only one prompt is supported (list length of 1).</p>
+Currently, only one prompt is supported (list length of 1).</p>
               </div>
             </td>
             <td>
@@ -878,14 +860,14 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>list[list[<a class="autorefs autorefs-internal" title="vision_agent_tools.models.owlv2.Owlv2InferenceData" href="#vision_agent_tools.models.owlv2.Owlv2InferenceData">Owlv2InferenceData</a>]]</code>
+                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxLabel">BboxLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Optional[list[Owlv2InferenceData]]: A list of <code>Owlv2InferenceData</code> objects containing the predicted
-                               labels, confidence scores, and bounding boxes for detected objects
-                               with confidence exceeding the threshold. Returns None if no objects
-                               are detected above the confidence threshold.</p>
+                <p>list[list[BboxLabel]]: A list of <code>BboxLabel</code> objects containing the predicted
+labels, confidence scores, and bounding boxes for detected objects
+with confidence exceeding the threshold. Returns None if no objects
+are detected above the confidence threshold.</p>
               </div>
             </td>
           </tr>
@@ -913,45 +895,6 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
     </div>
 
 </div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="vision_agent_tools.models.owlv2.Owlv2InferenceData" class="doc doc-heading">
-            <code>Owlv2InferenceData</code>
-
-
-<a href="#vision_agent_tools.models.owlv2.Owlv2InferenceData" class="headerlink" title="Permanent link">#</a></h2>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
-
-
-      <p>Represents an inference result from the Owlv2 model.</p>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
 
 
 
@@ -1076,7 +1019,7 @@ bottom_right_x, bottom_right_y) format.</p>
       </tbody>
     </table>
       <p>Returns:
-    <code>List[Dict]</code>: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
+    <code>List[dict]</code>: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
     in the batch as predicted by the model.</p>
 
     </div>

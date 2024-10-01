@@ -825,6 +825,34 @@ returns the instance segmentation for the text prompts in each frame.</p>
                   <code>20</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>iou_threshold</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The IoU threshold value used to compare last_predictions and new_predictions objects.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.6</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>nms_threshold</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The non-maximum suppression threshold value used to filter the Florencev2 predictions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>1.0</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -840,39 +868,38 @@ returns the instance segmentation for the text prompts in each frame.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
+                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>dict[int, ImageBboxMaskLabel]: a dictionary where the first key is the frame index</p>
+                <p>list[list[ImageBboxMaskLabel]]: a list where the first list contains the frames predictions,</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
+                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>then an annotation ID, then an object with the mask, label and possibly bbox (for images)</p>
+                <p>then the second list contains the annotation, where the annotations are objects with the mask,</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code>dict[int, dict[int, <span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
+                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>for each annotation ID. For example:
-{
-    0:
-        {
-            0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
-            1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
-        },
-    1: ...
-}</p>
+                <p>label and bbox (for images) for each annotation. For example:
+[
+    [
+        BboxAndMaskLabel({"mask": np.ndarray, "label": "car", score: 0.9}),
+        BboxAndMaskLabel({"mask", np.ndarray, "label": "person", score: 0.8}),
+    ],
+    ...
+]</p>
               </div>
             </td>
           </tr>
