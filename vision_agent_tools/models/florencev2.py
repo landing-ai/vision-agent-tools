@@ -240,50 +240,58 @@ class Florencev2(BaseMLModel):
         task: PromptTask,
         nms_threshold: float = 1.0,
     ):
-        inputs = self._processor(
-            text=text_inputs,
-            images=images,
-            return_tensors="pt",
-        ).to(self.device)
+        try:
+            inputs = self._processor(
+                text=text_inputs,
+                images=images,
+                return_tensors="pt",
+            ).to(self.device)
 
-        with torch.autocast(device_type=self.device):
-            generated_ids = self._model.generate(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                max_new_tokens=1024,
-                num_beams=3,
-                early_stopping=False,
-                do_sample=False,
-            )
-
-        # Set skip_special_tokens based on the task
-        if task == PromptTask.OCR:
-            skip_special_tokens = True
-        else:
-            skip_special_tokens = False
-
-        generated_texts = self._processor.batch_decode(
-            generated_ids, skip_special_tokens=skip_special_tokens
-        )
-
-        results = []
-        for text, img in zip(generated_texts, images):
-            parsed_answer = self._processor.post_process_generation(
-                text, task=task, image_size=(img.width, img.height)
-            )
-            if (
-                task == PromptTask.OBJECT_DETECTION
-                or task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
-            ):
-                preds = convert_florence_bboxes_to_bbox_labels(parsed_answer[task])
-                # Run a dummy NMS to get rid of any overlapping predictions on the same object
-                filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
-                # format the output to match the original format and update the output predictions
-                parsed_answer[task] = convert_bbox_labels_to_florence_bboxes(
-                    filtered_preds
+            with torch.autocast(device_type=self.device):
+                generated_ids = self._model.generate(
+                    input_ids=inputs["input_ids"],
+                    pixel_values=inputs["pixel_values"],
+                    max_new_tokens=1024,
+                    num_beams=3,
+                    early_stopping=False,
+                    do_sample=False,
                 )
-            results.append(parsed_answer)
-        return results
+
+            # Set skip_special_tokens based on the task
+            if task == PromptTask.OCR:
+                skip_special_tokens = True
+            else:
+                skip_special_tokens = False
+
+            generated_texts = self._processor.batch_decode(
+                generated_ids, skip_special_tokens=skip_special_tokens
+            )
+
+            results = []
+            for text, img in zip(generated_texts, images):
+                parsed_answer = self._processor.post_process_generation(
+                    text, task=task, image_size=(img.width, img.height)
+                )
+                if (
+                    task == PromptTask.OBJECT_DETECTION
+                    or task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
+                ):
+                    preds = convert_florence_bboxes_to_bbox_labels(parsed_answer[task])
+                    # Run a dummy NMS to get rid of any overlapping predictions on the same object
+                    filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
+                    # format the output to match the original format and update the output predictions
+                    parsed_answer[task] = convert_bbox_labels_to_florence_bboxes(
+                        filtered_preds
+                    )
+                results.append(parsed_answer)
+            return results
+
+        except torch.cuda.OutOfMemoryError as e:
+            # Clear the GPU cache to free up memory
+            torch.cuda.empty_cache()
+            raise RuntimeError(
+                "The model ran out of GPU memory during inference."
+            ) from e
 
     def to(self, device: Device):
         self._model.to(device=device.value)
