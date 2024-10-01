@@ -282,7 +282,7 @@ class Florencev2(BaseMLModel):
                     filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
                     # format the output to match the original format and update the output predictions
                     parsed_answer[task] = convert_bbox_labels_to_florence_bboxes(
-                        FlorenceV2ODRes(**parsed_answer[task])
+                        FlorenceV2ODRes(**filtered_preds)
                     )
                 results.append(parsed_answer)
             return results
