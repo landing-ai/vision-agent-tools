@@ -10,7 +10,8 @@ from vision_agent_tools.shared_types import (
     Device,
     BboxAndMaskLabel,
 )
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask, FlorenceV2ODRes
+
 from vision_agent_tools.models.utils import (
     calculate_mask_iou,
     mask_to_bbox,
@@ -115,7 +116,7 @@ class Florence2SAM2(BaseMLModel):
                 prompt=prompt,
                 nms_threshold=nms_threshold,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
-        preds = convert_florence_bboxes_to_bbox_labels(preds)
+        preds = convert_florence_bboxes_to_bbox_labels(FlorenceV2ODRes(**preds))
         if return_mask:
             with torch.autocast(
                 device_type=self._model_config.device, dtype=torch.bfloat16

@@ -36,7 +36,6 @@ def test_successful_text_to_object_detection_florencev2():
         assert pred.label in ["cat", "dog"]
 
 
-
 def test_successful_text_to_object_detection_custom_confidence():
     test_image = "000000039769.jpg"
     prompts = ["a photo of a cat", "a photo of a dog"]

@@ -10,6 +10,7 @@ from vision_agent_tools.shared_types import (
     BaseMLModel,
     Device,
     VideoNumpy,
+    BoundingBox,
     BboxLabel,
 )
 from vision_agent_tools.models.utils import (
@@ -188,7 +189,7 @@ class Florencev2(BaseMLModel):
             text_input = str(task.value) + prompt
             image = self._process_image(image)
             results = self._batch_image_call([text_input], [image], task, nms_threshold)
-            return results[0]
+            return results[0]  # TODO: check if this is output format is correct
         elif images is not None:
             # Batch processing
             images_list = [self._process_image(img) for img in images]
@@ -309,7 +310,7 @@ class FlorenceV2ODRes(BaseModel):
     Schema for the <OD> task.
     """
 
-    bboxes: List[List[float]] = Field(
+    bboxes: List[BoundingBox] = Field(
         ..., description="List of bounding boxes, each represented as [x1, y1, x2, y2]"
     )
     labels: List[str] = Field(

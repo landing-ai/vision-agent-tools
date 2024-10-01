@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from torch import nn
 from torchvision import transforms as T
 
-from vision_agent_tools.shared_types import BaseMLModel, Device
+from vision_agent_tools.shared_types import BaseMLModel, Device, BoundingBox
 
 from .utils import CHECKPOINT_DIR, download
 
@@ -114,7 +114,7 @@ class NShotCounting(BaseMLModel):
     def __call__(
         self,
         image: Image.Image,
-        bbox: Optional[list[int]] = None,
+        bbox: Optional[BoundingBox] = None,
     ) -> CountingDetection:
         """
         LOCA injects shape and appearance information into object queries
@@ -124,7 +124,7 @@ class NShotCounting(BaseMLModel):
 
         Args:
             image (Image.Image): The input image for object detection.
-            bbox (list[int]): A list of four ints representing the bounding box coordinates (xmin, ymin, xmax, ymax)
+            bbox (BoundingBox): A list of four ints representing the bounding box coordinates (xmin, ymin, xmax, ymax)
                         of the detected query in the image.
 
         Returns:

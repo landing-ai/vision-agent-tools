@@ -22,10 +22,7 @@ def test_successful_florence2_sam2_image():
     for instance in results[0].values():
         assert len(instance.bbox) == 4
         assert np.all(
-            [
-                0 <= coord <= np.max(test_image.size[:2])
-                for coord in instance.bbox
-            ]
+            [0 <= coord <= np.max(test_image.size[:2]) for coord in instance.bbox]
         )
         assert isinstance(instance.mask, np.ndarray)
         assert instance.mask.shape == test_image.size[::-1]

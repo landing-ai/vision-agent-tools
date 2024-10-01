@@ -35,7 +35,10 @@ class BaseTool:
     Tools are responsible for interfacing with one or more ML models to perform specific tasks.
     """
 
-    def __init__(self, model: str | BaseMLModel, ):
+    def __init__(
+        self,
+        model: str | BaseMLModel,
+    ):
         self.model = model
 
     def __call__(self):
@@ -72,12 +75,10 @@ BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
 class BboxLabel(BaseModel):
     label: str
     score: float
-    bbox: BoundingBox = Field(alias="bounding_box")
-
+    bbox: BoundingBox
 
     class Config:
         arbitrary_types_allowed = True
-        populate_by_name = True
 
 
 class BboxAndMaskLabel(BboxLabel):

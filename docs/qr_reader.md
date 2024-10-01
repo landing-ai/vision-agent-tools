@@ -27,10 +27,10 @@ if detections:
 
     # Draw the bounding box
     x_min, y_min, x_max, y_max = (
-        int(detection.bounding_box.x_min),
-        int(detection.bounding_box.y_min),
-        int(detection.bounding_box.x_max),
-        int(detection.bounding_box.y_max),
+        int(detection.bbox[0]),
+        int(detection.bbox[1]),
+        int(detection.bbox[2]),
+        int(detection.bbox[3]),
     )
     draw.rectangle(((x_min, y_min), (x_max, y_max)), outline="red", width=2)
 
