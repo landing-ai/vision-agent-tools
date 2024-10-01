@@ -2,8 +2,12 @@ import os
 import wget
 import gdown
 import os.path as osp
-from vision_agent_tools.shared_types import BoundingBox, SegmentationBitMask, BboxLabel
-from vision_agent_tools.models.florencev2 import FlorenceV2ODRes
+from vision_agent_tools.shared_types import (
+    BoundingBox,
+    SegmentationBitMask,
+    BboxLabel,
+    FlorenceV2ODRes,
+)
 import numpy as np
 
 

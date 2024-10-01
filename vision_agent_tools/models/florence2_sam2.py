@@ -9,8 +9,9 @@ from vision_agent_tools.shared_types import (
     VideoNumpy,
     Device,
     BboxAndMaskLabel,
+    FlorenceV2ODRes,
 )
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask, FlorenceV2ODRes
+from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 
 from vision_agent_tools.models.utils import (
     calculate_mask_iou,
@@ -129,16 +130,20 @@ class Florence2SAM2(BaseMLModel):
                     box=[elt.bbox for elt in preds],
                     multimask_output=False,
                 )
-        for i, pred in enumerate(preds, 1):
-            annotations.append(BboxAndMaskLabel(
-                bbox=pred.bbox,
-                mask=(masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :])
-                if return_mask
-                else None,
-                label=pred.label,
-                score=1.0,
-                id=i,
-            ))
+        for i, pred in enumerate(preds):
+            annotations.append(
+                BboxAndMaskLabel(
+                    bbox=pred.bbox,
+                    mask=(
+                        masks[i, 0, :, :] if len(masks.shape) == 4 else masks[i, :, :]
+                    )
+                    if return_mask
+                    else None,
+                    label=pred.label,
+                    score=1.0,
+                    id=i,
+                )
+            )
         return annotations
 
     @torch.inference_mode()
@@ -213,20 +218,22 @@ class Florence2SAM2(BaseMLModel):
                 ) in self.video_predictor.propagate_in_video(
                     inference_state, start_frame_idx, chunk_length
                 ):
-                    if out_frame_idx not in enumerate(len(video_segments)):
-                        video_segments[out_frame_idx] = []
+                    if out_frame_idx not in range(len(video_segments)):
+                        video_segments.append([])
 
                     for i, out_obj_id in enumerate(out_obj_ids):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
-                        # if np.max(pred_mask) == 0:
-                        #     continue
-                        video_segments[out_frame_idx].append(BboxAndMaskLabel(
-                            label=annotation_id_to_label[out_obj_id],
-                            bbox=mask_to_bbox(pred_mask),
-                            mask=pred_mask,
-                            score=1.0,
-                            id=out_obj_id,
-                        ))
+                        if np.max(pred_mask) == 0:
+                            continue
+                        video_segments[out_frame_idx].append(
+                            BboxAndMaskLabel(
+                                label=annotation_id_to_label[out_obj_id],
+                                bbox=mask_to_bbox(pred_mask),
+                                mask=pred_mask,
+                                score=1.0,
+                                id=out_obj_id,
+                            )
+                        )
                 index = (
                     start_frame_idx + chunk_length
                     if (start_frame_idx + chunk_length) < num_frames

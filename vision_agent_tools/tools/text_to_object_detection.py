@@ -3,12 +3,18 @@ from enum import Enum
 from PIL import Image
 from pydantic import BaseModel
 
-from vision_agent_tools.models.florencev2 import FlorenceV2ODRes, PromptTask
+from vision_agent_tools.models.florencev2 import PromptTask
 from vision_agent_tools.models.utils import (
     convert_florence_bboxes_to_bbox_labels,
 )
 from vision_agent_tools.models.model_registry import get_model_class
-from vision_agent_tools.shared_types import BaseTool, Device, VideoNumpy, BboxLabel
+from vision_agent_tools.shared_types import (
+    BaseTool,
+    Device,
+    VideoNumpy,
+    BboxLabel,
+    FlorenceV2ODRes,
+)
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
 
