@@ -277,7 +277,9 @@ class Florencev2(BaseMLModel):
                     task == PromptTask.OBJECT_DETECTION
                     or task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
                 ):
-                    preds = convert_florence_bboxes_to_bbox_labels(FlorenceV2ODRes(**parsed_answer[task]))
+                    preds = convert_florence_bboxes_to_bbox_labels(
+                        FlorenceV2ODRes(**parsed_answer[task])
+                    )
                     # Run a dummy NMS to get rid of any overlapping predictions on the same object
                     filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
                     # format the output to match the original format and update the output predictions
