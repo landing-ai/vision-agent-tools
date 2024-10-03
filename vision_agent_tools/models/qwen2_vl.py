@@ -1,21 +1,35 @@
 import torch
-import numpy as np
 from PIL import Image
-from pydantic import validate_call
+from pydantic import BaseModel, validate_call, Field
 
 from qwen_vl_utils import process_vision_info
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 
 
+class Qwen2VLConfig(BaseModel):
+    hf_model: str = Field(
+        default="Qwen/Qwen2-VL-7B-Instruct",
+        description="Name of the model",
+    )
+    device: Device = Field(
+        default=Device.GPU
+        if torch.cuda.is_available()
+        else Device.MPS
+        if torch.backends.mps.is_available()
+        else Device.CPU,
+        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
+    )
+
+
 class Qwen2VL(BaseMLModel):
     """
-    [Qwen2-VL](https://huggingface.co/Qwen/Qwen2-VL-2B-Instruct) is a tool that ...
+    [Qwen2-VL](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct) is a model that is capable
+    of accurately identifying and comprehending the content within images,
+    regardless of their clarity, resolution, or extreme aspect ratios.
 
     NOTE: The Qwen2-VL model should be used in GPU environments.
     """
-
-    _HF_MODEL = "Qwen/Qwen2-VL-2B-Instruct"
 
     def _process_image(self, image: Image.Image) -> Image.Image:
         image = image.convert("RGB")
@@ -28,25 +42,19 @@ class Qwen2VL(BaseMLModel):
         ]
         return images
 
-    def __init__(self, device: Device | None = Device.GPU) -> None:
+    def __init__(self, model_config: Qwen2VLConfig | None = None) -> None:
         """
         Initializes the Qwen2-VL model.
         """
-        if device is None:
-            self.device = (
-                "cuda"
-                if torch.cuda.is_available()
-                else "mps"
-                if torch.backends.mps.is_available()
-                else "cpu"
-            )
-        else:
-            self.device = device.value
+        self._model_config = model_config or Qwen2VLConfig()
+        self.device = self._model_config.device
 
         self._model = Qwen2VLForConditionalGeneration.from_pretrained(
-            self._HF_MODEL, torch_dtype=torch.bfloat16, device_map=self.device
+            self._model_config.hf_model,
+            torch_dtype=torch.bfloat16,
+            device_map=self.device,
         )
-        self._processor = AutoProcessor.from_pretrained(self._HF_MODEL)
+        self._processor = AutoProcessor.from_pretrained(self._model_config.hf_model)
 
         self._model.to(self.device)
         self._model.eval()
