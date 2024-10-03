@@ -50,7 +50,16 @@ class Flux1(BaseMLModel):
 
     config = ConfigDict(arbitrary_types_allowed=True)
 
-    def _generate_image(self, prompt: str) -> Image.Image | None:
+    def _generate_image(
+        self,
+        prompt: str,
+        height: int,
+        width: int,
+        guidance_scale: float,
+        num_inference_steps: int,
+        max_sequence_length: int,
+        seed: int = 0,
+    ) -> Image.Image | None:
         """
         Generate an image from a given prompt.
 
@@ -63,14 +72,14 @@ class Flux1(BaseMLModel):
             Optional[Image.Image]: The generated image if successful; None if an error occurred.
         """
         try:
-            generator = torch.Generator("cpu").manual_seed(0)
+            generator = torch.Generator("cpu").manual_seed(seed)
             image = self._pipeline(
                 prompt=prompt,
-                height=self.model_config.height,
-                width=self.model_config.width,
-                guidance_scale=self.model_config.guidance_scale,
-                num_inference_steps=self.model_config.num_inference_steps,
-                max_sequence_length=self.model_config.max_sequence_length,
+                height=height,
+                width=width,
+                guidance_scale=guidance_scale,
+                num_inference_steps=num_inference_steps,
+                max_sequence_length=max_sequence_length,
                 generator=generator,
             ).images[0]
             return image
@@ -82,7 +91,17 @@ class Flux1(BaseMLModel):
             ) from e
 
     def _inpaint_image(
-        self, prompt: str, image: Image.Image, mask_image: Image.Image
+        self,
+        image: Image.Image,
+        mask_image: Image.Image,
+        prompt: str,
+        height: int,
+        width: int,
+        guidance_scale: float,
+        num_inference_steps: int,
+        max_sequence_length: int,
+        strength: float,
+        seed: int = 0,
     ) -> Image.Image | None:
         """
         Inpaint an image using a given prompt and a mask image.
@@ -99,18 +118,18 @@ class Flux1(BaseMLModel):
             Optional[Image.Image]: The inpainted image if successful; None if an error occurred.
         """
         try:
-            generator = torch.Generator("cpu").manual_seed(0)
+            generator = torch.Generator("cpu").manual_seed(seed)
             image = self._inpaint_pipeline(
                 prompt=prompt,
-                height=self.model_config.height,
-                width=self.model_config.width,
-                guidance_scale=self.model_config.guidance_scale,
-                num_inference_steps=self.model_config.num_inference_steps,
-                max_sequence_length=self.model_config.max_sequence_length,
+                height=height,
+                width=width,
+                guidance_scale=guidance_scale,
+                num_inference_steps=num_inference_steps,
+                max_sequence_length=max_sequence_length,
                 generator=generator,
                 image=image,
                 mask_image=mask_image,
-                strength=self.model_config.strength,
+                strength=strength,
             ).images[0]
             return image
         except Exception as e:
@@ -145,8 +164,15 @@ class Flux1(BaseMLModel):
         self,
         task: Flux1Task,
         prompt: str,
-        image: Image.Image | None = None,
-        mask_image: Image.Image | None = None,
+        image: Image.Image | None = None,  # Only used for inpainting
+        mask_image: Image.Image | None = None,  # Only used for inpainting
+        height: int | None = None,
+        width: int | None = None,
+        guidance_scale: float | None = None,
+        num_inference_steps: int | None = None,
+        max_sequence_length: int | None = None,
+        strength: float | None = None,  # Only used for inpainting
+        seed: int = 0,
     ) -> Image.Image | None:
         """
         Performs object detection on an image using the Flux1 model.
@@ -155,19 +181,49 @@ class Flux1(BaseMLModel):
             prompts str: A prompt to generate an image from.
                         Currently, only one prompt is supported (single string)
                         and the model will generate a single image.
-            task Flux1Task: The task to perform using the model.
-            image Image.Image: The image to inpaint.
-            mask_image Image.Image: The mask image to use for inpainting.
+
+            task (Flux1Task): The task to perform using the model - either image generation ("generation") or mask inpainting ("inpainting").
+            prompt (str): A prompt to generate an image from. Currently, only one prompt is supported (single string) and the model will generate a single image.
+            image (Image.Image | None, optional): The image to inpaint. Defaults to None. Only used for inpainting.
+            mask_image (Image.Image | None, optional): The mask image to use for inpainting. Defaults to None. Only used for inpainting.
+            height (int | None, optional): The height of the generated image. Defaults to None.
+            width (int | None, optional): The width of the generated image. Defaults to None.
+            guidance_scale (float | None, optional): The guidance scale for image generation. Defaults to None.
+            num_inference_steps (int | None, optional): The number of inference steps for image generation. Defaults to None.
+            max_sequence_length (int | None, optional): The maximum sequence length for image generation. Defaults to None.
+            strength (float | None, optional): The strength for inpainting. Defaults to None. Only used for inpainting.
+            seed (int, optional): The seed for random number generation. Defaults to 0.
 
         Returns:
-            Optional[Image.Image]: The output image if thee flux1 process is successful;
+            Image.Image | None: The output image if the Flux1 process is successful;
                 None if an error occurred.
         """
         if task == Flux1Task.IMAGE_GENERATION:
-            generated_img = self._generate_image(prompt=prompt)
+            generated_img = self._generate_image(
+                prompt=prompt,
+                height=height or self.model_config.height,
+                width=width or self.model_config.width,
+                guidance_scale=guidance_scale or self.model_config.guidance_scale,
+                num_inference_steps=num_inference_steps
+                or self.model_config.num_inference_steps,
+                max_sequence_length=max_sequence_length
+                or self.model_config.max_sequence_length,
+                seed=seed or 0,
+            )
         elif task == Flux1Task.MASK_INPAINTING:
             generated_img = self._inpaint_image(
-                prompt=prompt, image=image, mask_image=mask_image
+                image=image,
+                mask_image=mask_image,
+                prompt=prompt,
+                height=height or self.model_config.height,
+                width=width or self.model_config.width,
+                guidance_scale=guidance_scale or self.model_config.guidance_scale,
+                num_inference_steps=num_inference_steps
+                or self.model_config.num_inference_steps,
+                max_sequence_length=max_sequence_length
+                or self.model_config.max_sequence_length,
+                strength=strength or self.model_config.strength,
+                seed=seed or 0,
             )
         else:
             _LOGGER.error(f"Unsupported task: {task}")

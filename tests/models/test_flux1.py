@@ -52,3 +52,25 @@ def test_successful_image_mask_inpainting():
     assert result is not None
     assert result.mode == "RGB"
     assert result.size == (512, 512)
+
+
+def test_parameters_image_generation():
+    prompt = "cat wizard, Pixar style, 8k"
+
+    flux1 = Flux1()
+
+    result = flux1(
+        task=Flux1Task.IMAGE_GENERATION,
+        prompt=prompt,
+        height=128,
+        width=128,
+        guidance_scale=0.5,
+        num_inference_steps=1,
+        max_sequence_length=32,
+    )
+
+    result.save("tests/models/data/flux1/cat_1_inference_step.png")
+
+    assert result is not None
+    assert result.mode == "RGB"
+    assert result.size == (128, 128)
