@@ -16,7 +16,7 @@ pydantic = "^2.7.4"
 qreader = { version = "^3.14", optional = true }
 numpy = ">=1.17,<2.0"
 pillow = ">=10.0.1,<=15.0"
-transformers = { extras = ["torch"], version = "^4.42.3", optional = true }
+transformers = { extras = ["torch"], version = "^v4.45.0", optional = true }
 scipy = { version = "^1.13.1", optional = true }
 gdown = "^5.1.0"
 wget = "^3.2"
@@ -35,6 +35,7 @@ decord = { version = "^0.6.0", optional = true }
 diffusers = {git = "https://github.com/huggingface/diffusers.git", branch = "main", optional = true}
 sentencepiece = {version = "^0.2.0", optional = true}
 protobuf = {version = "^5.28.2", optional = true}
+qwen_vl_utils = { version = "^0.0.8", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
@@ -68,6 +69,7 @@ all = [
     "diffusers",
     "sentencepiece",
     "protobuf",
+    "qwen_vl_utils"
 ]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
@@ -81,6 +83,7 @@ clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
+qwen2-vl = ["qwen_vl_utils", "transformers"]
 
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]

@@ -1,38 +1,37 @@
 import torch
+import numpy as np
 from PIL import Image
 from pydantic import validate_call
 
+from qwen_vl_utils import process_vision_info
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 
 
 class Qwen2VL(BaseMLModel):
     """
-    [Qwen2-VL](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct) is a tool that ...
+    [Qwen2-VL](https://huggingface.co/Qwen/Qwen2-VL-2B-Instruct) is a tool that ...
 
     NOTE: The Qwen2-VL model should be used in GPU environments.
     """
 
-    _HF_MODEL = "Qwen/Qwen2-VL-7B-Instruct"
+    _HF_MODEL = "Qwen/Qwen2-VL-2B-Instruct"
 
     def _process_image(self, image: Image.Image) -> Image.Image:
-        pass
+        image = image.convert("RGB")
+        return image
 
     def _process_video(self, video: VideoNumpy) -> list[Image.Image]:
-        pass
+        shape = video.shape
+        images = [
+            self._process_image(Image.fromarray(video[t])) for t in range(shape[0])
+        ]
+        return images
 
     def __init__(self, device: Device | None = Device.GPU) -> None:
         """
         Initializes the Qwen2-VL model.
         """
-        self._model = Qwen2VLForConditionalGeneration.from_pretrained(
-            self._HF_MODEL,
-            trust_remote_code=True,
-            torch_dtype="auto",
-            device_map="auto",
-        )
-        self._processor = AutoProcessor.from_pretrained(self._HF_MODEL)
-
         if device is None:
             self.device = (
                 "cuda"
@@ -43,6 +42,12 @@ class Qwen2VL(BaseMLModel):
             )
         else:
             self.device = device.value
+
+        self._model = Qwen2VLForConditionalGeneration.from_pretrained(
+            self._HF_MODEL, torch_dtype=torch.bfloat16, device_map=self.device
+        )
+        self._processor = AutoProcessor.from_pretrained(self._HF_MODEL)
+
         self._model.to(self.device)
         self._model.eval()
 
@@ -53,7 +58,6 @@ class Qwen2VL(BaseMLModel):
         prompt: str | None = None,
         image: Image.Image | None = None,
         video: VideoNumpy | None = None,
-        chunk_length: int | None = None,
     ) -> list[str]:
         """
         Qwen2-VL model answers questions about a video or image.
@@ -71,7 +75,7 @@ class Qwen2VL(BaseMLModel):
             raise ValueError("Either 'image' or 'video' must be provided.")
         if image is not None and video is not None:
             raise ValueError("Only one of 'image' or 'video' can be provided.")
-
+        # create the conversation template
         if image is not None:
             if prompt is None:
                 prompt = "Describe this image."
@@ -79,29 +83,52 @@ class Qwen2VL(BaseMLModel):
                 {
                     "role": "user",
                     "content": [
+                        {"type": "image", "image": self._process_image(image)},
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ]
+        if video is not None:
+            shape = video[0].shape
+            if prompt is None:
+                prompt = "Describe this video."
+            conversation = [
+                {
+                    "role": "user",
+                    "content": [
                         {
-                            "type": "image",
+                            "type": "video",
+                            "video": self._process_video(video),
+                            "max_pixels": shape[0] * shape[1],
+                            "fps": 1.0,
                         },
                         {"type": "text", "text": prompt},
                     ],
                 }
             ]
-            text_prompt = self._processor.apply_chat_template(conversation, add_generation_prompt=True)
-            inputs = self._processor(
-                text=[text_prompt], images=[image], padding=True, return_tensors="pt"
-            )
-            inputs = inputs.to(self.device)
-            output_ids = self._model.generate(**inputs, max_new_tokens=128)
-            generated_ids = [
-                output_ids[len(input_ids) :]
-                for input_ids, output_ids in zip(inputs.input_ids, output_ids)
-            ]
-            output_text = self._processor.batch_decode(
-                generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
-            )
-            print(output_text)
-        if video is not None:
-            return NotImplementedError("Video processing is not implemented yet.")
+        # process the inputs
+        text_prompt = self._processor.apply_chat_template(
+            conversation, tokenize=False, add_generation_prompt=True
+        )
+        image_inputs, video_inputs = process_vision_info(conversation)
+        inputs = self._processor(
+            text=[text_prompt],
+            images=image_inputs,
+            videos=video_inputs,
+            padding=True,
+            return_tensors="pt",
+        )
+        inputs = inputs.to(self.device)
+        # run the inference
+        output_ids = self._model.generate(**inputs, max_new_tokens=128)
+        generated_ids = [
+            output_ids[len(input_ids) :]
+            for input_ids, output_ids in zip(inputs.input_ids, output_ids)
+        ]
+        output_text = self._processor.batch_decode(
+            generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        )
+        return output_text
 
     def to(self, device: Device):
         self._model.to(device=device.value)
