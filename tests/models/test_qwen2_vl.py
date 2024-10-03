@@ -1,9 +1,11 @@
 from vision_agent_tools.models.qwen2_vl import Qwen2VL
 import cv2
 import numpy as np
+import pytest
 from PIL import Image
 
 
+@pytest.mark.skip(reason="Qwen2VL model does not fit on the current GPU memory")
 def load_video_frames(video_path: str) -> np.ndarray:
     # Load the video into frames
     cap = cv2.VideoCapture(video_path)
@@ -18,6 +20,7 @@ def load_video_frames(video_path: str) -> np.ndarray:
     return frames
 
 
+@pytest.mark.skip(reason="Qwen2VL model does not fit on the current GPU memory")
 def test_successful_qwen2vl_for_video(random_video_generator):
     video_path = "tests/tools/data/owlv2/test_video_5_frames.mp4"
     video_np = load_video_frames(video_path)
