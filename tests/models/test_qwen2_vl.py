@@ -5,7 +5,6 @@ import pytest
 from PIL import Image
 
 
-@pytest.mark.skip(reason="Qwen2VL model does not fit on the current GPU memory")
 def load_video_frames(video_path: str) -> np.ndarray:
     # Load the video into frames
     cap = cv2.VideoCapture(video_path)
@@ -33,6 +32,7 @@ def test_successful_qwen2vl_for_video(random_video_generator):
     assert len(answer[0]) > 0
 
 
+@pytest.mark.skip(reason="Qwen2VL model does not fit on the current GPU memory")
 def test_successful_qwen2vl_for_images():
     test_image = "car.jpg"
 
