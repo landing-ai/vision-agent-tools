@@ -32,6 +32,9 @@ sam-2 = { git = "https://github.com/landing-ai/segment-anything-2.git", branch =
 # that we don't use: https://huggingface.co/internlm/internlm-xcomposer2d5-7b/blob/main/ixc_utils.py#L9
 # as soon as they remove it we can extinguish from our side too 
 decord = { version = "^0.6.0", optional = true }
+diffusers = {git = "https://github.com/huggingface/diffusers.git", branch = "main", optional = true}
+sentencepiece = {version = "^0.2.0", optional = true}
+protobuf = {version = "^5.28.2", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
@@ -61,7 +64,10 @@ all = [
     "controlnet-aux",
     "lmdeploy",
     "sam-2",
-    "decord"
+    "decord",
+    "diffusers",
+    "sentencepiece",
+    "protobuf",
 ]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
@@ -74,6 +80,7 @@ florencev2-qa = ["transformers", "scipy", "timm", "einops"]
 clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
+flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
 
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]
