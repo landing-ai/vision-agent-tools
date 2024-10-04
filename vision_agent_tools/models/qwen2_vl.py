@@ -64,7 +64,7 @@ class Qwen2VL(BaseMLModel):
     def __call__(
         self,
         prompt: str | None = None,
-        image: Image.Image | None = None,
+        images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
     ) -> list[str]:
         """
@@ -72,28 +72,26 @@ class Qwen2VL(BaseMLModel):
 
         Args:
             prompt (str): The prompt with the question to be answered.
-            image (Image.Image | None): The image to be analyzed.
+            images (list[Image.Image]): A list of images for the model to process. None if using video.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
 
         Returns:
             list[str]: The answers to the prompt.
         """
-        if image is None and video is None:
-            raise ValueError("Either 'image' or 'video' must be provided.")
-        if image is not None and video is not None:
-            raise ValueError("Only one of 'image' or 'video' can be provided.")
+        if images is None and video is None:
+            raise ValueError("Either 'images' or 'video' must be provided.")
+        if images is not None and video is not None:
+            raise ValueError("Only one of 'images' or 'video' can be provided.")
         # create the conversation template
-        if image is not None:
+        if images is not None:
             if prompt is None:
                 prompt = "Describe this image."
+            images_input = [{"type": "image", "image": self._process_image(image)} for image in images]
             conversation = [
                 {
                     "role": "user",
-                    "content": [
-                        {"type": "image", "image": self._process_image(image)},
-                        {"type": "text", "text": prompt},
-                    ],
+                    "content": images_input + [{"type": "text", "text": prompt}],
                 }
             ]
         if video is not None:
