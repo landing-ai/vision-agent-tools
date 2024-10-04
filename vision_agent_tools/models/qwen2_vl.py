@@ -87,7 +87,10 @@ class Qwen2VL(BaseMLModel):
         if images is not None:
             if prompt is None:
                 prompt = "Describe this image."
-            images_input = [{"type": "image", "image": self._process_image(image)} for image in images]
+            images_input = [
+                {"type": "image", "image": self._process_image(image)}
+                for image in images
+            ]
             conversation = [
                 {
                     "role": "user",

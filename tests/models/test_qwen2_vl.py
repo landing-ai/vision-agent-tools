@@ -40,6 +40,6 @@ def test_successful_qwen2vl_for_images():
 
     run_inference = Qwen2VL()
 
-    answer = run_inference(image=image, prompt="what is the color of the car?")
+    answer = run_inference(images=[image], prompt="what is the color of the car?")
     assert len(answer) > 0
     assert len(answer[0]) > 0
