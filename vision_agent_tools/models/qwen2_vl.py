@@ -1,10 +1,21 @@
 import torch
 from PIL import Image
+from typing import Annotated
 from pydantic import BaseModel, validate_call, Field
+from annotated_types import Len
+
 
 from qwen_vl_utils import process_vision_info
 from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+
+MAX_NUMBER_OF_IMAGES = 10
+MAX_NUMBER_OF_FRAMES = 24
+
+Images = Annotated[
+    list[Image.Image], Len(min_length=1, max_length=MAX_NUMBER_OF_IMAGES)
+]
+Frames = Annotated[int, Field(ge=1, le=MAX_NUMBER_OF_FRAMES)]
 
 
 class Qwen2VLConfig(BaseModel):
@@ -31,16 +42,28 @@ class Qwen2VL(BaseMLModel):
     NOTE: The Qwen2-VL model should be used in GPU environments.
     """
 
-    def _process_image(self, image: Image.Image) -> Image.Image:
+    _IMAGE_MAX_SHAPE_VALUE = (960, 600)
+    _IMAGE_MAX_PIXELS = _IMAGE_MAX_SHAPE_VALUE[0] * _IMAGE_MAX_SHAPE_VALUE[1]
+    _VIDEO_MAX_SHAPE_VALUE = (560, 560)
+    _VIDEO_MAX_PIXELS = _VIDEO_MAX_SHAPE_VALUE[0] * _VIDEO_MAX_SHAPE_VALUE[1]
+
+    def _process_image(self, image: Image.Image, max_shape: tuple) -> Image.Image:
         image = image.convert("RGB")
+        if image.size[0] > max_shape[0] or image.size[1] > max_shape[1]:
+            image.thumbnail(max_shape)
         return image
 
-    def _process_video(self, video: VideoNumpy) -> list[Image.Image]:
-        shape = video.shape
-        images = [
-            self._process_image(Image.fromarray(video[t])) for t in range(shape[0])
+    def _process_video(self, frames: VideoNumpy, num_frames: int) -> list[Image.Image]:
+        if len(frames) > num_frames:
+            num_frames = min(num_frames, len(frames))
+            step_size = len(frames) / (num_frames + 1)
+            indices = [int(i * step_size) for i in range(num_frames)]
+            frames = [frames[i] for i in indices]
+        frames = [
+            self._process_image(Image.fromarray(arr), self._VIDEO_MAX_SHAPE_VALUE)
+            for arr in frames
         ]
-        return images
+        return frames
 
     def __init__(self, model_config: Qwen2VLConfig | None = None) -> None:
         """
@@ -53,6 +76,7 @@ class Qwen2VL(BaseMLModel):
             self._model_config.hf_model,
             torch_dtype=torch.bfloat16,
             device_map=self.device,
+            attn_implementation="flash_attention_2",
         )
         self._processor = AutoProcessor.from_pretrained(self._model_config.hf_model)
 
@@ -64,8 +88,9 @@ class Qwen2VL(BaseMLModel):
     def __call__(
         self,
         prompt: str | None = None,
-        images: list[Image.Image] | None = None,
+        images: Images | None = None,
         video: VideoNumpy | None = None,
+        frames: Frames = MAX_NUMBER_OF_FRAMES,
     ) -> list[str]:
         """
         Qwen2-VL model answers questions about a video or image.
@@ -74,7 +99,7 @@ class Qwen2VL(BaseMLModel):
             prompt (str): The prompt with the question to be answered.
             images (list[Image.Image]): A list of images for the model to process. None if using video.
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
-            chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
+            frames (int): The number of frames to be used from the video.
 
         Returns:
             list[str]: The answers to the prompt.
@@ -88,17 +113,20 @@ class Qwen2VL(BaseMLModel):
             if prompt is None:
                 prompt = "Describe this image."
             images_input = [
-                {"type": "image", "image": self._process_image(image)}
+                {
+                    "type": "image",
+                    "image": self._process_image(image, self._IMAGE_MAX_SHAPE_VALUE),
+                }
                 for image in images
             ]
             conversation = [
                 {
                     "role": "user",
                     "content": images_input + [{"type": "text", "text": prompt}],
+                    "max_pixels": self._IMAGE_MAX_PIXELS,
                 }
             ]
         if video is not None:
-            shape = video[0].shape
             if prompt is None:
                 prompt = "Describe this video."
             conversation = [
@@ -107,8 +135,8 @@ class Qwen2VL(BaseMLModel):
                     "content": [
                         {
                             "type": "video",
-                            "video": self._process_video(video),
-                            "max_pixels": shape[0] * shape[1],
+                            "video": self._process_video(video, frames),
+                            "max_pixels": self._VIDEO_MAX_PIXELS,
                             "fps": 1.0,
                         },
                         {"type": "text", "text": prompt},
@@ -129,14 +157,17 @@ class Qwen2VL(BaseMLModel):
         )
         inputs = inputs.to(self.device)
         # run the inference
-        output_ids = self._model.generate(**inputs, max_new_tokens=128)
+        output_ids = self._model.generate(**inputs, max_new_tokens=512)
         generated_ids = [
             output_ids[len(input_ids) :]
             for input_ids, output_ids in zip(inputs.input_ids, output_ids)
         ]
         output_text = self._processor.batch_decode(
-            generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
+            generated_ids,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
         )
+        torch.cuda.empty_cache()
         return output_text
 
     def to(self, device: Device):
