@@ -13,6 +13,7 @@ def load_video_frames(video_path: str) -> np.ndarray:
         ret, frame = cap.read()
         if not ret:
             break
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frames.append(frame)
     cap.release()
     frames = np.stack(frames, axis=0)
