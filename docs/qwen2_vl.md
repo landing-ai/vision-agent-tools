@@ -28,7 +28,7 @@ frames = np.stack(frames, axis=0)
 run_inference = Qwen2VL()
 prompt = "Here are some frames of a video. Describe this video in detail"
 # Time to put Qwen2VL to work!
-answer = run_inference(video=p_video, prompt=prompt)
+answer = run_inference(video=frames, prompt=prompt)
 
 # Print the output answer
 print(answer)
