@@ -58,9 +58,12 @@ class Owlv2(BaseMLModel):
         self, image, texts, confidence, nms_threshold
     ) -> list[BboxLabel]:
         # Run model inference here
-        inputs = self._processor(text=texts, images=image, return_tensors="pt").to(
-            self.model_config.device
-        )
+        inputs = self._processor(
+            text=texts,
+            images=image,
+            return_tensors="pt",
+            truncation=True,
+        ).to(self.model_config.device)
         # Forward pass
         with torch.autocast(self.model_config.device):
             outputs = self._model(**inputs)
