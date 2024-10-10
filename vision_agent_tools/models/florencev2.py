@@ -17,6 +17,7 @@ from vision_agent_tools.models.utils import (
     calculate_bbox_iou,
     convert_florence_bboxes_to_bbox_labels,
     convert_bbox_labels_to_florence_bboxes,
+    filter_redundant_boxes,
 )
 
 
@@ -283,8 +284,9 @@ class Florencev2(BaseMLModel):
                     # Run a dummy NMS to get rid of any overlapping predictions on the same object
                     filtered_preds = self._dummy_agnostic_nms(preds, nms_threshold)
                     # format the output to match the original format and update the output predictions
-                    parsed_answer[task] = convert_bbox_labels_to_florence_bboxes(
-                        filtered_preds
+
+                    parsed_answer[task] = filter_redundant_boxes(
+                        convert_bbox_labels_to_florence_bboxes(filtered_preds)
                     )
                 results.append(parsed_answer)
             return results
