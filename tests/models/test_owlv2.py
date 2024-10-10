@@ -62,7 +62,7 @@ def test_successful_image_detection_with_nms():
 def test_successful_image_with_large_prompt():
     test_image = "000000039769.jpg"
     prompts = [
-        """a photo of a  cat that is spleeping next to a remote control,
+        """a photo of a cat that is sleeping next to a remote control,
             the cat has a light brown color with black spots and seems to be wearing a light green necklace.
             It also seems to be stretching its right leg and next to its left leg, it is stepping on the tail"""
     ]
