@@ -1,16 +1,17 @@
 import logging
 import os
-import wget
-import gdown
 import os.path as osp
-from vision_agent_tools.shared_types import (
-    BoundingBox,
-    SegmentationBitMask,
-    BboxLabel,
-    FlorenceV2ODRes,
-)
-import numpy as np
 
+import gdown
+import numpy as np
+import wget
+
+from vision_agent_tools.shared_types import (
+    BboxLabel,
+    BoundingBox,
+    FlorenceV2ODRes,
+    SegmentationBitMask,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -194,8 +195,7 @@ def filter_redundant_boxes(response, min_contained=2):
                         _LOGGER.info(
                             f"Removing box {box_a} as it contains {contained} boxes."
                         )
-                        break  # No need to check further
-            # Continue to next box
+                        break
 
         # Add boxes that are not removed
         for idx in range(n):
