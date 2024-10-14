@@ -1,3 +1,4 @@
+import logging
 import os
 import wget
 import gdown
@@ -9,8 +10,9 @@ from vision_agent_tools.shared_types import (
     FlorenceV2ODRes,
 )
 import numpy as np
-import statistics
 
+
+_LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
 CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
@@ -125,68 +127,6 @@ def convert_bbox_labels_to_florence_bboxes(predictions: list[BboxLabel]) -> dict
     return preds
 
 
-def _compute_area(bbox):
-    """
-    Computes the area of a bounding box.
-    bbox: [x_min, y_min, x_max, y_max]
-    """
-    x_min, y_min, x_max, y_max = bbox
-    return max(0, x_max - x_min) * max(0, y_max - y_min)
-
-
-def filter_outliers_by_area(response, k=2):
-    """
-    Filters out bounding boxes that are outliers based on their area for each label.
-    Parameters:
-        response (dict): Dictionary containing 'bboxes' and 'labels'.
-        k (float): Number of standard deviations to use as the threshold.
-    Returns:
-        filtered_bboxes (list): List of filtered bounding boxes.
-        filtered_labels (list): Corresponding list of labels.
-    """
-
-    print(response)
-    bboxes = response["bboxes"]
-    labels = response["labels"]
-
-    # Compute area for each bbox
-    areas = [_compute_area(bbox) for bbox in bboxes]
-
-    # Organize areas by label
-    label_to_areas = {}
-    label_to_indices = {}
-    for idx, (bbox, label, area) in enumerate(zip(bboxes, labels, areas)):
-        label_to_areas.setdefault(label, []).append(area)
-        label_to_indices.setdefault(label, []).append(idx)
-
-    # Identify outliers
-    outlier_indices = set()
-    for label, areas_list in label_to_areas.items():
-        if len(areas_list) < 2:
-            # Not enough data to determine outliers
-            continue
-        mean = statistics.mean(areas_list)
-        stdev = statistics.stdev(areas_list)
-        threshold = mean + k * stdev
-        print(
-            f"Label: {label}, Mean area: {mean:.2f}, Std Dev: {stdev:.2f}, Threshold: {threshold:.2f}"
-        )
-        for idx in label_to_indices[label]:
-            if areas[idx] > threshold:
-                print(f"Marking box {bboxes[idx]} as outlier (Area: {areas[idx]:.2f})")
-                outlier_indices.add(idx)
-
-    # Filter out the outliers
-    filtered_bboxes = [
-        bbox for idx, bbox in enumerate(bboxes) if idx not in outlier_indices
-    ]
-    filtered_labels = [
-        label for idx, label in enumerate(labels) if idx not in outlier_indices
-    ]
-
-    return {"bboxes": filtered_bboxes, "labels": filtered_labels}
-
-
 def _contains(box_a, box_b):
     """
     Checks if box_a fully contains box_b.
@@ -251,7 +191,9 @@ def filter_redundant_boxes(response, min_contained=2):
                     contained += 1
                     if contained >= min_contained:
                         to_remove.add(i)
-                        print(f"Removing box {box_a} as it contains {contained} boxes.")
+                        _LOGGER.info(
+                            f"Removing box {box_a} as it contains {contained} boxes."
+                        )
                         break  # No need to check further
             # Continue to next box
 
