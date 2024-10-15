@@ -3,7 +3,7 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_caption_cereal(small_model):
+def test_caption_cereal(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.CAPTION
     # cannot have prompt
@@ -15,11 +15,11 @@ def test_caption_cereal(small_model):
         "task": task,
         "prompt": prompt,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
     assert response == [{"text": "A pile of colorful doughnuts sitting on a table."}]
 
 
-def test_caption_car(small_model):
+def test_caption_car(shared_model):
     image_path = "tests/shared_data/images/car.jpg"
     task = PromptTask.CAPTION
     # cannot have prompt
@@ -31,7 +31,7 @@ def test_caption_car(small_model):
         "task": task,
         "prompt": prompt,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
     assert response == [{"text": "A green car parked in front of a yellow building."}]
 
 

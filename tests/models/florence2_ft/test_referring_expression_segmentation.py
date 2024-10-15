@@ -4,7 +4,7 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_referring_expression_segmentation(small_model):
+def test_referring_expression_segmentation(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.REFERRING_EXPRESSION_SEGMENTATION
     image = Image.open(image_path)
@@ -13,7 +13,7 @@ def test_referring_expression_segmentation(small_model):
         "images": [image],
         "task": task,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
     assert response == [
         {
             "labels": [""],

@@ -4,7 +4,7 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_ocr_batch(small_model):
+def test_ocr_batch(shared_model):
     ocr_image_1 = Image.open("tests/shared_data/images/ocr_image_1.jpg")
     ocr_image_2 = Image.open("tests/shared_data/images/ocr_image_2.jpg")
     ocr_image_3 = Image.open("tests/shared_data/images/ocr_image_3.jpg")
@@ -14,7 +14,7 @@ def test_ocr_batch(small_model):
         "images": [ocr_image_1, ocr_image_2, ocr_image_3],
         "task": task,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
 
     assert len(response) == 3
     assert response == [

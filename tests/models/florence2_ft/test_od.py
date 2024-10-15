@@ -20,7 +20,7 @@ def test_large_model_od_image(large_model):
     ]
 
 
-def test_small_model_od_image(small_model):
+def test_small_model_od_image(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.OBJECT_DETECTION
     # cannot have prompt
@@ -28,7 +28,7 @@ def test_small_model_od_image(small_model):
     image = Image.open(image_path)
 
     request = {"images": [image], "task": task, "prompt": prompt}
-    response = small_model(**request)
+    response = shared_model(**request)
     assert response == [
         {
             "bboxes": [],

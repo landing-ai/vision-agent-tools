@@ -4,7 +4,7 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_caption_to_phrase_grounding_cereal(small_model):
+def test_caption_to_phrase_grounding_cereal(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "screw"
@@ -15,7 +15,7 @@ def test_caption_to_phrase_grounding_cereal(small_model):
         "task": task,
         "prompt": prompt,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
     assert response == [
         {
             "bboxes": [],
@@ -24,14 +24,14 @@ def test_caption_to_phrase_grounding_cereal(small_model):
     ]
 
 
-def test_caption_to_phrase_grounding_car_with_nms(small_model):
+def test_caption_to_phrase_grounding_car_with_nms(shared_model):
     image_path = "tests/shared_data/images/car.jpg"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "car"
     image = Image.open(image_path)
 
     payload = {"images": [image], "task": task, "prompt": prompt, "nms_threshold": 0.1}
-    response = small_model(**payload)
+    response = shared_model(**payload)
     assert response == [
         {
             "labels": ["car"],
@@ -47,7 +47,7 @@ def test_caption_to_phrase_grounding_car_with_nms(small_model):
     ]
 
 
-def test_caption_to_phrase_grounding_video(small_model, bytes_to_np):
+def test_caption_to_phrase_grounding_video(shared_model, bytes_to_np):
     video_path = "tests/shared_data/videos/shark_10fps.mp4"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "shark"
@@ -60,7 +60,7 @@ def test_caption_to_phrase_grounding_video(small_model, bytes_to_np):
         "task": task,
         "prompt": prompt,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
 
     assert len(response) == 80
     with open(

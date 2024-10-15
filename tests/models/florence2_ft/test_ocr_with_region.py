@@ -4,7 +4,7 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_ocr(small_model):
+def test_ocr(shared_model):
     image_path = "tests/shared_data/images/license_plate.jpg"
     task = PromptTask.OCR_WITH_REGION
     # cannot have prompt
@@ -16,7 +16,7 @@ def test_ocr(small_model):
         "task": task,
         "prompt": prompt,
     }
-    response = small_model(**payload)
+    response = shared_model(**payload)
     with open("tests/models/florence2_ft/data/results/ocr_results.json", "r") as source:
         expected_result = json.load(source)
     assert response == expected_result
