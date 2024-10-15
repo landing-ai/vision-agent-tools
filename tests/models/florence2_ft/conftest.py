@@ -13,18 +13,14 @@ from vision_agent_tools.models.florence2_ft import Florence2Ft
 logging.basicConfig(level=logging.INFO)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def large_model():
-    model = Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
-    yield model
-    model.load_base()
+    return Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def small_model():
-    model = Florence2Ft(Florence2ModelName.FLORENCE_2_BASE_FT)
-    yield model
-    model.load_base()
+    return Florence2Ft(Florence2ModelName.FLORENCE_2_BASE_FT)
 
 
 @pytest.fixture
