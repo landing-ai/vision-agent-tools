@@ -12,7 +12,7 @@ def test_successful_qr_detection(expected_text):
 
     # Load the test images
     for test_image in ["001.jpeg", "002.jpeg"]:
-        image = Image.open(f"tests/tools/data/qr_reader/{test_image}")
+        image = Image.open(f"tests/shared_data/images/{test_image}")
 
         qr_reader = QRReader()
 
@@ -28,7 +28,7 @@ def test_empty_image():
     This test verifies that the QRReader handles an empty image.
     """
 
-    empty_image = Image.open("tests/tools/data/qr_reader/empty.png")
+    empty_image = Image.open("tests/shared_data/images/empty.png")
 
     qr_reader = QRReader()
 

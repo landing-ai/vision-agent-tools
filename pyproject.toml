@@ -11,31 +11,44 @@ readme = "README.md"
 "documentation" = "https://github.com/landing-ai/vision-agent-tools"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.10,<3.13"
+
 pydantic = "^2.7.4"
-qreader = { version = "^3.14", optional = true }
 numpy = ">=1.17,<2.0"
 pillow = ">=10.0.1,<=15.0"
-transformers = { extras = ["torch"], version = "^v4.45.0", optional = true }
-scipy = { version = "^1.13.1", optional = true }
 gdown = "^5.1.0"
 wget = "^3.2"
-torch = ">=2.3.1"
+
+torch = { version = "2.3.1", source = "torch_cuda118" }
+torchvision = { version = "0.18.1", source = "torch_cuda118" }
+
+flash-attn = [
+    { url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.6.1/flash_attn-2.6.1+cu118torch2.3cxx11abiFALSE-cp310-cp310-linux_x86_64.whl", python = "~3.10", optional = true },
+    { url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.6.1/flash_attn-2.6.1+cu118torch2.3cxx11abiFALSE-cp311-cp311-linux_x86_64.whl", python = "~3.11", optional = true },
+    { url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.6.1/flash_attn-2.6.1+cu118torch2.3cxx11abiFALSE-cp312-cp312-linux_x86_64.whl", python = "~3.12", optional = true },
+]
+qreader = { version = "^3.14", optional = true }
+scipy = { version = "^1.13.1", optional = true }
+peft = { version = "^0.11.1", optional = true }
 timm = { version = "^0.6.7", optional = true }
-einops = { version = "^0.7.0", optional = true }
-loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
-depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main", optional = true }
+einops = { version = "^0.8.0", optional = true }
+transformers = { extras = ["torch"], version = "^4.45.0", optional = true }
 controlnet-aux = { version = "^0.0.9", optional = true }
 lmdeploy = { version = "^0.5.3", optional = true }
-sam-2 = { git = "https://github.com/landing-ai/segment-anything-2.git", branch = "main", optional = true }
+sentencepiece = { version = "^0.2.0", optional = true }
+protobuf = { version = "^5.28.2", optional = true }
+qwen_vl_utils = { version = "^0.0.8", optional = true }
+
 # this dependency is just here due to the ixc-25 model and because it's imported in one util file
 # that we don't use: https://huggingface.co/internlm/internlm-xcomposer2d5-7b/blob/main/ixc_utils.py#L9
 # as soon as they remove it we can extinguish from our side too 
 decord = { version = "^0.6.0", optional = true }
-diffusers = {git = "https://github.com/huggingface/diffusers.git", branch = "main", optional = true}
-sentencepiece = {version = "^0.2.0", optional = true}
-protobuf = {version = "^5.28.2", optional = true}
-qwen_vl_utils = { version = "^0.0.8", optional = true }
+
+diffusers = { git = "https://github.com/huggingface/diffusers.git", branch = "main", optional = true }
+
+loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
+sam-2 = { git = "https://github.com/landing-ai/segment-anything-2.git", branch = "main", optional = true }
+depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2.git", branch = "main", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.1"
@@ -45,13 +58,13 @@ mypy = "^1.10.1"
 ipykernel = "^6.29.5"
 pytest-asyncio = "^0.23.7"
 opencv-stubs = "^0.0.10"
-opencv-python = "^4.10.0.84"
+opencv-python-headless = "^4.10.0.84"
 
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-material = "^9.5.28"
 griffe-fieldz = "^0.2.0"
-opencv-python = "^4.10.0.84"
+opencv-python-headless = "^4.10.0.84"
 
 [tool.poetry.extras]
 all = [
@@ -61,6 +74,7 @@ all = [
     "loca",
     "depth-anything-v2",
     "timm",
+    "peft",
     "einops",
     "controlnet-aux",
     "lmdeploy",
@@ -69,21 +83,29 @@ all = [
     "diffusers",
     "sentencepiece",
     "protobuf",
-    "qwen_vl_utils"
+    "qwen_vl_utils",
 ]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
-florencev2 = ["transformers", "scipy", "timm", "einops"]
 loca-model = ["loca"]
 depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
+
+florence2-ft = ["flash-attn", "transformers", "timm", "einops", "peft"]
+florencev2 = ["transformers", "scipy", "timm", "einops"]
 florencev2-qa = ["transformers", "scipy", "timm", "einops"]
+florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
+
 clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
-florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
 qwen2-vl = ["qwen_vl_utils", "transformers"]
+
+[[tool.poetry.source]]
+name = "torch_cuda118"
+url = "https://download.pytorch.org/whl/cu118"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]

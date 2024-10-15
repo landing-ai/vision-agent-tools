@@ -22,7 +22,7 @@ def load_video_frames(video_path: str) -> np.ndarray:
 
 @pytest.mark.skip(reason="Qwen2VL model does not fit on the current GPU memory")
 def test_successful_qwen2vl_for_video(random_video_generator):
-    video_path = "tests/tools/data/owlv2/test_video_5_frames.mp4"
+    video_path = "tests/shared_data/videos/test_video_5_frames.mp4"
     video_np = load_video_frames(video_path)
     prompt = "Here are some frames of a video. Describe this video in detail"
 
@@ -37,7 +37,7 @@ def test_successful_qwen2vl_for_video(random_video_generator):
 def test_successful_qwen2vl_for_images():
     test_image = "car.jpg"
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     run_inference = Qwen2VL()
 

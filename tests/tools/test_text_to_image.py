@@ -27,8 +27,8 @@ def test_successful_image_generation():
 
 def test_successful_image_mask_inpainting():
     prompt = "cat wizard, Pixar style, 8k"
-    image = Image.open("tests/models/data/flux1/chihuahua.png").convert("RGB")
-    mask_image = Image.open("tests/models/data/flux1/chihuahua_mask.png")
+    image = Image.open("tests/shared_data/images/chihuahua.png").convert("RGB")
+    mask_image = Image.open("tests/shared_data/images/chihuahua_mask.png")
 
     flux_config = Flux1Config(
         height=512,

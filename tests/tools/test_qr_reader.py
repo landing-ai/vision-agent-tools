@@ -10,7 +10,7 @@ def test_successful_qr_tool(expected_text):
     """
 
     for test_image in ["001.jpeg", "002.jpeg"]:
-        image = Image.open(f"tests/tools/data/qr_reader/{test_image}")
+        image = Image.open(f"tests/shared_data/images/{test_image}")
 
         tool = QRReader(model="qr_reader")
 

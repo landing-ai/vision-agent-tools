@@ -8,7 +8,7 @@ def test_successful_image_detection():
     test_image = "000000039769.jpg"
     prompts = ["a photo of a cat", "a photo of a dog"]
 
-    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     owlv2 = Owlv2()
 
@@ -22,7 +22,7 @@ def test_successful_image_detection():
 
 def test_successful_video_detection():
     test_video = "test_video_5_frames.mp4"
-    file_path = f"tests/tools/data/owlv2/{test_video}"
+    file_path = f"tests/shared_data/videos/{test_video}"
     prompts = ["a car", "a tree"]
 
     cap = cv2.VideoCapture(file_path)
@@ -43,7 +43,7 @@ def test_successful_image_detection_with_nms():
     test_image = "surfers_with_shark.png"
     prompts = ["surfer", "shark"]
 
-    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
     results = owlv2(prompts=prompts, image=image)
@@ -67,7 +67,7 @@ def test_successful_image_with_large_prompt():
             It also seems to be stretching its right leg and next to its left leg, it is stepping on the tail"""
     ]
 
-    image = Image.open(f"tests/tools/data/owlv2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     owlv2 = Owlv2()
 

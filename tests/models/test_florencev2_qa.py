@@ -6,7 +6,7 @@ from vision_agent_tools.models.florencev2_qa import FlorenceQA
 def test_successful_florencev2_qa():
     test_image = "car.jpg"
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     florence_qa = FlorenceQA()
 
