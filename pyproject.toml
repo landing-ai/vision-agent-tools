@@ -93,14 +93,21 @@ nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
 
 florence2-ft = ["flash-attn", "transformers", "timm", "einops", "peft"]
-florencev2 = ["transformers", "scipy", "timm", "einops"]
-florencev2-qa = ["transformers", "scipy", "timm", "einops"]
-florence2-sam2 = ["transformers", "scipy", "timm", "einops", "sam-2"]
+florencev2 = ["flash-attn", "transformers", "scipy", "timm", "einops"]
+florencev2-qa = ["flash-attn", "transformers", "scipy", "timm", "einops"]
+florence2-sam2 = [
+    "flash-attn",
+    "transformers",
+    "scipy",
+    "timm",
+    "einops",
+    "sam-2",
+]
 
 clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
-qwen2-vl = ["qwen_vl_utils", "transformers"]
+qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
 
 [[tool.poetry.source]]
 name = "torch_cuda118"

@@ -41,12 +41,6 @@ You can install by running `poetry install --extras "all"` to install all tools,
 `poetry install --extras "owlv2 florencev2"` to install specific tools such as `owlv2`
 and `florencev2`.
 
-
-
-### Installing flash-attn
-
-If your project requires the `flash-attn` dependency, please note that installing it through Poetry can be tricky. We recommend installing `flash-attn` manually using pip after setting up your environment with Poetry with `poetry run pip install flash-attn` - this ensures that the `flash-attn` package is correctly installed in your environment.
-
 ## Usage
 
 ### Models

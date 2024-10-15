@@ -753,7 +753,7 @@ training = ["Jinja2", "accelerate (>=0.31.0)", "datasets", "peft (>=0.6.0)", "pr
 type = "git"
 url = "https://github.com/huggingface/diffusers.git"
 reference = "main"
-resolved_reference = "d40da7b68a3116bb18ee9725b8dc78d39c502473"
+resolved_reference = "3e9a28a8a19686b7b66701f7b93d3358d682a5ae"
 
 [[package]]
 name = "distlib"
@@ -5436,18 +5436,18 @@ clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
 florence2-ft = ["einops", "flash-attn", "flash-attn", "flash-attn", "peft", "timm", "transformers"]
-florence2-sam2 = ["einops", "sam-2", "scipy", "timm", "transformers"]
-florencev2 = ["einops", "scipy", "timm", "transformers"]
-florencev2-qa = ["einops", "scipy", "timm", "transformers"]
+florence2-sam2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "sam-2", "scipy", "timm", "transformers"]
+florencev2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "scipy", "timm", "transformers"]
+florencev2-qa = ["einops", "flash-attn", "flash-attn", "flash-attn", "scipy", "timm", "transformers"]
 flux1 = ["diffusers", "protobuf", "sentencepiece", "transformers"]
 ixc-25 = ["decord", "lmdeploy", "transformers"]
 loca-model = ["loca"]
 nsfw-classification = ["scipy", "transformers"]
 owlv2 = ["scipy", "transformers"]
 qr-reader = ["qreader"]
-qwen2-vl = ["qwen_vl_utils", "transformers"]
+qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transformers"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "ace61e104b5ffa0ee275131045336f0a143b42c65098e37d4d47335d6a45bb1f"
+content-hash = "fc0d3ca79dc261f702c3608f3c582e2277366833636f56dd32d730cd0cea5666"

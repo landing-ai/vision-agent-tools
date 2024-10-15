@@ -19,7 +19,3 @@ echo "Installing poetry dependencies"
 poetry install -E all
 # POETRY run install-dependencies
 echo "Installing poetry dependencies done 🎉"
-
-echo "Installing Flash Attention"
-FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE poetry run pip install flash-attn --no-build-isolation
-echo "Installing Flash Attention done 🎉"
