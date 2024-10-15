@@ -80,7 +80,7 @@ def test_batch_size_validation():
 
 def test_remove_container_box():
     test_image = "sheep_aereal.jpg"
-    image_path = f"tests/models/data/florencev2/{test_image}"
+    image_path = f"tests/shared_data/images/{test_image}"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
 
     image = Image.open(image_path)

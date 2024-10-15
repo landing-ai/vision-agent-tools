@@ -93,8 +93,8 @@ def test_fail_image_generation_dimensions():
 
 def test_fail_image_mask_size():
     prompt = "cat wizard, Pixar style, 8k"
-    image = Image.open("tests/models/data/flux1/chihuahua.png").convert("RGB")
-    mask_image = Image.open("tests/models/data/flux1/chihuahua_mask.png")
+    image = Image.open("tests/shared_data/images/chihuahua.png").convert("RGB")
+    mask_image = Image.open("tests/shared_data/images/chihuahua_mask.png")
     mask_image = mask_image.resize((128, 128))
 
     flux1 = Flux1()
