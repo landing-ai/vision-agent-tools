@@ -13,9 +13,9 @@ from vision_agent_tools.models.florence2_ft import Florence2Ft
 logging.basicConfig(level=logging.INFO)
 
 
-# @pytest.fixture(scope="session")
-# def large_model():
-#     return Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
+@pytest.fixture(scope="session")
+def large_model():
+    return Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
 
 
 @pytest.fixture(scope="session")
