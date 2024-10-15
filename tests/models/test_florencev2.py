@@ -75,3 +75,17 @@ def test_batch_size_validation():
         with pytest.raises(ValidationError):
             res = model(task=task, image=image, batch_size=invalid_batch_size)
             print(res)
+
+
+def test_remove_container_box():
+    test_image = "sheep_aereal.jpg"
+    image_path = f"tests/models/data/florencev2/{test_image}"
+    task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+
+    image = Image.open(image_path)
+
+    florencev2 = Florencev2()
+
+    results = florencev2(image=image, task=task, prompt="sheep")
+    caption = results[task]
+    assert len(caption["bboxes"]) == 14
