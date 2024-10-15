@@ -24,10 +24,10 @@ def small_model():
 
 
 @pytest.fixture(scope="session")
-def shared_model(small_model):
+def shared_model():
     # do not fine-tune this model, if you do, remember to reset it to the base model
     # by calling shared_model.load_base()
-    return small_model
+    return Florence2Ft(Florence2ModelName.FLORENCE_2_BASE_FT)
 
 
 @pytest.fixture
