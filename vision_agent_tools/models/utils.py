@@ -1,15 +1,19 @@
+import logging
 import os
-import wget
-import gdown
 import os.path as osp
-from vision_agent_tools.shared_types import (
-    BoundingBox,
-    SegmentationBitMask,
-    BboxLabel,
-    FlorenceV2ODRes,
-)
-import numpy as np
 
+import gdown
+import numpy as np
+import wget
+
+from vision_agent_tools.shared_types import (
+    BboxLabel,
+    BoundingBox,
+    FlorenceV2ODRes,
+    SegmentationBitMask,
+)
+
+_LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
 CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
@@ -124,3 +128,83 @@ def convert_bbox_labels_to_florence_bboxes(predictions: list[BboxLabel]) -> dict
         "labels": [predictions[i].label for i in range(len(predictions))],
     }
     return preds
+
+
+def _contains(box_a, box_b):
+    """
+    Checks if box_a fully contains box_b.
+    Each box is [x_min, y_min, x_max, y_max].
+    """
+    x_min_a, y_min_a, x_max_a, y_max_a = box_a
+    x_min_b, y_min_b, x_max_b, y_max_b = box_b
+    return (
+        x_min_a <= x_min_b
+        and y_min_a <= y_min_b
+        and x_max_a >= x_max_b
+        and y_max_a >= y_max_b
+    )
+
+
+def filter_redundant_boxes(response, min_contained=2):
+    """
+    Filters out redundant bounding boxes that fully contain multiple smaller boxes of the same label.
+
+    Parameters:
+        response (dict): Dictionary containing 'bboxes' and 'labels'.
+        min_contained (int): Minimum number of contained boxes to consider a box redundant.
+
+    Returns:
+        output_data (dict): Dictionary with filtered 'bboxes' and 'labels'.
+    """
+    bboxes = response["bboxes"]
+    labels = response["labels"]
+
+    # Organize boxes by label
+    label_to_boxes = {}
+    for bbox, label in zip(bboxes, labels):
+        label_to_boxes.setdefault(label, []).append(bbox)
+
+    filtered_bboxes = []
+    filtered_labels = []
+
+    for label, boxes in label_to_boxes.items():
+        n = len(boxes)
+        if n < min_contained + 1:
+            # Not enough boxes to have redundancies
+            filtered_bboxes.extend(boxes)
+            filtered_labels.extend([label] * n)
+            continue
+
+        # Sort boxes by area descending
+        boxes_sorted = sorted(
+            boxes, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]), reverse=True
+        )
+        to_remove = set()
+
+        for i in range(n):
+            if i in to_remove:
+                continue
+            box_a = boxes_sorted[i]
+            contained = 0
+            for j in range(n):
+                if i == j or j in to_remove:
+                    continue
+                box_b = boxes_sorted[j]
+                if _contains(box_a, box_b):
+                    contained += 1
+                    if contained >= min_contained:
+                        to_remove.add(i)
+                        _LOGGER.info(
+                            f"Removing box {box_a} as it contains {contained} boxes."
+                        )
+                        break
+
+        # Add boxes that are not removed
+        for idx in range(n):
+            if idx not in to_remove:
+                filtered_bboxes.append(boxes_sorted[idx])
+                filtered_labels.append(label)
+
+    output_data = {"bboxes": filtered_bboxes, "labels": filtered_labels}
+
+    return output_data

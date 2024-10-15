@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from PIL import Image
+
 from vision_agent_tools.tools.text_to_instance_segmentation import (
     TextToInstanceSegmentationTool,
 )
@@ -18,8 +19,8 @@ def test_successful_image_detection_segmentation():
 
     # The list should have only one key value with index 0
     assert len(results) == 1
-    # The list should have 23 instances of the tomato class
-    assert len(results[0]) == 23
+    # The list should have 22 instances of the tomato class
+    assert len(results[0]) == 22
 
     for instance in results[0]:
         assert len(instance.bbox) == 4
@@ -48,8 +49,8 @@ def test_successful_video_detection_segmentation():
 
     # The list should have 2 keys for the two frames in the video
     assert len(results) == 2
-    # The first frame should have 23 instances of the tomato class
-    assert len(results[0]) == 23
+    # The first frame should have 22 instances of the tomato class
+    assert len(results[0]) == 22
     # The second frame should not have any tomato class since it is all zeros
     assert len(results[1]) == 0
     # First frame

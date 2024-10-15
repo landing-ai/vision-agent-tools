@@ -17,8 +17,8 @@ def test_successful_florence2_sam2_image():
 
     # The list should have only one value at position 0
     assert len(results) == 1
-    # The list should have 23 instances of the tomato class
-    assert len(results[0]) == 23
+    # The list should have 22 instances of the tomato class
+    assert len(results[0]) == 22
     for instance in results[0]:
         assert len(instance.bbox) == 4
         assert np.all(
@@ -46,8 +46,8 @@ def test_successful_florence2_sam2_video():
 
     # The list should have 2 keys for the two frames in the video
     assert len(results) == 2
-    # The first frame should have 23 instances of the tomato class
-    assert len(results[0]) == 23
+    # The first frame should have 22 instances of the tomato class
+    assert len(results[0]) == 22
     # The second frame should not have any tomato class since it is all zeros
     assert len(results[1]) == 0
     # First frame
@@ -75,8 +75,8 @@ def test_successful_nms_florence2_sam2_video():
 
     # The list should have 2 keys for the two frames in the video
     assert len(results) == 2
-    # The first frame should have 23 instances of the tomato class
-    assert len(results[0]) == 23
+    # The first frame should have 22 instances of the tomato class
+    assert len(results[0]) == 22
     # The second frame should not have any tomato class since it is all zeros
     assert len(results[1]) == 0
     # First frame
