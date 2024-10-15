@@ -15,12 +15,16 @@ logging.basicConfig(level=logging.INFO)
 
 @pytest.fixture(scope="session")
 def large_model():
-    return Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
+    model = Florence2Ft(Florence2ModelName.FLORENCE_2_LARGE)
+    yield model
+    model.load_base()
 
 
 @pytest.fixture(scope="session")
 def small_model():
-    return Florence2Ft(Florence2ModelName.FLORENCE_2_BASE_FT)
+    model = Florence2Ft(Florence2ModelName.FLORENCE_2_BASE_FT)
+    yield model
+    model.load_base()
 
 
 @pytest.fixture
