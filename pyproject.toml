@@ -68,6 +68,7 @@ opencv-python-headless = "^4.10.0.84"
 
 [tool.poetry.extras]
 all = [
+    "flash-attn",
     "qreader",
     "transformers",
     "scipy",

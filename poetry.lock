@@ -5431,7 +5431,7 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 type = ["pytest-mypy"]
 
 [extras]
-all = ["controlnet-aux", "decord", "depth-anything-v2", "diffusers", "einops", "lmdeploy", "loca", "peft", "protobuf", "qreader", "qwen_vl_utils", "sam-2", "scipy", "sentencepiece", "timm", "transformers"]
+all = ["controlnet-aux", "decord", "depth-anything-v2", "diffusers", "einops", "flash-attn", "flash-attn", "flash-attn", "lmdeploy", "loca", "peft", "protobuf", "qreader", "qwen_vl_utils", "sam-2", "scipy", "sentencepiece", "timm", "transformers"]
 clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
@@ -5450,4 +5450,4 @@ qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transfor
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "fc0d3ca79dc261f702c3608f3c582e2277366833636f56dd32d730cd0cea5666"
+content-hash = "e906d7f5a88ef727de01ea837509742ccd3b3ec1e45ae3004258112d1c23a42b"
