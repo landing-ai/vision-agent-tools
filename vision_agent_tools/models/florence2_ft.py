@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Any
 
 import torch
+import numpy as np
 from PIL import Image
 from typing_extensions import Self
 from transformers import AutoModelForCausalLM, AutoProcessor
@@ -152,8 +153,10 @@ class Florence2Ft(BaseMLModel):
             text_input = task + prompt
 
         if video is not None:
-            images = video.tolist()
-            breakpoint()
+            # original shape: BHWC. When using florence2 with numpy, it expects the
+            # shape BCHW, where B is the amount of frames, C is a number of channels,
+            # H and W are image height and width.
+            images = np.transpose(video, (0, 3, 1, 2))
 
         parsed_answers = []
         for idx in range(0, len(images), batch_size):
@@ -188,8 +191,13 @@ class Florence2Ft(BaseMLModel):
             )
 
             for generated_text, image in zip(generated_texts, images_chunk):
+                if isinstance(image, np.ndarray):
+                    image_size = image.shape[1:]
+                else:
+                    image_size = image.size
+
                 parsed_answer = self._processor.post_process_generation(
-                    generated_text, task=task, image_size=image.size
+                    generated_text, task=task, image_size=image_size
                 )
                 if (
                     task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
@@ -199,7 +207,7 @@ class Florence2Ft(BaseMLModel):
                     or task == PromptTask.REGION_PROPOSAL
                 ):
                     parsed_answer[task] = _filter_predictions(
-                        parsed_answer[task], image.size, nms_threshold
+                        parsed_answer[task], image_size, nms_threshold
                     )
 
                 parsed_answers.append(parsed_answer)
