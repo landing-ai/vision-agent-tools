@@ -753,7 +753,7 @@ training = ["Jinja2", "accelerate (>=0.31.0)", "datasets", "peft (>=0.6.0)", "pr
 type = "git"
 url = "https://github.com/huggingface/diffusers.git"
 reference = "main"
-resolved_reference = "3e9a28a8a19686b7b66701f7b93d3358d682a5ae"
+resolved_reference = "d9029f2c5981a96ab51f8996be620af116b8d743"
 
 [[package]]
 name = "distlib"
@@ -5146,13 +5146,13 @@ files = [
 
 [[package]]
 name = "ultralytics"
-version = "8.3.13"
+version = "8.3.14"
 description = "Ultralytics YOLO for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "ultralytics-8.3.13-py3-none-any.whl", hash = "sha256:1b3218c0a69e776ce92fa2195cecf36bfb6d3434faa1ca95521a5df7510747fe"},
-    {file = "ultralytics-8.3.13.tar.gz", hash = "sha256:f4310b1c0ab259afb45d9adb900864a506c2909d70ddc33568fd10b4f74fdd92"},
+    {file = "ultralytics-8.3.14-py3-none-any.whl", hash = "sha256:675e8cb2549abe91cb5a4dbd49996b7ca1564535af75833f2bfc209b8d1c9550"},
+    {file = "ultralytics-8.3.14.tar.gz", hash = "sha256:f558005e1b29244f4447680d0df96015bd5d4322f3526c08bd6aed9487dedc0a"},
 ]
 
 [package.dependencies]
@@ -5435,9 +5435,8 @@ all = ["controlnet-aux", "decord", "depth-anything-v2", "diffusers", "einops", "
 clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
-florence2-ft = ["einops", "flash-attn", "flash-attn", "flash-attn", "peft", "timm", "transformers"]
+florence2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "peft", "timm", "transformers"]
 florence2-sam2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "sam-2", "scipy", "timm", "transformers"]
-florencev2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "scipy", "timm", "transformers"]
 florencev2-qa = ["einops", "flash-attn", "flash-attn", "flash-attn", "scipy", "timm", "transformers"]
 flux1 = ["diffusers", "protobuf", "sentencepiece", "transformers"]
 ixc-25 = ["decord", "lmdeploy", "transformers"]
@@ -5450,4 +5449,4 @@ qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transfor
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "e906d7f5a88ef727de01ea837509742ccd3b3ec1e45ae3004258112d1c23a42b"
+content-hash = "fe3a3b8b1793304b15635db21010e213bf183bee59a919556bfc42b2909a61e2"

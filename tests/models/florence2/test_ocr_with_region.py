@@ -17,14 +17,14 @@ def test_ocr(shared_model):
         "prompt": prompt,
     }
     response = shared_model(**payload)
-    with open("tests/models/florence2_ft/data/results/ocr_results.json", "r") as source:
+    with open("tests/models/florence2/data/results/ocr_results.json", "r") as source:
         expected_result = json.load(source)
     assert response == expected_result
 
 
 def test_ocr_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/license_plate.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/ocr_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/ocr_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     task = PromptTask.OCR_WITH_REGION
     # cannot have prompt

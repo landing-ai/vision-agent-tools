@@ -38,7 +38,7 @@ def test_caption_car(shared_model):
 def test_caption_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.CAPTION
-    model_zip_path = "tests/models/florence2_ft/data/models/caption_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/caption_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     # cannot have prompt
     prompt = ""

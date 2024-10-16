@@ -3,7 +3,7 @@ from PIL import Image
 from pydantic import ValidationError
 
 from vision_agent_tools.shared_types import PromptTask
-from vision_agent_tools.models.florence2_ft import _filter_predictions
+from vision_agent_tools.models.florence2 import _filter_predictions
 
 
 def test_no_images_and_no_video(shared_model):

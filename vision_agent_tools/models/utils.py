@@ -1,15 +1,15 @@
-import logging
 import os
+import logging
 import os.path as osp
 
+import wget
 import gdown
 import numpy as np
-import wget
 
 from vision_agent_tools.shared_types import (
     BboxLabel,
     BoundingBox,
-    FlorenceV2ODRes,
+    ODResponse,
     SegmentationBitMask,
 )
 
@@ -100,10 +100,10 @@ def mask_to_bbox(mask: np.ndarray) -> list[int] | None:
 
 
 def convert_florence_bboxes_to_bbox_labels(
-    predictions: FlorenceV2ODRes,
+    predictions: ODResponse,
 ) -> list[BboxLabel]:
     """
-    Converts the output of the Florecev2 <OD> an
+    Converts the output of the Florence2 <OD> an
     <CAPTION_TO_PHRASE_GROUNDING> tasks
     to a much simpler list of BboxLabel labels
     """
@@ -111,23 +111,11 @@ def convert_florence_bboxes_to_bbox_labels(
         BboxLabel(
             bbox=predictions.bboxes[i],
             label=predictions.labels[i],
-            score=1.0,  # FlorenceV2 doesn't provide confidence score
+            score=1.0,  # Florence2 doesn't provide confidence score
         )
         for i in range(len(predictions.labels))
     ]
     return od_response
-
-
-def convert_bbox_labels_to_florence_bboxes(predictions: list[BboxLabel]) -> dict:
-    """
-    Converts the simpler list of BboxLabel labels  format to the format
-    of Florecev2 OD and CAPTION_TO_PHRASE_GROUNDING task output.
-    """
-    preds = {
-        "bboxes": [predictions[i].bbox for i in range(len(predictions))],
-        "labels": [predictions[i].label for i in range(len(predictions))],
-    }
-    return preds
 
 
 def _contains(box_a, box_b):

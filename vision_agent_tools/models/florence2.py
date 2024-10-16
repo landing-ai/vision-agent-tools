@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 _AREA_THRESHOLD = 0.82
 
 
-class Florence2FtRequest(BaseModel):
+class Florence2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     task: PromptTask = Field(description="The task to be performed on the image/video.")
@@ -63,7 +63,7 @@ class Florence2FtRequest(BaseModel):
         return self
 
 
-class Florence2Ft(BaseMLModel):
+class Florence2(BaseMLModel):
     """Florence2 model.
     It supported both zero-shot and fine-tuned settings.
     For the zero-shot we use the [Florence-2-large](https://huggingface.co/microsoft/Florence-2-large).
@@ -74,7 +74,7 @@ class Florence2Ft(BaseMLModel):
     def __init__(
         self, model_name: Florence2ModelName, *, device: Device | None = Device.GPU
     ):
-        """Initializes the Florence2Ft model."""
+        """Initializes the Florence2 model."""
         self._base_model_name = model_name
         self._device = device
         self._fine_tuned = False
@@ -133,7 +133,7 @@ class Florence2Ft(BaseMLModel):
             Florence2ResponseType:
                 The output of the Florence-2 model based on the task and prompt.
         """
-        Florence2FtRequest(
+        Florence2Request(
             task=task,
             prompt=prompt,
             images=images,
@@ -283,7 +283,7 @@ class Florence2Ft(BaseMLModel):
         _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
 
     def to(self, device: Device) -> None:
-        raise NotImplementedError("This method is not supported for Florence2Ft model.")
+        raise NotImplementedError("This method is not supported for Florence2 model.")
 
 
 def _filter_predictions(

@@ -9,9 +9,10 @@ from vision_agent_tools.shared_types import (
     VideoNumpy,
     Device,
     BboxAndMaskLabel,
-    FlorenceV2ODRes,
+    ODResponse,
+    PromptTask,
 )
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.models.florence2 import Florence2
 
 from vision_agent_tools.models.utils import (
     calculate_mask_iou,
@@ -46,11 +47,11 @@ class Florence2SAM2(BaseMLModel):
 
     def __init__(self, model_config: Florence2SAM2Config | None = None):
         """
-        Initializes the Florence2SAM2 object with a pre-trained Florencev2 model
+        Initializes the Florence2SAM2 object with a pre-trained Florence2 model
         and a SAM2 model.
         """
         self._model_config = model_config or Florence2SAM2Config()
-        self.florence2 = Florencev2()
+        self.florence2 = Florence2()
         self.video_predictor = SAM2VideoPredictor.from_pretrained(
             self._model_config.hf_model
         )
@@ -73,7 +74,7 @@ class Florence2SAM2(BaseMLModel):
             annotation predictions of the last frame's prediction
             of the video propagation.
         new_predictions (list[BboxAndMaskLabel]): List containing the
-            annotation predictions of the FlorenceV2 model prediction.
+            annotation predictions of the Florence2 model prediction.
         iou_threshold (float): The IoU threshold value used to compare last_predictions
             and new_predictions annotation lists.
 
@@ -119,7 +120,7 @@ class Florence2SAM2(BaseMLModel):
                 prompt=prompt,
                 nms_threshold=nms_threshold,
             )[PromptTask.CAPTION_TO_PHRASE_GROUNDING]
-        preds = convert_florence_bboxes_to_bbox_labels(FlorenceV2ODRes(**preds))
+        preds = convert_florence_bboxes_to_bbox_labels(ODResponse(**preds))
         if return_mask:
             with torch.autocast(
                 device_type=self._model_config.device, dtype=torch.bfloat16
@@ -199,7 +200,7 @@ class Florence2SAM2(BaseMLModel):
                 )
                 self.video_predictor.reset_state(inference_state)
 
-                # Add new label points to the video predictor coming from the FlorenceV2 object predictions
+                # Add new label points to the video predictor coming from the Florence2 object predictions
                 annotation_id_to_label = {}
                 for updated_obj in updated_objs:
                     annotation_id = updated_obj.id
@@ -239,7 +240,7 @@ class Florence2SAM2(BaseMLModel):
                     if (start_frame_idx + chunk_length) < num_frames
                     else num_frames - 1
                 )
-                # Save the last frame predictions to later update the newly found FlorenceV2 object ids
+                # Save the last frame predictions to later update the newly found Florence2 object ids
                 last_chunk_frame_pred = video_segments[index]
                 self.video_predictor.reset_state(inference_state)
 
@@ -265,7 +266,7 @@ class Florence2SAM2(BaseMLModel):
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
             iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
-            nms_threshold (float): The non-maximum suppression threshold value used to filter the Florencev2 predictions.
+            nms_threshold (float): The non-maximum suppression threshold value used to filter the Florence2 predictions.
 
         Returns:
             list[list[ImageBboxMaskLabel]]: a list where the first list contains the frames predictions,

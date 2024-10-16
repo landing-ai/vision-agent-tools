@@ -1,9 +1,8 @@
 import numpy as np
 from enum import Enum
 from PIL import Image
-from pydantic import BaseModel
 
-from vision_agent_tools.models.florencev2 import PromptTask
+from vision_agent_tools.shared_types import PromptTask
 from vision_agent_tools.models.utils import (
     convert_florence_bboxes_to_bbox_labels,
 )
@@ -13,14 +12,14 @@ from vision_agent_tools.shared_types import (
     Device,
     VideoNumpy,
     BboxLabel,
-    FlorenceV2ODRes,
+    ODResponse,
 )
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
 
 class TextToObjectDetectionModel(str, Enum):
     OWLV2 = "owlv2"
-    FLORENCEV2 = "florencev2"
+    FLORENCE2 = "florence2"
 
 
 class TextToObjectDetection(BaseTool):
@@ -43,8 +42,8 @@ class TextToObjectDetection(BaseTool):
 
         if model == TextToObjectDetectionModel.OWLV2:
             self.owlv2_config = model_config or OWLV2Config()
-        elif model == TextToObjectDetectionModel.FLORENCEV2:
-            pass  # Note we don't need model config for FlorenceV2
+        elif model == TextToObjectDetectionModel.FLORENCE2:
+            pass  # Note we don't need model config for Florence2
         else:
             raise ValueError(f"Model is not supported: '{model}'")
 
@@ -52,7 +51,7 @@ class TextToObjectDetection(BaseTool):
         model_instance = self.model_class()
         if model == TextToObjectDetectionModel.OWLV2:
             super().__init__(model=model_instance(self.owlv2_config))
-        elif model == TextToObjectDetectionModel.FLORENCEV2:
+        elif model == TextToObjectDetectionModel.FLORENCE2:
             super().__init__(model=model_instance())
 
     def __call__(
@@ -83,7 +82,7 @@ class TextToObjectDetection(BaseTool):
             elif video is not None:
                 prediction = self.model(video=video, prompts=prompts)
 
-        elif self.modelname == TextToObjectDetectionModel.FLORENCEV2:
+        elif self.modelname == TextToObjectDetectionModel.FLORENCE2:
             od_task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
             prompt = ", ".join(prompts)
             if image is not None:
@@ -92,16 +91,14 @@ class TextToObjectDetection(BaseTool):
                     task=od_task,
                     prompt=prompt,
                 )
-                fl_prediction = [FlorenceV2ODRes(**fl_prediction[od_task])]
+                fl_prediction = [ODResponse(**fl_prediction[od_task])]
             elif video is not None:
                 fl_prediction = self.model(
                     video=video,
                     task=od_task,
                     prompt=prompt,
                 )
-                fl_prediction = [
-                    FlorenceV2ODRes(**pred[od_task]) for pred in fl_prediction
-                ]
+                fl_prediction = [ODResponse(**pred[od_task]) for pred in fl_prediction]
             # Prediction should be a list of lists of BboxLabel objects
             # We need to convert the output to the format that is used in the playground-tools
             fv2_pred_output = []

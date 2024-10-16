@@ -1,9 +1,10 @@
 import torch
 from PIL import Image
 from pydantic import validate_call
+
 from vision_agent_tools.shared_types import BaseTool, VideoNumpy
-from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
 from vision_agent_tools.models.florence2_sam2 import BboxAndMaskLabel
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
 
 
 class TextToInstanceSegmentationTool(BaseTool):
@@ -34,7 +35,7 @@ class TextToInstanceSegmentationTool(BaseTool):
             video (VideoNumpy | None): A numpy array containing the different images, representing the video.
             chunk_length (int): The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.
             iou_threshold (float): The IoU threshold value used to compare last_predictions and new_predictions objects.
-            nms_threshold (float): The non-maximum suppression threshold value used to filter the Florencev2 predictions.
+            nms_threshold (float): The non-maximum suppression threshold value used to filter the Florence2 predictions.
 
         Returns:
             list[list[ImageBboxMaskLabel]]: a list where the first list contains the frames predictions,

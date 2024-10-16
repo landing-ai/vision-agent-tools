@@ -4,9 +4,9 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_referring_expression_segmentation(shared_model):
+def test_region_to_segmentation(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    task = PromptTask.REFERRING_EXPRESSION_SEGMENTATION
+    task = PromptTask.REGION_TO_SEGMENTATION
     image = Image.open(image_path)
 
     payload = {
@@ -23,7 +23,7 @@ def test_referring_expression_segmentation(shared_model):
                         1.0240000486373901,
                         1.0240000486373901,
                         2046.97607421875,
-                        2046.97607421875,
+                        2042.880126953125,
                         1.0240000486373901,
                         2046.97607421875,
                     ]
@@ -33,10 +33,10 @@ def test_referring_expression_segmentation(shared_model):
     ]
 
 
-def test_referring_expression_segmentation_ft(small_model, unzip_model):
+def test_region_to_segmentation_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    task = PromptTask.REFERRING_EXPRESSION_SEGMENTATION
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    task = PromptTask.REGION_TO_SEGMENTATION
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     image = Image.open(image_path)
 
@@ -49,6 +49,6 @@ def test_referring_expression_segmentation_ft(small_model, unzip_model):
         small_model(**payload)
         assert (
             exc.value
-            == "The task REFERRING_EXPRESSION_SEGMENTATION is not supported yet if "
-            "your are using a fine-tuned model."
+            == "The task REGION_TO_SEGMENTATION is not supported yet if your are "
+            "using a fine-tuned model."
         )

@@ -10,6 +10,10 @@ readme = "README.md"
 "repository" = "https://github.com/landing-ai/vision-agent-tools"
 "documentation" = "https://github.com/landing-ai/vision-agent-tools"
 
+[build-system]
+requires = ["poetry-core>=1.8.0", "setuptools", "packaging", "wheel", "torch"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 
@@ -93,8 +97,7 @@ depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
 
-florence2-ft = ["flash-attn", "transformers", "timm", "einops", "peft"]
-florencev2 = ["flash-attn", "transformers", "scipy", "timm", "einops"]
+florence2 = ["flash-attn", "transformers", "timm", "einops", "peft"]
 florencev2-qa = ["flash-attn", "transformers", "scipy", "timm", "einops"]
 florence2-sam2 = [
     "flash-attn",
@@ -114,10 +117,6 @@ qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
 name = "torch_cuda118"
 url = "https://download.pytorch.org/whl/cu118"
 priority = "explicit"
-
-[build-system]
-requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 install-dependencies = "scripts.install_dependencies:install_dependencies"
