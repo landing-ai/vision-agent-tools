@@ -1,5 +1,6 @@
 from enum import Enum
 from PIL import Image
+from typing import List
 from pydantic import ConfigDict, validate_arguments
 from vision_agent_tools.models.flux1 import Flux1Task, Flux1Config
 from vision_agent_tools.models.model_registry import get_model_class
@@ -44,7 +45,7 @@ class TextToImage(BaseTool):
         prompt: str,
         image: Image.Image | None = None,
         mask_image: Image.Image | None = None,
-    ) -> Image.Image | None:
+    ) -> List[Image.Image] | None:
         """
         Perform the specified task (Image Generation or Mask Inpainting) using the model and return the results.
 
@@ -55,19 +56,19 @@ class TextToImage(BaseTool):
             mask_image (Image.Image): The mask image for mask inpainting.
 
         Returns:
-            Optional[Image.Image]: The generated / inpainted image if successful; None if an error occurred.
+            List[Image.Image]: The generated / inpainted image if successful; None if an error occurred.
         """
-        output_image = None
+        output = None
 
         if self._model_name == TextToImageModel.FLUX1:
             if task == Flux1Task.IMAGE_GENERATION:
-                output_image = self.model(task=task, prompt=prompt)
+                output = self.model(task=task, prompt=prompt)
             elif task == Flux1Task.MASK_INPAINTING:
                 if image is None or mask_image is None:
                     raise ValueError(
                         "Image and mask_image are required for mask inpainting."
                     )
-                output_image = self.model(
+                output = self.model(
                     task=task, prompt=prompt, image=image, mask_image=mask_image
                 )
             else:
@@ -75,7 +76,7 @@ class TextToImage(BaseTool):
                     f"Unsupported task: {task}. Supported tasks are: {', '.join([task.value for task in Flux1Task])}."
                 )
 
-        return output_image
+        return output
 
     def to(self, device: Device):
         self.model.to(device)

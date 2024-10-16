@@ -22,8 +22,10 @@ def test_successful_image_mask_inpainting(tool):
     )
 
     assert result is not None
-    assert result.mode == "RGB"
-    assert result.size == (32, 32)
+    assert len(result) == 1
+    image = result[0]
+    assert image.mode == "RGB"
+    assert image.size == (32, 32)
 
 
 def test_successful_image_generation(tool):
@@ -40,5 +42,7 @@ def test_successful_image_generation(tool):
     )
 
     assert result is not None
-    assert result.mode == "RGB"
-    assert result.size == (32, 32)
+    assert len(result) == 1
+    image = result[0]
+    assert image.mode == "RGB"
+    assert image.size == (32, 32)
