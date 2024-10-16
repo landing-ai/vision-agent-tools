@@ -188,6 +188,9 @@ class Flux1(BaseMLModel):
 
         return output.images
 
+    def to(self, device: Device):
+        raise NotImplementedError("This method is not supported for Flux1 model.")
+
     def _generate_image(
         self,
         prompt: str,
