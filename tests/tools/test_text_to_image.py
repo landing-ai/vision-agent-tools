@@ -1,11 +1,12 @@
 import pytest
 from PIL import Image
 
-from vision_agent_tools.models.flux1 import Flux1Task, Flux1Config
-from vision_agent_tools.tools.text_to_image import TextToImage, TextToImageModel
+from vision_agent_tools.models.flux1 import Flux1Task
 
 
-@pytest.skip("FIX THIS TEST. This test is incorrect, the configs are not being used.")
+@pytest.mark.skip(
+    reason="FIX THIS TEST. This test is incorrect, the configs are not being used."
+)
 def test_successful_image_generation(tool):
     prompt = "cat wizard, Pixar style"
 
@@ -19,7 +20,9 @@ def test_successful_image_generation(tool):
     assert result.size == (32, 32)
 
 
-@pytest.skip("FIX THIS TEST. This test is incorrect, the configs are not being used.")
+@pytest.mark.skip(
+    reason="FIX THIS TEST. This test is incorrect, the configs are not being used."
+)
 def test_successful_image_mask_inpainting(tool):
     prompt = "cat wizard, Pixar style"
     image = Image.open("tests/shared_data/images/chihuahua.png")
@@ -37,13 +40,13 @@ def test_successful_image_mask_inpainting(tool):
     assert result.size == (32, 32)
 
 
-@pytest.fixture(scope="session")
-def tool():
-    flux_config = Flux1Config(
-        height=32,
-        width=32,
-        num_inference_steps=1,
-        max_sequence_length=256,
-    )
+# @pytest.fixture(scope="session")
+# def tool():
+#     flux_config = Flux1Config(
+#         height=32,
+#         width=32,
+#         num_inference_steps=1,
+#         max_sequence_length=256,
+#     )
 
-    return TextToImage(model=TextToImageModel.FLUX1, model_config=flux_config)
+#     return TextToImage(model=TextToImageModel.FLUX1, model_config=flux_config)
