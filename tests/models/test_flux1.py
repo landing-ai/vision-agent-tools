@@ -23,8 +23,10 @@ def test_image_mask_inpainting(model):
     )
 
     assert result is not None
-    assert result.mode == "RGB"
-    assert result.size == (32, 32)
+    assert len(result) == 1
+    image = result[0]
+    assert image.mode == "RGB"
+    assert image.size == (32, 32)
 
 
 def test_image_generation(model):
@@ -41,8 +43,10 @@ def test_image_generation(model):
     )
 
     assert result is not None
-    assert result.mode == "RGB"
-    assert result.size == (32, 32)
+    assert len(result) == 1
+    image = result[0]
+    assert image.mode == "RGB"
+    assert image.size == (32, 32)
 
 
 def test_fail_image_generation_dimensions(model):
@@ -109,7 +113,15 @@ def test_different_images_different_seeds(model):
 
     assert result_1 is not None
     assert result_2 is not None
-    assert result_1 != result_2
+    assert len(result_1) == 1
+    assert len(result_2) == 1
+    image_1 = result_1[0]
+    image_2 = result_2[0]
+    assert image_1.mode == "RGB"
+    assert image_1.size == (32, 32)
+    assert image_2.mode == "RGB"
+    assert image_2.size == (32, 32)
+    assert image_1 != image_2
 
 
 def test_multiple_images_per_prompt(model):
