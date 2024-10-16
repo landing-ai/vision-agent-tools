@@ -22,7 +22,7 @@ def test_image_mask_inpainting(model):
         seed=42,
     )
 
-    result.save("tests/shared_data/images/chihuahua_to_cat_wizard.png")
+    result.save("tests/generated_data/chihuahua_to_cat_wizard.png")
 
     assert result is not None
     assert result.mode == "RGB"
@@ -42,7 +42,7 @@ def test_image_generation(model):
         seed=42,
     )
 
-    result.save("tests/shared_data/images/cat_1_inference_step.png")
+    result.save("tests/generated_data/cat_1_inference_step.png")
 
     assert result is not None
     assert result.mode == "RGB"
@@ -71,7 +71,7 @@ def test_fail_image_generation_dimensions(model):
 
 
 def test_fail_image_mask_size(model):
-    prompt = "cat wizard, Pixar style, 8k"
+    prompt = "cat wizard, Pixar style"
     image = Image.open("tests/shared_data/images/chihuahua.png")
     mask_image = Image.open("tests/shared_data/images/chihuahua_mask.png")
     mask_image = mask_image.resize((64, 64))
@@ -97,16 +97,16 @@ def test_different_images_different_seeds(model):
     result_1 = model(
         task=Flux1Task.IMAGE_GENERATION,
         prompt=prompt,
-        height=512,
-        width=512,
+        height=32,
+        width=32,
         num_inference_steps=1,
         seed=42,
     )
 
     result_2 = model(
         prompt=prompt,
-        height=512,
-        width=512,
+        height=32,
+        width=32,
         num_inference_steps=1,
         seed=0,
     )
