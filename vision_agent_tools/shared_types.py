@@ -32,6 +32,9 @@ class BaseTool:
     def __call__(self):
         raise NotImplementedError("Subclasses should implement '__call__' method.")
 
+    def to(self, device: Device):
+        raise NotImplementedError("Subclass must implement 'to' method")
+
 
 DType = TypeVar("DType", bound=np.generic)
 
