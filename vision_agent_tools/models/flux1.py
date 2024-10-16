@@ -1,13 +1,15 @@
+import random
+import logging
+from enum import Enum
+from typing import List
+
 import torch
 from PIL import Image
 from pydantic import BaseModel, Field
 from pydantic import ConfigDict, validate_arguments
-from vision_agent_tools.shared_types import BaseMLModel, Device
 from diffusers import FluxPipeline, FluxInpaintPipeline
-from enum import Enum
-from typing import List
-import logging
-import random
+
+from vision_agent_tools.shared_types import BaseMLModel, Device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,106 +44,6 @@ class Flux1(BaseMLModel):
 
     config = ConfigDict(arbitrary_types_allowed=True)
 
-    def _generate_image(
-        self,
-        prompt: str,
-        height: int,
-        width: int,
-        num_inference_steps: int,
-        guidance_scale: float,
-        num_images_per_prompt: int,
-        generator: torch.Generator,
-        max_sequence_length: int,
-    ) -> List[Image.Image] | None:
-        """
-        Generate an image from a given prompt.
-
-        Image generation pipeline to create an image based on a provided textual prompt.
-
-        Args:
-            prompt (`str`)
-            height (`int`)
-            width (`int`)
-            num_inference_steps (`int`)
-            guidance_scale (`float`)
-            num_images_per_prompt (`int`)
-            generator (`torch.Generator`)
-            max_sequence_length (`int`)
-
-        Returns:
-            Optional[Image.Image]: The generated image if successful; None if an error occurred.
-        """
-        output = self._pipeline_img_generation(
-            prompt=prompt,
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            num_images_per_prompt=num_images_per_prompt,
-            generator=generator,
-            max_sequence_length=max_sequence_length,
-        )
-
-        if output is None:
-            return None
-
-        return output
-
-    def _inpaint_image(
-        self,
-        prompt: str,
-        image: Image.Image,
-        mask_image: Image.Image,
-        height: int,
-        width: int,
-        num_inference_steps: int,
-        guidance_scale: float,
-        num_images_per_prompt: int,
-        generator: torch.Generator,
-        max_sequence_length: int,
-        strength: float,
-    ) -> List[Image.Image] | None:
-        """
-        Inpaint an image using a given prompt and a mask image.
-
-        This method utilizes an inpainting pipeline to generate a modified image
-        based on the given prompt and mask.
-
-        Args:
-            prompt (str): The text prompt describing the desired modifications.
-            image (Image.Image): The original image to be modified.
-            mask_image (Image.Image): The mask image indicating areas to be inpainted.
-            height (`int`)
-            width (`int`)
-            num_inference_steps (`int`)
-            guidance_scale (`float`)
-            num_images_per_prompt (`int`)
-            generator (`torch.Generator`)
-            max_sequence_length (`int`)
-            strength (`float`)
-
-        Returns:
-            Optional[Image.Image]: The inpainted image if successful; None if an error occurred.
-        """
-        output = self._pipeline_mask_inpainting(
-            prompt=prompt,
-            image=image,
-            mask_image=mask_image,
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            num_images_per_prompt=num_images_per_prompt,
-            generator=generator,
-            max_sequence_length=max_sequence_length,
-            strength=strength,
-        )
-
-        if output is None:
-            return None
-
-        return output
-
     def __init__(
         self,
         model_config: Flux1Config | None = None,
@@ -158,7 +60,6 @@ class Flux1(BaseMLModel):
         """
         self.model_config = model_config or Flux1Config()
         dtype = torch.bfloat16
-        self._pipeline = None
 
         self._pipeline_img_generation = FluxPipeline.from_pretrained(
             self.model_config.hf_model, torch_dtype=dtype
@@ -287,6 +188,102 @@ class Flux1(BaseMLModel):
 
         return output.images
 
-    def to(self, device: Device):
-        self._pipeline.to(device=device.value)
-        self._device = device
+    def _generate_image(
+        self,
+        prompt: str,
+        height: int,
+        width: int,
+        num_inference_steps: int,
+        guidance_scale: float,
+        num_images_per_prompt: int,
+        generator: torch.Generator,
+        max_sequence_length: int,
+    ) -> List[Image.Image] | None:
+        """
+        Generate an image from a given prompt.
+
+        Image generation pipeline to create an image based on a provided textual prompt.
+
+        Args:
+            prompt (`str`)
+            height (`int`)
+            width (`int`)
+            num_inference_steps (`int`)
+            guidance_scale (`float`)
+            num_images_per_prompt (`int`)
+            generator (`torch.Generator`)
+            max_sequence_length (`int`)
+
+        Returns:
+            Optional[Image.Image]: The generated image if successful; None if an error occurred.
+        """
+        output = self._pipeline_img_generation(
+            prompt=prompt,
+            height=height,
+            width=width,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            num_images_per_prompt=num_images_per_prompt,
+            generator=generator,
+            max_sequence_length=max_sequence_length,
+        )
+
+        if output is None:
+            return None
+
+        return output
+
+    def _inpaint_image(
+        self,
+        prompt: str,
+        image: Image.Image,
+        mask_image: Image.Image,
+        height: int,
+        width: int,
+        num_inference_steps: int,
+        guidance_scale: float,
+        num_images_per_prompt: int,
+        generator: torch.Generator,
+        max_sequence_length: int,
+        strength: float,
+    ) -> List[Image.Image] | None:
+        """
+        Inpaint an image using a given prompt and a mask image.
+
+        This method utilizes an inpainting pipeline to generate a modified image
+        based on the given prompt and mask.
+
+        Args:
+            prompt (str): The text prompt describing the desired modifications.
+            image (Image.Image): The original image to be modified.
+            mask_image (Image.Image): The mask image indicating areas to be inpainted.
+            height (`int`)
+            width (`int`)
+            num_inference_steps (`int`)
+            guidance_scale (`float`)
+            num_images_per_prompt (`int`)
+            generator (`torch.Generator`)
+            max_sequence_length (`int`)
+            strength (`float`)
+
+        Returns:
+            Optional[Image.Image]: The inpainted image if successful; None if an error occurred.
+        """
+        output = self._pipeline_mask_inpainting(
+            prompt=prompt,
+            image=image,
+            mask_image=mask_image,
+            height=height,
+            width=width,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            num_images_per_prompt=num_images_per_prompt,
+            generator=generator,
+            max_sequence_length=max_sequence_length,
+            strength=strength,
+        )
+
+        if output is None:
+            return None
+
+        return output

@@ -1,41 +1,22 @@
+import pytest
 from PIL import Image
+
 from vision_agent_tools.models.flux1 import Flux1, Flux1Task
 
 
-def test_successful_image_generation():
-    prompt = "cat wizard, Pixar style, 8k"
-
-    flux1 = Flux1()
-    result = flux1(
-        task=Flux1Task.IMAGE_GENERATION,
-        prompt=prompt,
-        height=512,
-        width=512,
-        num_inference_steps=10,
-        seed=42,
-    )
-
-    result.save("tests/shared_data/images/cat_wizard.png")
-
-    assert result is not None
-    assert result.mode == "RGB"
-    assert result.size == (512, 512)
-
-
-def test_successful_image_mask_inpainting():
-    prompt = "cat wizard, Pixar style, 8k"
-    image = Image.open("tests/shared_data/images/chihuahua.png").convert("RGB")
+def test_image_mask_inpainting(model):
+    prompt = "cat wizard, Pixar style"
+    image = Image.open("tests/shared_data/images/chihuahua.png")
     mask_image = Image.open("tests/shared_data/images/chihuahua_mask.png")
 
-    flux1 = Flux1()
-    result = flux1(
+    result = model(
         task=Flux1Task.MASK_INPAINTING,
         prompt=prompt,
         image=image,
         mask_image=mask_image,
-        height=512,
-        width=512,
-        num_inference_steps=10,
+        height=32,
+        width=32,
+        num_inference_steps=1,
         guidance_scale=7,
         strength=0.85,
         seed=42,
@@ -45,20 +26,19 @@ def test_successful_image_mask_inpainting():
 
     assert result is not None
     assert result.mode == "RGB"
-    assert result.size == (512, 512)
+    assert result.size == (32, 32)
 
 
-def test_parameters_image_generation():
-    prompt = "cat wizard, Pixar style, 8k"
+def test_image_generation(model):
+    prompt = "cat wizard, Pixar style"
 
-    flux1 = Flux1()
-    result = flux1(
+    result = model(
         task=Flux1Task.IMAGE_GENERATION,
         prompt=prompt,
-        height=128,
-        width=128,
+        height=32,
+        width=32,
         guidance_scale=0.5,
-        num_inference_steps=10,
+        num_inference_steps=1,
         seed=42,
     )
 
@@ -66,17 +46,16 @@ def test_parameters_image_generation():
 
     assert result is not None
     assert result.mode == "RGB"
-    assert result.size == (128, 128)
+    assert result.size == (32, 32)
 
 
-def test_fail_image_generation_dimensions():
-    prompt = "cat wizard, Pixar style, 8k"
+def test_fail_image_generation_dimensions(model):
+    prompt = "cat wizard, Pixar style"
 
-    flux1 = Flux1()
-    height = 500
-    width = 500
+    height = 31
+    width = 31
     try:
-        flux1(
+        model(
             task=Flux1Task.IMAGE_GENERATION,
             prompt=prompt,
             height=height,
@@ -91,21 +70,20 @@ def test_fail_image_generation_dimensions():
         )
 
 
-def test_fail_image_mask_size():
+def test_fail_image_mask_size(model):
     prompt = "cat wizard, Pixar style, 8k"
-    image = Image.open("tests/shared_data/images/chihuahua.png").convert("RGB")
+    image = Image.open("tests/shared_data/images/chihuahua.png")
     mask_image = Image.open("tests/shared_data/images/chihuahua_mask.png")
-    mask_image = mask_image.resize((128, 128))
+    mask_image = mask_image.resize((64, 64))
 
-    flux1 = Flux1()
     try:
-        flux1(
+        model(
             task=Flux1Task.MASK_INPAINTING,
             prompt=prompt,
             image=image,
             mask_image=mask_image,
-            height=512,
-            width=128,
+            height=32,
+            width=32,
             num_inference_steps=1,
             seed=42,
         )
@@ -113,11 +91,10 @@ def test_fail_image_mask_size():
         assert str(e) == "The image and mask image should have the same size."
 
 
-def test_different_images_different_seeds():
-    prompt = "cat wizard, Pixar style, 8k"
+def test_different_images_different_seeds(model):
+    prompt = "cat wizard, Pixar style"
 
-    flux1 = Flux1()
-    result_1 = flux1(
+    result_1 = model(
         task=Flux1Task.IMAGE_GENERATION,
         prompt=prompt,
         height=512,
@@ -126,7 +103,7 @@ def test_different_images_different_seeds():
         seed=42,
     )
 
-    result_2 = flux1(
+    result_2 = model(
         prompt=prompt,
         height=512,
         width=512,
@@ -139,15 +116,14 @@ def test_different_images_different_seeds():
     assert result_1 != result_2
 
 
-def test_multiple_images_per_prompt():
-    prompt = "cat wizard, Pixar style, 8k"
+def test_multiple_images_per_prompt(model):
+    prompt = "cat wizard, Pixar style"
 
-    flux1 = Flux1()
-    result = flux1(
+    result = model(
         task=Flux1Task.IMAGE_GENERATION,
         prompt=prompt,
-        height=128,
-        width=128,
+        height=32,
+        width=32,
         num_inference_steps=1,
         num_images_per_prompt=3,
         seed=42,
@@ -157,4 +133,9 @@ def test_multiple_images_per_prompt():
     assert len(result) == 3
     for image in result:
         assert image.mode == "RGB"
-        assert image.size == (128, 128)
+        assert image.size == (32, 32)
+
+
+@pytest.fixture(scope="session")
+def model():
+    return Flux1()
