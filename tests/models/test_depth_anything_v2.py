@@ -6,7 +6,7 @@ from vision_agent_tools.models.depth_anything_v2 import DepthAnythingV2
 
 def test_successful_depth_estimation():
     test_image = "tomatoes.jpg"
-    image = Image.open(f"tests/tools/data/loca/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     depth = DepthAnythingV2()
     results = depth(image)
@@ -15,7 +15,7 @@ def test_successful_depth_estimation():
 
 def test_depth_grayscale_true():
     test_image = "tomatoes.jpg"
-    image = Image.open(f"tests/tools/data/loca/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     depth = DepthAnythingV2()
 

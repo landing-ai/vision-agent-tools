@@ -1,5 +1,3 @@
-import os
-
 from PIL import Image
 
 from vision_agent_tools.models.controlnet_aux import Image2Pose
@@ -10,7 +8,7 @@ def test_successful_image_2_pos_detection():
     This test verifies that Image2Pose returns a valid image for a valid input image.
     """
     test_image = "pose.png"
-    image_path = os.path.join("tests", "tools", "data", "controlnet_aux", test_image)
+    image_path = f"tests/shared_data/images/{test_image}"
 
     try:
         image = Image.open(image_path)

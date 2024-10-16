@@ -11,7 +11,7 @@ def test_successful_image_detection_segmentation():
     """
     This test verifies that TextToInstanceSegmentationTool returns a valid response when passed an image.
     """
-    test_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
+    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
 
     tool = TextToInstanceSegmentationTool()
 
@@ -36,7 +36,7 @@ def test_successful_video_detection_segmentation():
     """
     This test verifies that TextToInstanceSegmentationTool returns a valid response when passed a video.
     """
-    tomatoes_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
+    tomatoes_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
     img_size = tomatoes_image.size
     np_test_img = np.array(tomatoes_image, dtype=np.uint8)
     zeros = np.zeros((img_size[1], img_size[0], 3), dtype=np.uint8)

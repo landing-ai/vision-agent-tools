@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Annotated, Any, List
 
 import torch
@@ -12,6 +11,7 @@ from vision_agent_tools.shared_types import (
     VideoNumpy,
     BboxLabel,
     FlorenceV2ODRes,
+    PromptTask,
 )
 from vision_agent_tools.models.utils import (
     calculate_bbox_iou,
@@ -23,42 +23,6 @@ from vision_agent_tools.models.utils import (
 
 MODEL_NAME = "microsoft/Florence-2-large"
 PROCESSOR_NAME = "microsoft/Florence-2-large"
-
-
-class PromptTask(str, Enum):
-    """
-    Valid task_prompts options for the Florence2 model.
-
-    """
-
-    CAPTION = "<CAPTION>"
-    """"""
-    CAPTION_TO_PHRASE_GROUNDING = "<CAPTION_TO_PHRASE_GROUNDING>"
-    """"""
-    DETAILED_CAPTION = "<DETAILED_CAPTION>"
-    """"""
-    MORE_DETAILED_CAPTION = "<MORE_DETAILED_CAPTION>"
-    """"""
-    DENSE_REGION_CAPTION = "<DENSE_REGION_CAPTION>"
-    """"""
-    OPEN_VOCABULARY_DETECTION = "<OPEN_VOCABULARY_DETECTION>"
-    """"""
-    OBJECT_DETECTION = "<OD>"
-    """"""
-    OCR = "<OCR>"
-    """"""
-    OCR_WITH_REGION = "<OCR_WITH_REGION>"
-    """"""
-    REGION_PROPOSAL = "<REGION_PROPOSAL>"
-    """"""
-    REFERRING_EXPRESSION_SEGMENTATION = "<REFERRING_EXPRESSION_SEGMENTATION>"
-    """"""
-    REGION_TO_SEGMENTATION = "<REGION_TO_SEGMENTATION>"
-    """"""
-    REGION_TO_CATEGORY = "<REGION_TO_CATEGORY>"
-    """"""
-    REGION_TO_DESCRIPTION = "<REGION_TO_DESCRIPTION>"
-    """"""
 
 
 class Florencev2(BaseMLModel):

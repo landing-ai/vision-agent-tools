@@ -2,14 +2,15 @@ import pytest
 from PIL import Image
 from pydantic import ValidationError
 
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
+from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florencev2 import Florencev2
 
 
 def test_successful_florencev2_detection():
     test_image = "car.jpg"
     task = PromptTask.CAPTION
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     florencev2 = Florencev2()
 
@@ -23,7 +24,7 @@ def test_successful_florencev2_od_detection_with_nms():
     test_image = "car.jpg"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     florencev2 = Florencev2()
 
@@ -47,9 +48,9 @@ def test_successful_florencev2_detection_video(random_video_generator):
 
 
 def test_batch_ocr():
-    ocr_image_1 = Image.open("tests/models/data/florencev2/ocr_image_1.jpg")
-    ocr_image_2 = Image.open("tests/models/data/florencev2/ocr_image_2.jpg")
-    ocr_image_3 = Image.open("tests/models/data/florencev2/ocr_image_3.jpg")
+    ocr_image_1 = Image.open("tests/shared_data/images/ocr_image_1.jpg")
+    ocr_image_2 = Image.open("tests/shared_data/images/ocr_image_2.jpg")
+    ocr_image_3 = Image.open("tests/shared_data/images/ocr_image_3.jpg")
     task = PromptTask.OCR
 
     florencev2 = Florencev2()
@@ -79,7 +80,7 @@ def test_batch_size_validation():
 
 def test_remove_container_box():
     test_image = "sheep_aereal.jpg"
-    image_path = f"tests/models/data/florencev2/{test_image}"
+    image_path = f"tests/shared_data/images/{test_image}"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
 
     image = Image.open(image_path)

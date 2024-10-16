@@ -27,7 +27,7 @@ def test_successful_internlm_xcomposer2_for_video_chunks(random_video_generator)
 def test_successful_internlm_xcomposer2_for_images():
     test_image = "car.jpg"
 
-    image = Image.open(f"tests/tools/data/florencev2/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     run_inference = InternLMXComposer2()
 

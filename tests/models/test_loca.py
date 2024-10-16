@@ -5,7 +5,7 @@ from vision_agent_tools.models.nshot_counting import NShotCounting
 
 def test_successful_zeroshot_counting():
     test_image = "tomatoes.jpg"
-    image = Image.open(f"tests/tools/data/loca/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     count = NShotCounting()
     results = count(image)
@@ -15,7 +15,7 @@ def test_successful_zeroshot_counting():
 
 def test_successful_nshot_counting():
     test_image = "tomatoes.jpg"
-    image = Image.open(f"tests/tools/data/loca/{test_image}")
+    image = Image.open(f"tests/shared_data/images/{test_image}")
 
     count = NShotCounting(zero_shot=False)
     bbox = [267, 44, 324, 82]

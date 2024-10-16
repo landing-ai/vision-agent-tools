@@ -8,7 +8,7 @@ def test_point_segmentation_sam2_image():
     """
     This test verifies that SAM2Model returns a valid response when passed an image.
     """
-    test_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
+    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
 
     sam2_model = SAM2Model()
 
@@ -38,7 +38,7 @@ def test_box_segmentation_sam2_image():
     """
     This test verifies that SAM2Model returns a valid response when passed an image.
     """
-    test_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
+    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
 
     sam2_model = SAM2Model()
 
@@ -86,7 +86,7 @@ def test_sam2_image_no_prompts():
     """
     This test verifies that SAM2Model raises an error if neither points nor labels are provided.
     """
-    test_image = Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB")
+    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
     sam2_model = SAM2Model()
 
     with pytest.raises(ValueError):
@@ -99,7 +99,8 @@ def test_successful_video_detection_segmentation():
     """
     # Load a sample image and create a test video
     test_image = np.array(
-        Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB"), dtype=np.uint8
+        Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB"),
+        dtype=np.uint8,
     )
     test_video = np.array([test_image, np.zeros(test_image.shape, dtype=np.uint8)])
 

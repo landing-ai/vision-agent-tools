@@ -28,7 +28,7 @@ def test_successful_clip_similarity_target_text():
     """
     This test verifies that CLIPMediaSim returns a valid iresponse when passed a target_text
     """
-    image = np.array(Image.open("tests/tools/data/loca/tomatoes.jpg").convert("RGB"))
+    image = np.array(Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB"))
     zeros = np.zeros(image.shape, dtype=np.uint8)
 
     test_video = np.array([zeros, image, zeros], dtype=np.uint8)

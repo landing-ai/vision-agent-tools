@@ -59,11 +59,13 @@ def calculate_bbox_iou(bbox1: BoundingBox, bbox2: BoundingBox) -> float:
     Calculate the Intersection over Union (IoU) between two bounding boxes.
 
     Parameters:
-    bbox1 (BoundingBox): First bounding box [x_min, y_min, x_max, y_max].
-    bbox2 (BoundingBox): Second bounding box [x_min, y_min, x_max, y_max].
+        bbox1:
+            First bounding box [x_min, y_min, x_max, y_max].
+        bbox2:
+            Second bounding box [x_min, y_min, x_max, y_max].
 
     Returns:
-    float: IoU value.
+        float: IoU value.
     """
     # Determine the coordinates of the intersection rectangle
     x_min_inter = max(bbox1[0], bbox2[0])

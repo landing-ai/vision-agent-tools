@@ -178,3 +178,6 @@ get-pip.py
 
 _infra
 .sshyncignore
+
+# dev env
+.devcontainer.json
