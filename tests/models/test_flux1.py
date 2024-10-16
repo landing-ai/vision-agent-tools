@@ -22,8 +22,6 @@ def test_image_mask_inpainting(model):
         seed=42,
     )
 
-    result.save("tests/generated_data/chihuahua_to_cat_wizard.png")
-
     assert result is not None
     assert result.mode == "RGB"
     assert result.size == (32, 32)
@@ -41,8 +39,6 @@ def test_image_generation(model):
         num_inference_steps=1,
         seed=42,
     )
-
-    result.save("tests/generated_data/cat_1_inference_step.png")
 
     assert result is not None
     assert result.mode == "RGB"
