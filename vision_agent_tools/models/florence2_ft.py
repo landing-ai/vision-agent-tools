@@ -282,6 +282,9 @@ class Florence2Ft(BaseMLModel):
         self._model.eval()
         _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
 
+    def to(self, device: Device) -> None:
+        raise NotImplementedError("This method is not supported for Florence2Ft model.")
+
 
 def _filter_predictions(
     predictions: dict[str, Any],
