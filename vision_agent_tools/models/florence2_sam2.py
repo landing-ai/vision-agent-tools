@@ -1,3 +1,5 @@
+from typing import Any
+
 import torch
 from PIL import Image
 from typing_extensions import Self
@@ -10,6 +12,7 @@ from vision_agent_tools.shared_types import (
     BboxAndMaskLabel,
     PromptTask,
     Florence2ModelName,
+    ODResponse
 )
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 from vision_agent_tools.models.florence2 import Florence2
@@ -36,7 +39,6 @@ class Florence2SAM2Config(BaseModel):
 class Florence2Sam2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    task: PromptTask = Field(description="The task to be performed on the image/video.")
     prompt: str | None = Field(
         "",
         description="The text input that complements the media to find or track objects.",
@@ -108,7 +110,7 @@ class Florence2SAM2(BaseMLModel):
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         nms_threshold: float = 1.0,
-    ) -> list[BboxAndMaskLabel]:
+    ) -> list[dict[str, Any]]:
         """
         Florence2Sam2 model find objects in images and track objects in a video.
 
@@ -157,17 +159,18 @@ class Florence2SAM2(BaseMLModel):
             batch_size=5,
             nms_threshold=nms_threshold,
         )
+        od_response = [ODResponse(**item) for item in florence2_response]
 
         if images is not None:
             return self.sam2(
                 images=images,
-                bboxes=florence2_response,
+                bboxes=od_response,
             )
 
         if video is not None:
             return self.sam2(
                 video=video,
-                bboxes=florence2_response,
+                bboxes=od_response,
                 chunk_length_frames=chunk_length_frames,
                 iou_threshold=iou_threshold,
             )

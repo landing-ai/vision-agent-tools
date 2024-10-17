@@ -358,10 +358,12 @@ def _dummy_agnostic_nms(predictions: dict[str, Any], nms_threshold: float) -> li
         best_prediction_bbox = prediction_items[best_prediction_idx]
         bboxes_to_keep.append(best_prediction_idx)
 
-        prediction_items = {}
-        for idx, bbox in prediction_items.items():
-            if calculate_bbox_iou(best_prediction_bbox, bbox) < nms_threshold:
+        new_prediction_items = {}
+        for idx, pred in prediction_items.items():
+            if calculate_bbox_iou(best_prediction_bbox, pred) < nms_threshold:
                 bboxes_to_keep.append(idx)
+                new_prediction_items[idx] = pred
+        prediction_items = new_prediction_items
 
     bboxes_to_remove = []
     for idx, bbox in enumerate(predictions["bboxes"]):

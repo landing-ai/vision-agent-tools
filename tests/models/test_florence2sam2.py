@@ -1,8 +1,11 @@
+import json
+from typing import Any
+
 import pytest
 import numpy as np
 from PIL import Image
 
-from vision_agent_tools.shared_types import RLEEncoding, Florence2ModelName, Device
+from vision_agent_tools.shared_types import Florence2ModelName, Device
 from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
 
 
@@ -11,18 +14,14 @@ def test_florence2sam2_image(shared_model):
     test_image = Image.open(image_path)
     prompt = "tomato"
 
-    results = shared_model(prompt, images=[test_image])
+    response = shared_model(prompt, images=[test_image])
 
-    # TODO: save to a file
-    assert len(results) == 1
-    for idx in range(len(results.masks)):
-        assert isinstance(results.masks[idx], RLEEncoding)
-        assert results.labels[idx] == "tomato"
-        assert len(results.bboxes[idx]) == 4
-        assert np.all(
-            [0 <= coord <= np.max(test_image.size[:2]) for coord in results.bboxes[idx]]
-        )
-        reverted_masks = _rle_to_binary_mask(results.masks[idx])
+    with open("tests/models/data/florence2sam2_image_results.json", "r") as dest:
+        expected_results = json.load(dest)
+
+    assert expected_results == response
+    for idx in range(len(response[0]["masks"])):
+        reverted_masks = _rle_to_binary_mask(response[0]["masks"][idx])
         assert reverted_masks.shape == test_image.size[::-1]
 
 
@@ -94,17 +93,17 @@ def shared_model():
     )
 
 
-def _rle_to_binary_mask(rle: RLEEncoding) -> np.ndarray:
+def _rle_to_binary_mask(rle: dict[str, Any]) -> np.ndarray:
     # Convert the counts to a flat array of 0s and 1s
-    flat_mask = np.zeros(sum(rle.counts), dtype=np.uint8)
+    flat_mask = np.zeros(sum(rle["counts"]), dtype=np.uint8)
     current_value = 1
     position = 0
-    for count in rle.counts:
+    for count in rle["counts"]:
         flat_mask[position : position + count] = current_value
         # Flip between 1 and 0
         current_value = 1 - current_value
         position += count
 
     # Reshape the flat array back to the original mask shape
-    binary_mask = flat_mask.reshape(rle.size[::-1], order="F").astype(np.uint8)
-    return binary_mask
+    binary_mask = flat_mask.reshape(rle["size"], order="F").astype(np.uint8)
+    return binary_mask[0]

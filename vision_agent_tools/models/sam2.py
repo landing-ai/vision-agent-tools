@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import torch
 import numpy as np
@@ -75,18 +76,6 @@ class Florence2Sam2Request(BaseModel):
 
         return self
 
-    @model_validator(mode="after")
-    def check_inputs(self) -> Self:
-        if (
-            self.input_box is None
-            and self.input_points is None
-            and self.input_label is None
-        ):
-            raise ValueError(
-                "Either 'input_box' or 'input_points' and 'input_label' must be provided."
-            )
-        return self
-
 
 class Sam2(BaseMLModel):
     """It receives images, a prompt and returns the instance segmentation for the
@@ -123,7 +112,7 @@ class Sam2(BaseMLModel):
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
         iou_threshold: float = 0.6,
-    ) -> list[Sam2Response] | list[BboxAndMaskLabel]:
+    ) -> list[dict[str, Any]]:
         """Run Sam2 on images or video and find segments based on the input.
 
         Returns:
@@ -179,7 +168,7 @@ class Sam2(BaseMLModel):
                 iou_threshold=iou_threshold,
             )
 
-        return predictions
+        return _serialize(predictions)
 
     def to(self, device: Device):
         raise NotImplementedError("The method 'to' is not implemented.")
@@ -205,6 +194,7 @@ class Sam2(BaseMLModel):
                 box=input_box,
                 multimask_output=multimask_output,
             )
+
         return Sam2Response(
             masks=masks,
             scores=scores,
@@ -410,14 +400,9 @@ class Sam2(BaseMLModel):
         )
 
         for idx in range(len(preds)):
-            formatted_mask = (
-                sam2_image_pred.masks[idx, 0, :, :]
-                if len(sam2_image_pred.masks.shape) == 4
-                else sam2_image_pred.masks[idx, :, :]
-            )
             objs[annotation_id] = ObjBboxAndMaskLabel(
                 bbox=preds[idx]["bbox"],
-                mask=formatted_mask,
+                mask=sam2_image_pred.masks[idx][:, :],
                 label=preds[idx]["label"],
             )
             annotation_id += 1
@@ -505,3 +490,10 @@ def _mask_to_bbox(mask: np.ndarray) -> list[int]:
         x_min, x_max = np.min(cols), np.max(cols)
         y_min, y_max = np.min(rows), np.max(rows)
         return [x_min, y_min, x_max, y_max]
+
+
+def _serialize(detections: list[Sam2Response] | list[BboxAndMaskLabel]) -> list[dict[str, Any]]:
+    return [
+        detection.model_dump() if detection is not None else None
+        for detection in detections
+    ]
