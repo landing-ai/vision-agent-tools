@@ -753,7 +753,7 @@ training = ["Jinja2", "accelerate (>=0.31.0)", "datasets", "peft (>=0.6.0)", "pr
 type = "git"
 url = "https://github.com/huggingface/diffusers.git"
 reference = "main"
-resolved_reference = "d9029f2c5981a96ab51f8996be620af116b8d743"
+resolved_reference = "9a7f82464541bff49bc05dd02cb2d0abb3cccf2c"
 
 [[package]]
 name = "distlib"
@@ -2318,13 +2318,13 @@ files = [
 
 [[package]]
 name = "narwhals"
-version = "1.9.3"
+version = "1.9.4"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "narwhals-1.9.3-py3-none-any.whl", hash = "sha256:598d09227bef31f42ec25840728f3113e7e37c30d5430ae8126a1c8bd58177f9"},
-    {file = "narwhals-1.9.3.tar.gz", hash = "sha256:5b3f52c02a86730a611497e6ffbaccaa3df86fc26470c23e3fb40dc2bc793ebb"},
+    {file = "narwhals-1.9.4-py3-none-any.whl", hash = "sha256:cdd16f73268a3f0d3327aa9e4c6ab25a0b277629d6710bef58e86f40e57e5cc9"},
+    {file = "narwhals-1.9.4.tar.gz", hash = "sha256:5de1f2d7bfbe555573d945fe1d760469a05784f3e69b7bc1b5b1303aae7946a1"},
 ]
 
 [package.extras]
@@ -5146,13 +5146,13 @@ files = [
 
 [[package]]
 name = "ultralytics"
-version = "8.3.14"
+version = "8.3.15"
 description = "Ultralytics YOLO for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "ultralytics-8.3.14-py3-none-any.whl", hash = "sha256:675e8cb2549abe91cb5a4dbd49996b7ca1564535af75833f2bfc209b8d1c9550"},
-    {file = "ultralytics-8.3.14.tar.gz", hash = "sha256:f558005e1b29244f4447680d0df96015bd5d4322f3526c08bd6aed9487dedc0a"},
+    {file = "ultralytics-8.3.15-py3-none-any.whl", hash = "sha256:db24adac6f24fdd67cf5391ae8ebb968a759abf85a859ba18f1e766e88a4f726"},
+    {file = "ultralytics-8.3.15.tar.gz", hash = "sha256:29c1d502efa80b4f75c461d3d3e598fe7637b8f295af8d97ce96e6253238049d"},
 ]
 
 [package.dependencies]
@@ -5436,7 +5436,7 @@ clip-media-sim = ["transformers"]
 controlnet-aux = ["controlnet-aux"]
 depth-anything-v2-model = ["depth-anything-v2"]
 florence2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "peft", "timm", "transformers"]
-florence2-sam2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "sam-2", "scipy", "timm", "transformers"]
+florence2-sam2 = ["einops", "flash-attn", "flash-attn", "flash-attn", "peft", "sam-2", "timm", "transformers"]
 florencev2-qa = ["einops", "flash-attn", "flash-attn", "flash-attn", "scipy", "timm", "transformers"]
 flux1 = ["diffusers", "protobuf", "sentencepiece", "transformers"]
 ixc-25 = ["decord", "lmdeploy", "transformers"]
@@ -5449,4 +5449,4 @@ qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transfor
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "fe3a3b8b1793304b15635db21010e213bf183bee59a919556bfc42b2909a61e2"
+content-hash = "741519a4cf6ff61cd5526befca26ecf8c5119b847d409f6a79e71c00bc3c8869"

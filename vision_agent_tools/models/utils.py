@@ -4,6 +4,7 @@ import os.path as osp
 
 import wget
 import gdown
+import torch
 import numpy as np
 
 from vision_agent_tools.shared_types import (
@@ -11,12 +12,23 @@ from vision_agent_tools.shared_types import (
     BoundingBox,
     ODResponse,
     SegmentationBitMask,
+    Device,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
 CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
+
+
+def get_device() -> Device:
+    return (
+        Device.GPU
+        if torch.cuda.is_available()
+        else Device.MPS
+        if torch.backends.mps.is_available()
+        else Device.CPU
+    )
 
 
 def download(url, path):
@@ -30,12 +42,13 @@ def download(url, path):
 
 
 def calculate_mask_iou(mask1: SegmentationBitMask, mask2: SegmentationBitMask) -> float:
-    """
-    Calculate the Intersection over Union (IoU) between two masks.
+    """Calculate the Intersection over Union (IoU) between two masks.
 
     Parameters:
-    mask1 (numpy.ndarray): First mask.
-    mask2 (numpy.ndarray): Second mask.
+        mask1:
+            First mask.
+        mask2:
+            Second mask.
 
     Returns:
     float: IoU value.
@@ -50,7 +63,6 @@ def calculate_mask_iou(mask1: SegmentationBitMask, mask2: SegmentationBitMask) -
 
     # Calculate the IoU
     iou = intersection / union if union != 0 else 0
-
     return iou
 
 

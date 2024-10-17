@@ -108,6 +108,7 @@ class Florence2(BaseMLModel):
         prompt: Optional[str] = "",
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
+        *,
         batch_size: int = 5,
         nms_threshold: float = 1.0,
     ) -> Florence2ResponseType:

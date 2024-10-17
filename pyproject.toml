@@ -102,9 +102,9 @@ florencev2-qa = ["flash-attn", "transformers", "scipy", "timm", "einops"]
 florence2-sam2 = [
     "flash-attn",
     "transformers",
-    "scipy",
     "timm",
     "einops",
+    "peft",
     "sam-2",
 ]
 
