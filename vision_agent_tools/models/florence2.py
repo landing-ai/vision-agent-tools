@@ -157,7 +157,9 @@ class Florence2(BaseMLModel):
             # original shape: BHWC. When using florence2 with numpy, it expects the
             # shape BCHW, where B is the amount of frames, C is a number of channels,
             # H and W are image height and width.
-            images = np.transpose(video, (0, 3, 1, 2))
+            # TODO: fix predictions with numpy
+            # images = np.transpose(video, (0, 3, 1, 2))
+            images = [Image.fromarray(frame) for frame in video]
 
         parsed_answers = []
         for idx in range(0, len(images), batch_size):
