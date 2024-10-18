@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Dict, Optional
 
 from vision_agent_tools.shared_types import BaseTool, Device
 

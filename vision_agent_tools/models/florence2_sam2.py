@@ -109,6 +109,7 @@ class Florence2SAM2(BaseMLModel):
         prompt: str,
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
+        *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         nms_threshold: float = 1.0,
@@ -134,7 +135,7 @@ class Florence2SAM2(BaseMLModel):
                 Florence2 predictions.
 
         Returns:
-            list[BboxAndMaskLabel]:
+            list[dict[str, Any]]:
                 A list where each item represents each frames predictions.
                 [{
                     "masks": [rle, rle],

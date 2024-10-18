@@ -35,6 +35,10 @@ MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
         model_name="florence2",
         class_name="Florence2",
     ),
+    "florence2sam2": ModelRegistryEntry(
+        model_name="florence2_sam2",
+        class_name="Florence2SAM2",
+    ),
     "owlv2": ModelRegistryEntry(model_name="owlv2", class_name="Owlv2"),
     "qr_reader": ModelRegistryEntry(
         model_name="qr_reader",
