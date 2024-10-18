@@ -1,37 +1,37 @@
-import numpy as np
 import pytest
+import numpy as np
 from PIL import Image
-from vision_agent_tools.models.sam2 import Sam2
+
+from vision_agent_tools.shared_types import Device
+from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 
 
-def test_point_segmentation_sam2_image():
-    """
-    This test verifies that Sam2 returns a valid response when passed an image.
-    """
-    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
-
-    sam2_model = Sam2()
+def test_point_segmentation_sam2_image(shared_model, rle_decode_array):
+    image_path = "tests/shared_data/images/tomatoes.jpg"
+    test_image = Image.open(image_path)
 
     input_points = np.array([[110, 120]])
     input_label = np.array([1])
     input_box = None
     multimask_output = False
 
-    masks, scores, logits = sam2_model.predict_image(
-        image=test_image,
+    response = shared_model(
+        images=[test_image],
         input_points=input_points,
         input_label=input_label,
         input_box=input_box,
         multimask_output=multimask_output,
     )
 
+    assert len(response) == 1
+    masks = response[0]["masks"]
     assert len(masks) == 1
-    assert len(scores) == 1
-    assert len(logits) == 1
+    assert response[0]["scores"] == [1]
+    assert len(response[0]["logits"]) == 1
 
     for mask in masks:
-        assert isinstance(mask, np.ndarray)
-        assert mask.shape == test_image.size[::-1]
+        reverted_masks = rle_decode_array(mask)
+        assert reverted_masks.shape == test_image.size[::-1]
 
 
 def test_box_segmentation_sam2_image():
@@ -124,3 +124,13 @@ def test_successful_video_detection_segmentation():
     for obj_id, mask in results[1].items():
         assert isinstance(mask, np.ndarray)
         assert mask.shape[-2:] == test_image.shape[:2]
+
+
+@pytest.fixture(scope="session")
+def shared_model():
+    return Sam2(
+        model_config=Sam2Config(
+            hf_model="facebook/sam2-hiera-large",
+            device=Device.GPU,
+        )
+    )

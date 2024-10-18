@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 import pytest
 import numpy as np
@@ -9,7 +8,7 @@ from vision_agent_tools.shared_types import Florence2ModelName, Device
 from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
 
 
-def test_florence2sam2_image(shared_model):
+def test_florence2sam2_image(shared_model, rle_decode_array):
     image_path = "tests/shared_data/images/tomatoes.jpg"
     test_image = Image.open(image_path)
     prompt = "tomato"
@@ -20,11 +19,11 @@ def test_florence2sam2_image(shared_model):
         expected_results = json.load(dest)
 
     assert expected_results == response
-    reverted_masks = _rle_decode_array(response[0]["masks"][0])
+    reverted_masks = rle_decode_array(response[0]["masks"][0])
     assert reverted_masks.shape == test_image.size[::-1]
 
 
-def test_florence2sam2_video(shared_model):
+def test_florence2sam2_video(shared_model, rle_decode_array):
     tomatoes_image = Image.open("tests/shared_data/images/tomatoes.jpg")
     img_size = tomatoes_image.size
     np_test_img = np.array(tomatoes_image, dtype=np.uint8)
@@ -39,7 +38,7 @@ def test_florence2sam2_video(shared_model):
 
     assert expected_results == response
     # only check the first frame since the second frame is all zeros
-    reverted_masks = _rle_decode_array(response[0]["masks"][0])
+    reverted_masks = rle_decode_array(response[0]["masks"][0])
     assert reverted_masks.shape == img_size[::-1]
 
 
@@ -64,19 +63,3 @@ def shared_model():
             device=Device.GPU,
         )
     )
-
-def _rle_decode_array(rle: dict[str, Any]) -> np.ndarray:
-    size = rle["size"]
-    counts = rle["counts"]
-
-    total_elements = size[0] * size[1]
-    flattened_mask = np.zeros(total_elements, dtype=np.uint8)
-
-    current_pos = 0
-    for i, count in enumerate(counts):
-        if i % 2 == 1:
-            flattened_mask[current_pos : current_pos + count] = 1
-        current_pos += count
-
-    binary_mask = flattened_mask.reshape(size, order="F")
-    return binary_mask
