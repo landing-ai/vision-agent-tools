@@ -51,6 +51,7 @@ class Florence2Request(BaseModel):
         le=1.0,
         description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
     )
+    chunk_length_frames: int | None = None
 
     @model_validator(mode="after")
     def check_images_and_video(self) -> Self:
@@ -111,6 +112,7 @@ class Florence2(BaseMLModel):
         *,
         batch_size: int = 5,
         nms_threshold: float = 1.0,
+        chunk_length_frames: int | None = None,
     ) -> Florence2ResponseType:
         """
         Performs inference on the Florence-2 model based on the provided task,
@@ -129,6 +131,9 @@ class Florence2(BaseMLModel):
                 The batch size used for processing multiple images or video frames.
             nms_threshold:
                 The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
+            chunk_length_frames:
+                The number of frames for each chunk of video to analyze.
+                The last chunk may have fewer frames.
 
         Returns:
             Florence2ResponseType:
@@ -141,6 +146,7 @@ class Florence2(BaseMLModel):
             video=video,
             batch_size=batch_size,
             nms_threshold=nms_threshold,
+            chunk_length_frames=chunk_length_frames,
         )
 
         if self._fine_tuned and task not in self._fine_tune_supported_tasks:
@@ -160,7 +166,46 @@ class Florence2(BaseMLModel):
             # TODO: fix predictions with numpy
             # images = np.transpose(video, (0, 3, 1, 2))
             images = [Image.fromarray(frame) for frame in video]
+            if chunk_length_frames is not None:
+                # run only the start index for each chunk, this is useful
+                # for florence2sam2 to optimize performance
+                num_frames = video.shape[0]
+                idxs_to_pred = list(range(0, num_frames, chunk_length_frames))
+                images = [
+                    Image.fromarray(frame) if idx in idxs_to_pred else None
+                    for idx, frame in enumerate(video)
+                ]
+                result = self._predict_all(task, text_input, images, nms_threshold)
+                return _serialize(task, result)
 
+        result = self._predict_batch(task, text_input, images, batch_size, nms_threshold)
+        return _serialize(task, result)
+
+    def _predict_all(
+        self,
+        task: PromptTask,
+        text_input: str,
+        images: list[Image.Image],
+        nms_threshold: float,
+    ) -> list[dict[str, Any]]:
+        parsed_answers = []
+        for image in images:
+            if image is not None:
+                parsed_answers.append(
+                    self._predict(task, text_input, image, nms_threshold)
+                )
+            else:
+                parsed_answers.append(None)
+        return parsed_answers
+
+    def _predict_batch(
+        self,
+        task: PromptTask,
+        text_input: str,
+        images: list[Image.Image],
+        batch_size: int,
+        nms_threshold: float,
+    ) -> list[dict[str, Any]]:
         parsed_answers = []
         for idx in range(0, len(images), batch_size):
             end_frame = idx + batch_size
@@ -172,104 +217,74 @@ class Florence2(BaseMLModel):
             )
             images_chunk = images[idx:end_frame]
             text_input_chunk = [text_input] * len(images_chunk)
-            inputs = self._processor(
-                text=text_input_chunk, images=images_chunk, return_tensors="pt"
-            ).to(self._device.value)
-
-            generated_ids = self._model.generate(
-                input_ids=inputs["input_ids"],
-                pixel_values=inputs["pixel_values"],
-                max_new_tokens=1024,
-                num_beams=3,
-                early_stopping=False,
-                do_sample=False,
+            parsed_answers.extend(
+                self._batch_call(task, text_input_chunk, images_chunk, nms_threshold)
             )
 
-            skip_special_tokens = False
-            if task is PromptTask.OCR:
-                skip_special_tokens = True
+        return parsed_answers
 
-            generated_texts = self._processor.batch_decode(
-                generated_ids, skip_special_tokens=skip_special_tokens
+    def _predict(
+        self,
+        task: PromptTask,
+        text_input: str,
+        image: Image.Image,
+        nms_threshold: float,
+    ) -> dict[str, Any]:
+        images_chunk = [image]
+        text_input_chunk = [text_input]
+        return self._batch_call(task, text_input_chunk, images_chunk, nms_threshold)[0]
+
+    def _batch_call(
+        self,
+        task: PromptTask,
+        text_input_chunk: list[str],
+        images_chunk: list[Image.Image],
+        nms_threshold: float,
+    ) -> list[dict[str, Any]]:
+        parsed_answers = []
+        inputs = self._processor(
+            text=text_input_chunk, images=images_chunk, return_tensors="pt"
+        ).to(self._device.value)
+
+        generated_ids = self._model.generate(
+            input_ids=inputs["input_ids"],
+            pixel_values=inputs["pixel_values"],
+            max_new_tokens=1024,
+            num_beams=3,
+            early_stopping=False,
+            do_sample=False,
+        )
+
+        skip_special_tokens = False
+        if task is PromptTask.OCR:
+            skip_special_tokens = True
+
+        generated_texts = self._processor.batch_decode(
+            generated_ids, skip_special_tokens=skip_special_tokens
+        )
+
+        for generated_text, image in zip(generated_texts, images_chunk):
+            if isinstance(image, np.ndarray):
+                image_size = image.shape[1:]
+            else:
+                image_size = image.size
+
+            parsed_answer = self._processor.post_process_generation(
+                generated_text, task=task, image_size=image_size
             )
-
-            for generated_text, image in zip(generated_texts, images_chunk):
-                if isinstance(image, np.ndarray):
-                    image_size = image.shape[1:]
-                else:
-                    image_size = image.size
-
-                parsed_answer = self._processor.post_process_generation(
-                    generated_text, task=task, image_size=image_size
+            if (
+                task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
+                or task == PromptTask.OBJECT_DETECTION
+                or task == PromptTask.DENSE_REGION_CAPTION
+                or task == PromptTask.OPEN_VOCABULARY_DETECTION
+                or task == PromptTask.REGION_PROPOSAL
+            ):
+                parsed_answer[task] = _filter_predictions(
+                    parsed_answer[task], image_size, nms_threshold
                 )
-                if (
-                    task == PromptTask.CAPTION_TO_PHRASE_GROUNDING
-                    or task == PromptTask.OBJECT_DETECTION
-                    or task == PromptTask.DENSE_REGION_CAPTION
-                    or task == PromptTask.OPEN_VOCABULARY_DETECTION
-                    or task == PromptTask.REGION_PROPOSAL
-                ):
-                    parsed_answer[task] = _filter_predictions(
-                        parsed_answer[task], image_size, nms_threshold
-                    )
 
-                parsed_answers.append(parsed_answer)
-
-        # serialize the florence2 results
-        detections = []
-        for parsed_answer in parsed_answers:
-            detection = parsed_answer[task]
-            match task:
-                case (
-                    PromptTask.CAPTION_TO_PHRASE_GROUNDING
-                    | PromptTask.OBJECT_DETECTION
-                    | PromptTask.DENSE_REGION_CAPTION
-                    | PromptTask.REGION_PROPOSAL
-                ):
-                    detections.append(
-                        ODResponse(
-                            bboxes=detection["bboxes"], labels=detection["labels"]
-                        )
-                    )
-                case PromptTask.OCR_WITH_REGION:
-                    detections.append(
-                        Florence2OCRResponse(
-                            quad_boxes=detection["quad_boxes"],
-                            labels=detection["labels"],
-                        )
-                    )
-                case (
-                    PromptTask.CAPTION
-                    | PromptTask.OCR
-                    | PromptTask.DETAILED_CAPTION
-                    | PromptTask.MORE_DETAILED_CAPTION
-                    | PromptTask.REGION_TO_CATEGORY
-                    | PromptTask.REGION_TO_DESCRIPTION
-                ):
-                    detections.append(Florence2TextResponse(text=detection))
-                case PromptTask.OPEN_VOCABULARY_DETECTION:
-                    detections.append(
-                        Florence2OpenVocabularyResponse(
-                            bboxes=detection["bboxes"],
-                            bboxes_labels=detection["bboxes_labels"],
-                            polygons=detection["polygons"],
-                            polygons_labels=detection["polygons_labels"],
-                        )
-                    )
-                case (
-                    PromptTask.REFERRING_EXPRESSION_SEGMENTATION
-                    | PromptTask.REGION_TO_SEGMENTATION
-                ):
-                    detections.append(
-                        Florence2SegmentationResponse(
-                            polygons=detection["polygons"],
-                            labels=detection["labels"],
-                        )
-                    )
-                case _:
-                    raise ValueError(f"Task {task} not supported")
-
-        return _serialize(detections)
+            parsed_answers.append(parsed_answer)
+        return parsed_answers
 
     def load(
         self, model_name: str, processor_name: str, revision: str | None = None
@@ -379,7 +394,64 @@ def _dummy_agnostic_nms(predictions: dict[str, Any], nms_threshold: float) -> li
     return bboxes_to_remove
 
 
-def _serialize(detections: Florence2ResponseType) -> list[dict[str, Any]]:
+def _serialize(
+    task: PromptTask, parsed_answers: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    # serialize the florence2 results
+    detections = []
+    for parsed_answer in parsed_answers:
+        if parsed_answer is None:
+            detections.append(None)
+            continue
+        detection = parsed_answer[task]
+        match task:
+            case (
+                PromptTask.CAPTION_TO_PHRASE_GROUNDING
+                | PromptTask.OBJECT_DETECTION
+                | PromptTask.DENSE_REGION_CAPTION
+                | PromptTask.REGION_PROPOSAL
+            ):
+                detections.append(
+                    ODResponse(bboxes=detection["bboxes"], labels=detection["labels"])
+                )
+            case PromptTask.OCR_WITH_REGION:
+                detections.append(
+                    Florence2OCRResponse(
+                        quad_boxes=detection["quad_boxes"],
+                        labels=detection["labels"],
+                    )
+                )
+            case (
+                PromptTask.CAPTION
+                | PromptTask.OCR
+                | PromptTask.DETAILED_CAPTION
+                | PromptTask.MORE_DETAILED_CAPTION
+                | PromptTask.REGION_TO_CATEGORY
+                | PromptTask.REGION_TO_DESCRIPTION
+            ):
+                detections.append(Florence2TextResponse(text=detection))
+            case PromptTask.OPEN_VOCABULARY_DETECTION:
+                detections.append(
+                    Florence2OpenVocabularyResponse(
+                        bboxes=detection["bboxes"],
+                        bboxes_labels=detection["bboxes_labels"],
+                        polygons=detection["polygons"],
+                        polygons_labels=detection["polygons_labels"],
+                    )
+                )
+            case (
+                PromptTask.REFERRING_EXPRESSION_SEGMENTATION
+                | PromptTask.REGION_TO_SEGMENTATION
+            ):
+                detections.append(
+                    Florence2SegmentationResponse(
+                        polygons=detection["polygons"],
+                        labels=detection["labels"],
+                    )
+                )
+            case _:
+                raise ValueError(f"Task {task} not supported")
+
     return [
         detection.model_dump() if detection is not None else None
         for detection in detections

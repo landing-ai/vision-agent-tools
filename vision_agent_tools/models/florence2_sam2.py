@@ -158,8 +158,9 @@ class Florence2SAM2(BaseMLModel):
             video=video,
             batch_size=5,
             nms_threshold=nms_threshold,
+            chunk_length_frames=chunk_length_frames
         )
-        od_response = [ODResponse(**item) for item in florence2_response]
+        od_response = [ODResponse(**item) if item is not None else None for item in florence2_response]
 
         if images is not None:
             return self.sam2(
