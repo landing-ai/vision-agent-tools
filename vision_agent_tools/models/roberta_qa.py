@@ -65,8 +65,7 @@ class RobertaQA(BaseMLModel):
         with torch.autocast(self.device):
             data = self._model({"context": context, "question": question})
         inference = RobertaQAInferenceData(answer=data["answer"], score=data["score"])
-
-        return inference
+        return inference.model_dump()
 
     def to(self, device: Device):
         self._model.model.to(device=device.value)

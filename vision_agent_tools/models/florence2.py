@@ -73,7 +73,7 @@ class Florence2(BaseMLModel):
     """
 
     def __init__(
-        self, model_name: Florence2ModelName, *, device: Device | None = Device.GPU
+        self, model_name: Florence2ModelName = Florence2ModelName.FLORENCE_2_LARGE, *, device: Device | None = Device.GPU
     ):
         """Initializes the Florence2 model."""
         self._base_model_name = model_name

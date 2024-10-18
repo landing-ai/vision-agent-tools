@@ -546,7 +546,7 @@ def _update_reference_predictions(
             as the value of the last frame's prediction of the video propagation.
         new_predictions:
             Dictionary containing the id of the object as the key and the prediction
-            as the value of the FlorenceV2 model prediction.
+            as the value of the Florence2 model prediction.
         iou_threshold:
             The IoU threshold value used to compare last_predictions and new_predictions
             annotation objects.
