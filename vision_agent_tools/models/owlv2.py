@@ -58,7 +58,7 @@ class Owlv2(BaseMLModel):
 
     from typing import Dict, List
 
-    def filter_bboxes(self, bboxlabels: List[BboxLabel]) -> List[BboxLabel]:
+    def _filter_bboxes(self, bboxlabels: List[BboxLabel]) -> List[BboxLabel]:
         """
         Filters out redundant BboxLabel objects that fully contain multiple smaller boxes of the same label.
 
@@ -124,7 +124,7 @@ class Owlv2(BaseMLModel):
                 BboxLabel(label=texts[i][label.item()], score=score.item(), bbox=box)
             )
 
-        filtered_inferences = self.filter_bboxes(inferences)
+        filtered_inferences = self._filter_bboxes(inferences)
 
         return filtered_inferences
 
