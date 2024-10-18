@@ -64,10 +64,7 @@ def test_fail_image_generation_dimensions(model):
             seed=42,
         )
     except ValueError as e:
-        assert (
-            str(e)
-            == f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
-        )
+        assert str(e) == "height and width must be multiples of 8."
 
 
 def test_fail_image_mask_size(model):
@@ -142,6 +139,28 @@ def test_multiple_images_per_prompt(model):
     for image in result:
         assert image.mode == "RGB"
         assert image.size == (32, 32)
+
+
+def test_image_to_image(model):
+    prompt = "pixar style"
+    image = Image.open("tests/shared_data/images/chihuahua.png")
+
+    result = model(
+        task=Flux1Task.IMAGE_TO_IMAGE,
+        prompt=prompt,
+        image=image,
+        height=32,
+        width=32,
+        num_inference_steps=1,
+        guidance_scale=0.5,
+        seed=42,
+    )
+
+    assert result is not None
+    assert len(result) == 1
+    image = result[0]
+    assert image.mode == "RGB"
+    assert image.size == (32, 32)
 
 
 @pytest.fixture(scope="session")
