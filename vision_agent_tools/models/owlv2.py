@@ -282,10 +282,18 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
             boxes = boxes * scale_fct[:, None, :]
 
         results = []
-        for score, label, box in zip(scores, labels, boxes):
-            score = score[score > threshold]
-            label = label[score > threshold]
-            box = box[score > threshold]
-            results.append({"scores": score, "labels": label, "boxes": box})
+        for score_array, label_array, box_array in zip(scores, labels, boxes):
+            high_score_mask = score_array > threshold
+            filtered_scores = score_array[high_score_mask]
+            filtered_labels = label_array[high_score_mask]
+            filtered_boxes = box_array[high_score_mask]
+
+            results.append(
+                {
+                    "scores": filtered_scores,
+                    "labels": filtered_labels,
+                    "boxes": filtered_boxes,
+                }
+            )
 
         return results
