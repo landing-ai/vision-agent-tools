@@ -1,39 +1,43 @@
 import random
 import logging
 from enum import Enum
-from typing import List
-
+from typing import List, Annotated
 import torch
 from PIL import Image
 from pydantic import BaseModel, Field
 from pydantic import ConfigDict, validate_arguments
-from diffusers import FluxPipeline, FluxInpaintPipeline
+from pydantic.functional_validators import AfterValidator
+from diffusers import FluxPipeline, FluxInpaintPipeline, FluxImg2ImgPipeline
 
 from vision_agent_tools.shared_types import BaseMLModel, Device
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Flux1Config(BaseModel):
-    hf_model: str = Field(
-        default="black-forest-labs/FLUX.1-schnell",
-        description="Name of the HuggingFace model",
-    )
-    device: Device = Field(
-        default=(
-            Device.GPU
-            if torch.cuda.is_available()
-            else Device.MPS
-            if torch.backends.mps.is_available()
-            else Device.CPU
-        ),
-        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
-    )
-
-
 class Flux1Task(str, Enum):
     IMAGE_GENERATION = "generation"
     MASK_INPAINTING = "inpainting"
+    IMAGE_TO_IMAGE = "img2img"
+
+
+def _check_multiple_of_8(number: int) -> int:
+    assert number % 8 == 0, "height and width must be multiples of 8."
+    return number
+
+
+class Flux1Config(BaseModel):
+    height: Annotated[int, AfterValidator(_check_multiple_of_8)] = Field(
+        ge=8, default=512
+    )
+    width: Annotated[int, AfterValidator(_check_multiple_of_8)] = Field(
+        ge=8, default=512
+    )
+    num_inference_steps: int | None = Field(ge=1, default=10)
+    guidance_scale: float | None = Field(ge=0, default=3.5)
+    num_images_per_prompt: int | None = Field(ge=1, default=1)
+    max_sequence_length: int | None = Field(ge=0, le=512, default=512)
+    seed: int | None = None
+    strength: float | None = Field(ge=0, le=1, default=0.6)
 
 
 class Flux1(BaseMLModel):
@@ -46,7 +50,12 @@ class Flux1(BaseMLModel):
 
     def __init__(
         self,
-        model_config: Flux1Config | None = None,
+        hf_model: str = Field(
+            default="black-forest-labs/FLUX.1-schnell",
+            description="Name of the HuggingFace model",
+        ),
+        dtype=torch.bfloat16,
+        enable_sequential_cpu_offload: bool = True,
     ):
         """
         Initializes the Flux1 image generation tool.
@@ -58,43 +67,40 @@ class Flux1(BaseMLModel):
                 or mask inpainting ("inpainting").
             - model_config: The configuration for the model, hf_model, and device.
         """
-        self.model_config = model_config or Flux1Config()
-        dtype = torch.bfloat16
 
         self._pipeline_img_generation = FluxPipeline.from_pretrained(
-            self.model_config.hf_model, torch_dtype=dtype
+            hf_model, torch_dtype=dtype
         )
-        self._pipeline_img_generation.enable_sequential_cpu_offload()
+        if enable_sequential_cpu_offload:
+            self._pipeline_img_generation.enable_sequential_cpu_offload()
 
         self._pipeline_mask_inpainting = FluxInpaintPipeline.from_pretrained(
-            self.model_config.hf_model, torch_dtype=dtype
+            hf_model, torch_dtype=dtype
         )
-        self._pipeline_mask_inpainting.enable_sequential_cpu_offload()
+        if enable_sequential_cpu_offload:
+            self._pipeline_mask_inpainting.enable_sequential_cpu_offload()
+
+        self._pipeline_img2img = FluxImg2ImgPipeline.from_pretrained(
+            hf_model, torch_dtype=dtype
+        )
+        if enable_sequential_cpu_offload:
+            self._pipeline_img2img.enable_sequential_cpu_offload()
 
     @torch.inference_mode()
     @validate_arguments(config=config)
     def __call__(
         self,
-        prompt: str,
+        prompt: str = Field(max_length=512),
         task: Flux1Task = Flux1Task.IMAGE_GENERATION,
+        config: Flux1Config = Flux1Config(),
         image: Image.Image | None = None,
         mask_image: Image.Image | None = None,
-        height: int = 1024,
-        width: int = 1024,
-        strength: float | None = 0.6,
-        num_inference_steps: int | None = 28,
-        guidance_scale: float | None = 3.5,
-        num_images_per_prompt: int | None = 1,
-        max_sequence_length: int | None = 512,
-        seed: int | None = None,
     ) -> List[Image.Image] | None:
         """
         Performs object detection on an image using the Flux1 model.
 
         Args:
             - prompt (str): The text prompt describing the desired modifications.
-            - image (Image.Image): The original image to be modified.
-            - mask_image (Image.Image): The mask image indicating areas to be inpainted.
             - height (`int`, *optional*):
                 The height in pixels of the generated image.
                 This is set to 1024 by default for the best results.
@@ -112,75 +118,89 @@ class Flux1(BaseMLModel):
             - max_sequence_length (`int` defaults to 512):
                 Maximum sequence length to use with the `prompt`.
                 to make generation deterministic.
+            - seed (`int`, *optional*): The seed to use for the random number generator.
+                If not provided, a random seed is used.
             - strength (`float`, *optional*, defaults to 0.6):
                 Indicates extent to transform the reference `image`.
                 Must be between 0 and 1.
                 A value of 1 essentially ignores `image`.
-            - seed (`int`, *optional*): The seed to use for the random number generator.
-                If not provided, a random seed is used.
+            - image (Image.Image): The original image to be modified.
+            - mask_image (Image.Image): The mask image indicating areas to be inpainted.
 
         Returns:
             Image.Image | None: The output image if the Flux1 process is successful;
                 None if an error occurred.
         """
 
-        if height % 8 != 0 or width % 8 != 0:
-            raise ValueError(
-                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
-            )
+        if config.seed is None:
+            config.seed = random.randint(0, 2**32 - 1)
 
-        if max_sequence_length is not None and max_sequence_length > 512:
-            raise ValueError(
-                f"`max_sequence_length` cannot be greater than 512 but is {max_sequence_length}"
-            )
-
-        if strength < 0 or strength > 1:
-            raise ValueError(
-                f"The value of strength should in [0.0, 1.0] but is {strength}"
-            )
-
-        if seed is None:
-            seed = random.randint(0, 2**32 - 1)
-
-        generator = torch.Generator("cpu").manual_seed(seed)
+        generator = torch.Generator("cpu").manual_seed(config.seed)
         output = None
 
         if task == Flux1Task.IMAGE_GENERATION:
             output = self._generate_image(
                 prompt=prompt,
-                height=height,
-                width=width,
-                num_inference_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                num_images_per_prompt=num_images_per_prompt,
+                height=config.height,
+                width=config.width,
+                num_inference_steps=config.num_inference_steps,
+                guidance_scale=config.guidance_scale,
+                num_images_per_prompt=config.num_images_per_prompt,
+                max_sequence_length=config.max_sequence_length,
                 generator=generator,
-                max_sequence_length=max_sequence_length,
             )
         elif task == Flux1Task.MASK_INPAINTING:
+            if image is None or mask_image is None:
+                raise ValueError(
+                    "Both image and mask image must be provided for inpainting."
+                )
+
             if image.size != mask_image.size:
                 raise ValueError("The image and mask image should have the same size.")
 
-            if height is None:
-                height = image.height
-            if width is None:
-                width = image.width
+            height, width = config.height, config.width
+
+            if height is None or width is None:
+                height, width = image.size
 
             output = self._inpaint_image(
-                prompt=prompt,
                 image=image,
                 mask_image=mask_image,
+                prompt=prompt,
                 height=height,
                 width=width,
-                num_inference_steps=num_inference_steps,
-                guidance_scale=guidance_scale,
-                num_images_per_prompt=num_images_per_prompt,
+                num_inference_steps=config.num_inference_steps,
+                guidance_scale=config.guidance_scale,
+                num_images_per_prompt=config.num_images_per_prompt,
+                max_sequence_length=config.max_sequence_length,
+                strength=config.strength,
                 generator=generator,
-                max_sequence_length=max_sequence_length,
-                strength=strength,
+            )
+        elif task == Flux1Task.IMAGE_TO_IMAGE:
+            if image is None:
+                raise ValueError(
+                    "Image must be provided for image-to-image generation."
+                )
+
+            height, width = config.height, config.width
+
+            if height is None or width is None:
+                height, width = image.size
+
+            output = self._image_to_image(
+                prompt=prompt,
+                image=image,
+                height=config.height,
+                width=config.width,
+                num_inference_steps=config.num_inference_steps,
+                guidance_scale=config.guidance_scale,
+                num_images_per_prompt=config.num_images_per_prompt,
+                max_sequence_length=config.max_sequence_length,
+                generator=generator,
             )
         else:
             raise ValueError(
-                f"Unsupported task: {self.task}. Supported tasks are: {', '.join([task.value for task in Flux1Task])}."
+                f"Unsupported task: {config.task}. Supported tasks are: {', '.join([task.value for task in Flux1Task])}."
             )
 
         return output.images
@@ -281,6 +301,53 @@ class Flux1(BaseMLModel):
             generator=generator,
             max_sequence_length=max_sequence_length,
             strength=strength,
+        )
+
+        if output is None:
+            return None
+
+        return output
+
+    def _image_to_image(
+        self,
+        prompt: str,
+        image: Image.Image,
+        height: int,
+        width: int,
+        num_inference_steps: int,
+        guidance_scale: float,
+        num_images_per_prompt: int,
+        generator: torch.Generator,
+        max_sequence_length: int,
+    ) -> List[Image.Image] | None:
+        """
+        Generate an image from a given prompt + provided reference image.
+
+        Image generation pipeline to create an image based on a provided textual prompt.
+
+        Args:
+            prompt (`str`)
+            height (`int`)
+            width (`int`)
+            num_inference_steps (`int`)
+            guidance_scale (`float`)
+            num_images_per_prompt (`int`)
+            generator (`torch.Generator`)
+            max_sequence_length (`int`)
+
+        Returns:
+            Optional[Image.Image]: The generated image if successful; None if an error occurred.
+        """
+        output = self._pipeline_img2img(
+            prompt=prompt,
+            image=image,
+            height=height,
+            width=width,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            num_images_per_prompt=num_images_per_prompt,
+            generator=generator,
+            max_sequence_length=max_sequence_length,
         )
 
         if output is None:
