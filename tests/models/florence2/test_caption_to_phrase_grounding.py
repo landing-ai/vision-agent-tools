@@ -26,7 +26,7 @@ def test_caption_to_phrase_grounding_cereal(shared_model):
     ]
 
 
-def test_caption_to_phrase_grounding_sheep(shared_model):
+def test_caption_to_phrase_grounding_sheep(shared_large_model):
     image_path = "tests/shared_data/images/sheep_aerial.jpg"
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "sheep"
@@ -37,10 +37,12 @@ def test_caption_to_phrase_grounding_sheep(shared_model):
         "task": task,
         "prompt": prompt,
     }
-    response = shared_model(**payload)
+    response = shared_large_model(**payload)
+
+    assert len(response) == 1
     # this test case test the nms postprocessing where the model would output
-    # more than 14 bboxes for this image without nms
-    assert len(response["bboxes"]) == 14
+    # more than 15 bboxes for this image without nms
+    assert len(response[0]["bboxes"]) == 15
 
 
 def test_caption_to_phrase_grounding_car_with_nms(shared_model):
