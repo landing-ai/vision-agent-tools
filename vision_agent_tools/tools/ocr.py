@@ -1,15 +1,10 @@
 from enum import Enum
-from typing import List, Any
+from typing import Any
 
 from PIL import Image
-from pydantic import BaseModel
 
-from vision_agent_tools.shared_types import BaseTool
 from vision_agent_tools.models.model_registry import get_model_class
-
-
-class OCROutput(BaseModel):
-    output: Any
+from vision_agent_tools.shared_types import BaseTool, PromptTask, Device
 
 
 class OCRModel(str, Enum):
@@ -17,21 +12,19 @@ class OCRModel(str, Enum):
 
 
 class OCR(BaseTool):
-    """
-    Tool to perform OCR on an image using a specified ML model
-    """
-
-    def __init__(self, model: OCRModel):
-        if model not in OCRModel._value2member_map_:
-            raise ValueError(
-                f"Model '{model}' is not a valid model for {self.__class__.__name__}."
-            )
-        model_class = get_model_class(model_name=model)
+    """Tool to perform OCR on images using a specified ML model"""
+    def __init__(self, model: OCRModel = OCRModel.FLORENCE2):
+        model_class = get_model_class(model_name=model.value)
         model_instance = model_class()
         super().__init__(model=model_instance())
+        self._ocr_tasks = [PromptTask.OCR, PromptTask.OCR_WITH_REGION]
 
     def __call__(
-        self, image: Image.Image, task: List[str] = "<OCR>"
-    ) -> List[OCROutput]:
-        result = self.model(image=image, task=task)
-        return result[task]
+        self, images: list[Image.Image], task: PromptTask = PromptTask.OCR
+    ) -> dict[str, Any]:
+        if task not in self._ocr_tasks:
+            raise ValueError(f"Invalid task: {task}. Supported tasks are: {self._ocr_tasks}")
+        return self.model(images=images, task=task)
+
+    def to(self, device: Device) -> None:
+        raise NotImplementedError("This method is not supported for OCR tool.")

@@ -26,9 +26,7 @@ def get_device() -> Device:
     return (
         Device.GPU
         if torch.cuda.is_available()
-        else Device.MPS
-        if torch.backends.mps.is_available()
-        else Device.CPU
+        else Device.MPS if torch.backends.mps.is_available() else Device.CPU
     )
 
 
@@ -104,14 +102,6 @@ def calculate_bbox_iou(bbox1: BoundingBox, bbox2: BoundingBox) -> float:
     return iou
 
 
-def mask_to_bbox(mask: np.ndarray) -> list[int] | None:
-    rows, cols = np.where(mask)
-    if len(rows) > 0 and len(cols) > 0:
-        x_min, x_max = np.min(cols), np.max(cols)
-        y_min, y_max = np.min(rows), np.max(rows)
-        return [x_min, y_min, x_max, y_max]
-
-
 def convert_florence_bboxes_to_bbox_labels(
     predictions: ODResponse,
 ) -> list[BboxLabel]:
@@ -131,22 +121,9 @@ def convert_florence_bboxes_to_bbox_labels(
     return od_response
 
 
-def _contains(box_a, box_b):
-    """
-    Checks if box_a fully contains box_b.
-    Each box is [x_min, y_min, x_max, y_max].
-    """
-    x_min_a, y_min_a, x_max_a, y_max_a = box_a
-    x_min_b, y_min_b, x_max_b, y_max_b = box_b
-    return (
-        x_min_a <= x_min_b
-        and y_min_a <= y_min_b
-        and x_max_a >= x_max_b
-        and y_max_a >= y_max_b
-    )
-
-
-def filter_redundant_boxes(bboxes: list[list[float]], labels: list[str], min_contained: int = 2) -> dict[str, Any]:
+def filter_redundant_boxes(
+    bboxes: list[list[float]], labels: list[str], min_contained: int = 2
+) -> dict[str, Any]:
     """Filters out redundant bounding boxes that fully contain multiple smaller
     boxes of the same label.
 
@@ -177,7 +154,9 @@ def filter_redundant_boxes(bboxes: list[list[float]], labels: list[str], min_con
 
         # Sort boxes by area descending
         boxes_and_idx_sorted = sorted(
-            boxes_and_idx, key=lambda x: (x["bbox"][2] - x["bbox"][0]) * (x["bbox"][3] - x["bbox"][1]), reverse=True
+            boxes_and_idx,
+            key=lambda x: (x["bbox"][2] - x["bbox"][0]) * (x["bbox"][3] - x["bbox"][1]),
+            reverse=True,
         )
 
         to_remove = set()
@@ -201,3 +180,18 @@ def filter_redundant_boxes(bboxes: list[list[float]], labels: list[str], min_con
                         break
 
     return bboxes_to_remove
+
+
+def _contains(box_a, box_b):
+    """
+    Checks if box_a fully contains box_b.
+    Each box is [x_min, y_min, x_max, y_max].
+    """
+    x_min_a, y_min_a, x_max_a, y_max_a = box_a
+    x_min_b, y_min_b, x_max_b, y_max_b = box_b
+    return (
+        x_min_a <= x_min_b
+        and y_min_a <= y_min_b
+        and x_max_a >= x_max_b
+        and y_max_a >= y_max_b
+    )

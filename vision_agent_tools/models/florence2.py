@@ -158,6 +158,9 @@ class Florence2(BaseMLModel):
             text_input = task
         else:
             text_input = task + prompt
+        
+        if images is not None:
+            images = [image.convert("RGB") for image in images]
 
         if video is not None:
             # original shape: BHWC. When using florence2 with numpy, it expects the
@@ -165,14 +168,14 @@ class Florence2(BaseMLModel):
             # H and W are image height and width.
             # TODO: fix predictions with numpy
             # images = np.transpose(video, (0, 3, 1, 2))
-            images = [Image.fromarray(frame) for frame in video]
+            images = [Image.fromarray(frame).convert("RGB") for frame in video]
             if chunk_length_frames is not None:
                 # run only the start index for each chunk, this is useful
                 # for florence2sam2 to optimize performance
                 num_frames = video.shape[0]
                 idxs_to_pred = list(range(0, num_frames, chunk_length_frames))
                 images = [
-                    Image.fromarray(frame) if idx in idxs_to_pred else None
+                    Image.fromarray(frame).convert("RGB") if idx in idxs_to_pred else None
                     for idx, frame in enumerate(video)
                 ]
                 result = self._predict_all(task, text_input, images, nms_threshold)
