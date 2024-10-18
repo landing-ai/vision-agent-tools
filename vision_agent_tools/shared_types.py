@@ -170,7 +170,12 @@ Florence2ResponseType = (
 SegmentationBitMask = Annotated[npt.NDArray[np.bool_], Literal["H", "W"]]
 
 
-class Sam2Response(BaseModel):
+class RLEEncoding(BaseModel):
+    counts: list[int]
+    size: list[int]
+
+
+class Sam2BitMask(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     masks: list[SegmentationBitMask]
@@ -178,9 +183,12 @@ class Sam2Response(BaseModel):
     logits: list[SegmentationBitMask]
 
 
-class RLEEncoding(BaseModel):
-    counts: list[int]
-    size: list[int]
+class Sam2Response(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    masks: list[RLEEncoding]
+    scores: list[float] | None
+    logits: list[SegmentationBitMask] | None
 
 
 class BboxAndMaskLabel(ODResponse):
@@ -192,4 +200,12 @@ class ObjBboxAndMaskLabel(BaseModel):
 
     label: str
     bbox: list[float]
+    mask: SegmentationBitMask
+
+
+class ObjMaskLabel(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    score: float | None
+    logits: SegmentationBitMask | None
     mask: SegmentationBitMask

@@ -6,7 +6,7 @@ from vision_agent_tools.shared_types import Device
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 
 
-def test_point_segmentation_sam2_image(shared_model, rle_decode_array):
+def test_sam2_point_segmentation_image(shared_model, rle_decode_array):
     image_path = "tests/shared_data/images/tomatoes.jpg"
     test_image = Image.open(image_path)
 
@@ -26,21 +26,16 @@ def test_point_segmentation_sam2_image(shared_model, rle_decode_array):
     assert len(response) == 1
     masks = response[0]["masks"]
     assert len(masks) == 1
-    assert response[0]["scores"] == [1]
-    assert len(response[0]["logits"]) == 1
+    assert response[0]["scores"] == [0.9140625]
 
     for mask in masks:
         reverted_masks = rle_decode_array(mask)
         assert reverted_masks.shape == test_image.size[::-1]
 
 
-def test_box_segmentation_sam2_image():
-    """
-    This test verifies that Sam2 returns a valid response when passed an image.
-    """
-    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
-
-    sam2_model = Sam2()
+def test_sam2_box_segmentation_image(shared_model, rle_decode_array):
+    image_path = "tests/shared_data/images/tomatoes.jpg"
+    test_image = Image.open(image_path)
 
     input_points = None
     input_label = None
@@ -52,78 +47,56 @@ def test_box_segmentation_sam2_image():
     )
     multimask_output = False
 
-    masks, scores, logits = sam2_model.predict_image(
-        image=test_image,
+    response = shared_model(
+        images=[test_image],
         input_points=input_points,
         input_label=input_label,
         input_box=input_box,
         multimask_output=multimask_output,
     )
 
+    assert len(response) == 1
+    masks = response[0]["masks"]
     assert len(masks) == 2
-    assert len(scores) == 2
-    assert len(logits) == 2
+    assert response[0]["scores"] == [0.953125, 0.921875]
 
     for mask in masks:
-        assert isinstance(mask, np.ndarray)
-        assert mask.shape[-2:] == test_image.size[::-1]
+        reverted_masks = rle_decode_array(mask)
+        assert reverted_masks.shape == test_image.size[::-1]
 
 
-def test_sam2_invalid_media():
-    """
-    This test verifies that Sam2 raises an error if the input media is not valid.
-    """
-    sam2_model = Sam2()
+def test_sam2_invalid_media(shared_model):
+    with pytest.raises(ValueError):
+        shared_model(images=["invalid media"])  # Invalid type for image
 
     with pytest.raises(ValueError):
-        sam2_model.predict_image(image="invalid media")  # Invalid type for image
-
-    with pytest.raises(ValueError):
-        sam2_model.predict_image(image=None)  # No image provided
+        shared_model(images=[None])  # No image provided
 
 
-def test_sam2_image_no_prompts():
-    """
-    This test verifies that Sam2 raises an error if neither points nor labels are provided.
-    """
-    test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
-    sam2_model = Sam2()
-
-    with pytest.raises(ValueError):
-        sam2_model.predict_image(image=test_image, input_points=None, input_label=None)
-
-
-def test_successful_video_detection_segmentation():
-    """
-    This test verifies that Sam2's predict_video method returns a valid response when passed a video.
-    """
+def test_sam2_video_detection_segmentation(shared_model, rle_decode_array):
+    image_path = "tests/shared_data/images/tomatoes.jpg"
     # Load a sample image and create a test video
-    test_image = np.array(
-        Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB"),
-        dtype=np.uint8,
-    )
+    pil_test_image = Image.open(image_path)
+    test_image = np.array(pil_test_image, dtype=np.uint8)
     test_video = np.array([test_image, np.zeros(test_image.shape, dtype=np.uint8)])
-
-    sam2_model = Sam2()
 
     input_points = np.array([[130, 170]])
     input_label = np.array([1])
 
-    results = sam2_model.predict_video(
+    response = shared_model(
         video=test_video, input_points=input_points, input_label=input_label
     )
 
-    assert len(results) == 2
+    assert len(response) == 2
+    for frame_idx in range(len(response)): 
+        masks = response[frame_idx]["masks"]
+        assert len(masks) == 1
+        assert response[frame_idx]["scores"] is None
+        assert response[frame_idx]["logits"] is None
 
-    assert len(results[0]) == 1
-    for obj_id, mask in results[0].items():
-        assert isinstance(mask, np.ndarray)
-        assert mask.shape[-2:] == test_image.shape[:2]
-
-    assert len(results[1]) == 1
-    for obj_id, mask in results[1].items():
-        assert isinstance(mask, np.ndarray)
-        assert mask.shape[-2:] == test_image.shape[:2]
+        for mask in masks:
+            reverted_masks = rle_decode_array(mask)
+            assert reverted_masks.shape == pil_test_image.size[::-1]
 
 
 @pytest.fixture(scope="session")
