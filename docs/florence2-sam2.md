@@ -1,6 +1,6 @@
 # Florence2Sam2
 
-This tool uses FlorenceV2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
+This tool uses Florence2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
 
 ```python
 import cv2

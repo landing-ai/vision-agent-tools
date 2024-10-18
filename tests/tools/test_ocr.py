@@ -8,7 +8,7 @@ def test_successful_ocr():
 
     image = Image.open(f"tests/shared_data/images/{test_image}")
 
-    tool = OCR(model="florencev2")
+    tool = OCR(model="florence2")
     output = tool(image=image)
 
     assert output == "This is a handwrittenexampleWrite as good as you can."

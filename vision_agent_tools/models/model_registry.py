@@ -29,9 +29,9 @@ class ModelRegistryEntry(BaseModel):
 
 
 MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
-    "florencev2": ModelRegistryEntry(
-        model_name="florencev2",
-        class_name="Florencev2",
+    "florence2": ModelRegistryEntry(
+        model_name="florence2",
+        class_name="Florence2",
     ),
     "owlv2": ModelRegistryEntry(model_name="owlv2", class_name="Owlv2"),
     "qr_reader": ModelRegistryEntry(

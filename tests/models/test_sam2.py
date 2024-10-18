@@ -1,16 +1,16 @@
 import numpy as np
 import pytest
 from PIL import Image
-from vision_agent_tools.models.sam2 import SAM2Model
+from vision_agent_tools.models.sam2 import Sam2
 
 
 def test_point_segmentation_sam2_image():
     """
-    This test verifies that SAM2Model returns a valid response when passed an image.
+    This test verifies that Sam2 returns a valid response when passed an image.
     """
     test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
 
-    sam2_model = SAM2Model()
+    sam2_model = Sam2()
 
     input_points = np.array([[110, 120]])
     input_label = np.array([1])
@@ -36,11 +36,11 @@ def test_point_segmentation_sam2_image():
 
 def test_box_segmentation_sam2_image():
     """
-    This test verifies that SAM2Model returns a valid response when passed an image.
+    This test verifies that Sam2 returns a valid response when passed an image.
     """
     test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
 
-    sam2_model = SAM2Model()
+    sam2_model = Sam2()
 
     input_points = None
     input_label = None
@@ -71,9 +71,9 @@ def test_box_segmentation_sam2_image():
 
 def test_sam2_invalid_media():
     """
-    This test verifies that SAM2Model raises an error if the input media is not valid.
+    This test verifies that Sam2 raises an error if the input media is not valid.
     """
-    sam2_model = SAM2Model()
+    sam2_model = Sam2()
 
     with pytest.raises(ValueError):
         sam2_model.predict_image(image="invalid media")  # Invalid type for image
@@ -84,10 +84,10 @@ def test_sam2_invalid_media():
 
 def test_sam2_image_no_prompts():
     """
-    This test verifies that SAM2Model raises an error if neither points nor labels are provided.
+    This test verifies that Sam2 raises an error if neither points nor labels are provided.
     """
     test_image = Image.open("tests/shared_data/images/tomatoes.jpg").convert("RGB")
-    sam2_model = SAM2Model()
+    sam2_model = Sam2()
 
     with pytest.raises(ValueError):
         sam2_model.predict_image(image=test_image, input_points=None, input_label=None)
@@ -95,7 +95,7 @@ def test_sam2_image_no_prompts():
 
 def test_successful_video_detection_segmentation():
     """
-    This test verifies that SAM2Model's predict_video method returns a valid response when passed a video.
+    This test verifies that Sam2's predict_video method returns a valid response when passed a video.
     """
     # Load a sample image and create a test video
     test_image = np.array(
@@ -104,7 +104,7 @@ def test_successful_video_detection_segmentation():
     )
     test_video = np.array([test_image, np.zeros(test_image.shape, dtype=np.uint8)])
 
-    sam2_model = SAM2Model()
+    sam2_model = Sam2()
 
     input_points = np.array([[130, 170]])
     input_label = np.array([1])

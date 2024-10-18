@@ -39,7 +39,7 @@ def test_small_model_od_image(shared_model):
 
 def test_od_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     task = PromptTask.OBJECT_DETECTION
     # cannot have prompt
@@ -65,7 +65,7 @@ def test_od_ft(small_model, unzip_model):
 
 def test_large_model_base_with_small_model_od_ft(large_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     task = PromptTask.OBJECT_DETECTION
     # cannot have prompt
@@ -91,7 +91,7 @@ def test_large_model_base_with_small_model_od_ft(large_model, unzip_model):
 
 def test_od_ft_and_base(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     task = PromptTask.OBJECT_DETECTION
     # cannot have prompt

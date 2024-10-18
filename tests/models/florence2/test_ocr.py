@@ -26,7 +26,7 @@ def test_ocr_batch(shared_model):
 
 def test_ocr_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/ocr_image_1.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     task = PromptTask.OCR
     image = Image.open(image_path)

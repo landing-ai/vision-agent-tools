@@ -38,8 +38,8 @@ make install
 ### Advanced usage
 
 You can install by running `poetry install --extras "all"` to install all tools, or with
-`poetry install --extras "owlv2 florencev2"` to install specific tools such as `owlv2`
-and `florencev2`.
+`poetry install --extras "owlv2 florence2"` to install specific tools such as `owlv2`
+and `florence2`.
 
 ## Usage
 
@@ -81,7 +81,7 @@ detections = detector(image=image, prompts=["find dogs in the picture"])
 
 In this example:
 
-- `TextToObjectDetection` tool is initialized with the "florencev2" model.
+- `TextToObjectDetection` tool is initialized with the "florence2" model.
 - The tool detects objects based on the text prompt "find dogs in the picture" and returns a list of `TextToObjectDetectionOutput` containing the detection results.
 
 
@@ -128,7 +128,7 @@ To use a model with your tool, you need to register it in the `model_registry`. 
 
 ```python
 MODEL_REGISTRY: Dict[str, Callable[[], BaseMLModel]] = {
-    "florencev2": lambda: lazy_import(f"{MODELS_PATH}.florencev2", "Florencev2")(),
+    "florence2": lambda: lazy_import(f"{MODELS_PATH}.florence2", "Florence2")(),
     "owlv2": lambda: lazy_import(f"{MODELS_PATH}.owlv2", "Owlv2")(), # Register the new Owlv2 model here
 }
 ```
@@ -141,7 +141,7 @@ You can easily add new tools to the vision_agent_tools/tools directory. Tools ar
 2. **Map the Models to Tool**: Associate the list of models that can perform some task creating an Enum inside your tool file:
     ```python
     class TextToObjectDetectionModel(str, Enum):
-        FLORENCEV2 = "florencev2"
+        FLORENCE2 = "florence2"
         OWLV2 = "owlv2"
     ```
 3. **Implement the Tool Class**: Inside the new Python file, create a class with the same name as the file. This class should inherit from BaseTool and implement the `__call__` method.

@@ -16,12 +16,31 @@ def test_caption_to_phrase_grounding_cereal(shared_model):
         "prompt": prompt,
     }
     response = shared_model(**payload)
+    # without removing the whole container box, the model will detect one bbox
+    # in this image
     assert response == [
         {
             "bboxes": [],
             "labels": [],
         }
     ]
+
+
+def test_caption_to_phrase_grounding_sheep(shared_model):
+    image_path = "tests/shared_data/images/sheep_aerial.jpg"
+    task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+    prompt = "sheep"
+    image = Image.open(image_path)
+
+    payload = {
+        "images": [image],
+        "task": task,
+        "prompt": prompt,
+    }
+    response = shared_model(**payload)
+    # this test case test the nms postprocessing where the model would output
+    # more than 14 bboxes for this image without nms
+    assert len(response["bboxes"]) == 14
 
 
 def test_caption_to_phrase_grounding_car_with_nms(shared_model):
@@ -64,7 +83,7 @@ def test_caption_to_phrase_grounding_video(shared_model, bytes_to_np):
 
     assert len(response) == 80
     with open(
-        "tests/models/florence2_ft/data/results/caption_to_phrase_grounding_video_results.json",
+        "tests/models/florence2/data/results/caption_to_phrase_grounding_video_results.json",
         "r",
     ) as source:
         expected_response = json.load(source)
@@ -73,7 +92,9 @@ def test_caption_to_phrase_grounding_video(shared_model, bytes_to_np):
 
 def test_caption_to_phrase_grounding_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    model_zip_path = "tests/models/florence2_ft/data/models/caption_to_phrase_grounding_checkpoint.zip"
+    model_zip_path = (
+        "tests/models/florence2/data/models/caption_to_phrase_grounding_checkpoint.zip"
+    )
     model_path = unzip_model(model_zip_path)
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "screw"

@@ -4,7 +4,7 @@ from typing import Annotated, Literal, TypeVar, Any
 import numpy as np
 import numpy.typing as npt
 from annotated_types import Len
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Device(str, Enum):
@@ -52,8 +52,6 @@ DType = TypeVar("DType", bound=np.generic)
 
 VideoNumpy = Annotated[npt.NDArray[DType], Literal["N", "N", "N", 3]]
 
-SegmentationBitMask = Annotated[npt.NDArray[np.bool_], Literal["N", "N"]]
-
 
 class Point(BaseModel):
     # X coordinate of the point
@@ -79,51 +77,6 @@ class BboxLabel(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
-
-class BboxAndMaskLabel(BboxLabel):
-    id: int | str
-    mask: SegmentationBitMask | None
-
-    class Config:
-        arbitrary_types_allowed = True
-        populate_by_name = True
-
-
-class FlorenceV2ODRes(BaseModel):
-    """
-    Schema for the <OD> task.
-    """
-
-    bboxes: list[BoundingBox] = Field(
-        ..., description="list of bounding boxes, each represented as [x1, y1, x2, y2]"
-    )
-    labels: list[str] = Field(
-        ..., description="list of labels corresponding to each bounding box"
-    )
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "<OD>": {
-                    "bboxes": [
-                        [
-                            33.599998474121094,
-                            159.59999084472656,
-                            596.7999877929688,
-                            371.7599792480469,
-                        ],
-                        [
-                            454.0799865722656,
-                            96.23999786376953,
-                            580.7999877929688,
-                            261.8399963378906,
-                        ],
-                    ],
-                    "labels": ["car", "door"],
-                }
-            }
-        }
 
 
 # florence2
@@ -158,8 +111,31 @@ class Florence2TextResponse(BaseModel):
 
 
 class ODResponse(BaseModel):
-    labels: list[str]
-    bboxes: list[list[float]]
+    labels: list[str] = Field(
+        description="list of labels corresponding to each bounding box"
+    )
+    bboxes: list[list[float]] = Field(
+        description="list of bounding boxes, each represented as [x_min, y_min, x_max, y_max]"
+    )
+
+    class Config:
+        schema_extra = {
+            "bboxes": [
+                [
+                    33.599998474121094,
+                    159.59999084472656,
+                    596.7999877929688,
+                    371.7599792480469,
+                ],
+                [
+                    454.0799865722656,
+                    96.23999786376953,
+                    580.7999877929688,
+                    261.8399963378906,
+                ],
+            ],
+            "labels": ["car", "door"],
+        }
 
 
 class Florence2OCRResponse(BaseModel):
@@ -179,21 +155,41 @@ class Florence2OpenVocabularyResponse(BaseModel):
     polygons_labels: list[str]
 
 
-class RLEEncoding(BaseModel):
-    counts: list[int]
-    size: list[int]
-
-
-class ImageBboxAndMaskLabel(ODResponse):
-    masks: list[RLEEncoding]
-
-
 # the items can be none for the case where the frame does not have any detections
 Florence2ResponseType = (
     list[Florence2TextResponse | None]
     | list[ODResponse | None]
     | list[Florence2OCRResponse | None]
-    | list[ImageBboxAndMaskLabel | None]
     | list[Florence2OpenVocabularyResponse | None]
     | list[Florence2SegmentationResponse | None]
 )
+
+
+# sam2
+
+SegmentationBitMask = Annotated[npt.NDArray[np.bool_], Literal["H", "W"]]
+
+
+class Sam2Response(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    masks: list[SegmentationBitMask]
+    scores: list[float]
+    logits: list[SegmentationBitMask]
+
+
+class RLEEncoding(BaseModel):
+    counts: list[int]
+    size: list[int]
+
+
+class BboxAndMaskLabel(ODResponse):
+    masks: list[RLEEncoding]
+
+
+class ObjBboxAndMaskLabel(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    label: str
+    bbox: list[float]
+    mask: SegmentationBitMask

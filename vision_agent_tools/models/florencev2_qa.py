@@ -1,8 +1,9 @@
 import torch
 from PIL import Image
 
+from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florence2 import Florence2
 from vision_agent_tools.helpers.roberta_qa import RobertaQA
-from vision_agent_tools.models.florencev2 import Florencev2, PromptTask
 from vision_agent_tools.shared_types import BaseMLModel, Device
 
 
@@ -18,7 +19,7 @@ class FlorenceQA(BaseMLModel):
         """
         Initializes the FlorenceQA model.
         """
-        self._florence = Florencev2()
+        self._florence = Florence2()
         self._roberta_qa = RobertaQA()
 
     @torch.inference_mode()

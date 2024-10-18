@@ -4,9 +4,9 @@ from PIL import Image
 from vision_agent_tools.shared_types import PromptTask
 
 
-def test_open_vocabulary_detection(shared_model):
+def test_dense_region_caption(shared_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    task = PromptTask.OPEN_VOCABULARY_DETECTION
+    task = PromptTask.DENSE_REGION_CAPTION
     image = Image.open(image_path)
 
     payload = {
@@ -14,15 +14,13 @@ def test_open_vocabulary_detection(shared_model):
         "task": task,
     }
     response = shared_model(**payload)
-    assert response == [
-        {"bboxes": [], "bboxes_labels": [], "polygons": [], "polygons_labels": []}
-    ]
+    assert response == [{"labels": [], "bboxes": []}]
 
 
-def test_open_vocabulary_detection_ft(small_model, unzip_model):
+def test_dense_region_caption_ft(small_model, unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
-    task = PromptTask.OPEN_VOCABULARY_DETECTION
-    model_zip_path = "tests/models/florence2_ft/data/models/od_checkpoint.zip"
+    task = PromptTask.DENSE_REGION_CAPTION
+    model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     image = Image.open(image_path)
 
@@ -35,6 +33,6 @@ def test_open_vocabulary_detection_ft(small_model, unzip_model):
         small_model(**payload)
         assert (
             exc.value
-            == "The task OPEN_VOCABULARY_DETECTION is not supported yet if your are "
-            "using a fine-tuned model."
+            == "The task DENSE_REGION_CAPTION is not supported yet if your are using "
+            "a fine-tuned model."
         )

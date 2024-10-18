@@ -1,4 +1,5 @@
 from PIL import Image
+
 from vision_agent_tools.tools.text_to_object_detection import (
     TextToObjectDetection,
     TextToObjectDetectionModel,
@@ -21,13 +22,13 @@ def test_successful_text_to_object_detection_owlv2():
         assert pred.label == "a photo of a cat"
 
 
-def test_successful_text_to_object_detection_florencev2():
+def test_successful_text_to_object_detection_florence2():
     test_image = "000000039769.jpg"
     prompts = ["cat", "dog"]
 
     image = Image.open(f"tests/shared_data/images/{test_image}")
 
-    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCEV2)
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCE2)
     output = tool(image=image, prompts=prompts)[0]
 
     assert len(output) > 0

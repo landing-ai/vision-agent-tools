@@ -1,7 +1,9 @@
-from typing import List, Any
 from enum import Enum
+from typing import List, Any
+
 from PIL import Image
 from pydantic import BaseModel
+
 from vision_agent_tools.shared_types import BaseTool
 from vision_agent_tools.models.model_registry import get_model_class
 
@@ -11,7 +13,7 @@ class OCROutput(BaseModel):
 
 
 class OCRModel(str, Enum):
-    FLORENCEV2 = "florencev2"
+    FLORENCE2 = "florence2"
 
 
 class OCR(BaseTool):
