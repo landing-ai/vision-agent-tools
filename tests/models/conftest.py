@@ -1,7 +1,11 @@
+import logging
 from typing import Any
 
 import pytest
 import numpy as np
+
+logging.basicConfig(level=logging.INFO)
+
 
 @pytest.fixture
 def rle_decode_array():

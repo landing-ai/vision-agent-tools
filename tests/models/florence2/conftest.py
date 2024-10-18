@@ -1,6 +1,5 @@
 import os
 import shutil
-import logging
 import tempfile
 
 import cv2
@@ -9,8 +8,6 @@ import numpy as np
 
 from vision_agent_tools.models.florence2 import Florence2
 from vision_agent_tools.shared_types import Florence2ModelName
-
-logging.basicConfig(level=logging.INFO)
 
 
 @pytest.fixture

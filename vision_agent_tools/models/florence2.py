@@ -21,7 +21,7 @@ from vision_agent_tools.shared_types import (
     Florence2OpenVocabularyResponse,
     Florence2SegmentationResponse,
 )
-from vision_agent_tools.models.utils import calculate_bbox_iou
+from vision_agent_tools.models.utils import calculate_bbox_iou, filter_redundant_boxes
 
 _MODEL_REVISION_PER_MODEL_NAME = {
     Florence2ModelName.FLORENCE_2_BASE_FT: "refs/pr/20",
@@ -279,8 +279,9 @@ class Florence2(BaseMLModel):
                 or task == PromptTask.OPEN_VOCABULARY_DETECTION
                 or task == PromptTask.REGION_PROPOSAL
             ):
+                label_key = "bboxes_labels" if task is PromptTask.OPEN_VOCABULARY_DETECTION else "labels"
                 parsed_answer[task] = _filter_predictions(
-                    parsed_answer[task], image_size, nms_threshold
+                    parsed_answer[task], image_size, nms_threshold, label_key
                 )
 
             parsed_answers.append(parsed_answer)
@@ -308,6 +309,7 @@ def _filter_predictions(
     predictions: dict[str, Any],
     image_size: tuple[int, int],
     nms_threshold: float,
+    label_key: str = "labels",
 ) -> dict[str, Any]:
     new_preds = {}
 
@@ -318,6 +320,10 @@ def _filter_predictions(
     # Apply a dummy agnostic Non-Maximum Suppression (NMS) to get rid of any
     # overlapping predictions on the same object
     bboxes_to_remove = _dummy_agnostic_nms(new_preds, nms_threshold)
+    new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
+
+    # Remove redundant boxes (boxes that are completely covered by another box)
+    bboxes_to_remove = filter_redundant_boxes(new_preds["bboxes"], new_preds[label_key])
     new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
 
     return new_preds
@@ -363,7 +369,8 @@ def _dummy_agnostic_nms(predictions: dict[str, Any], nms_threshold: float) -> li
             The IoU threshold value used for NMS.
 
     Returns:
-        list[int]: Indexes to remove from the predictions.
+        list[int]:
+            Indexes to remove from the predictions.
     """
     bboxes_to_keep = []
     prediction_items = {idx: pred for idx, pred in enumerate(predictions["bboxes"])}

@@ -1,6 +1,7 @@
 import os
 import logging
 import os.path as osp
+from typing import Any
 
 import wget
 import gdown
@@ -145,51 +146,50 @@ def _contains(box_a, box_b):
     )
 
 
-def filter_redundant_boxes(response, min_contained=2):
-    """
-    Filters out redundant bounding boxes that fully contain multiple smaller boxes of the same label.
+def filter_redundant_boxes(bboxes: list[list[float]], labels: list[str], min_contained: int = 2) -> dict[str, Any]:
+    """Filters out redundant bounding boxes that fully contain multiple smaller
+    boxes of the same label.
 
     Parameters:
-        response (dict): Dictionary containing 'bboxes' and 'labels'.
-        min_contained (int): Minimum number of contained boxes to consider a box redundant.
+        bboxes:
+            List of bounding boxes.
+        labels:
+            List of bounding labels.
+        min_contained:
+            Minimum number of contained boxes to consider a box redundant.
 
     Returns:
-        output_data (dict): Dictionary with filtered 'bboxes' and 'labels'.
+        list[int]:
+            Indexes to remove from the bboxes.
     """
-    bboxes = response["bboxes"]
-    labels = response["labels"]
+    bboxes_to_remove = []
 
-    # Organize boxes by label
+    # Organize boxes by label and idx
     label_to_boxes = {}
-    for bbox, label in zip(bboxes, labels):
-        label_to_boxes.setdefault(label, []).append(bbox)
+    for idx, bbox, label in zip(range(len(bboxes)), bboxes, labels):
+        label_to_boxes.setdefault(label, []).append({"bbox": bbox, "idx": idx})
 
-    filtered_bboxes = []
-    filtered_labels = []
-
-    for label, boxes in label_to_boxes.items():
-        n = len(boxes)
+    for label, boxes_and_idx in label_to_boxes.items():
+        n = len(boxes_and_idx)
         if n < min_contained + 1:
             # Not enough boxes to have redundancies
-            filtered_bboxes.extend(boxes)
-            filtered_labels.extend([label] * n)
             continue
 
         # Sort boxes by area descending
-        boxes_sorted = sorted(
-            boxes, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]), reverse=True
+        boxes_and_idx_sorted = sorted(
+            boxes_and_idx, key=lambda x: (x["bbox"][2] - x["bbox"][0]) * (x["bbox"][3] - x["bbox"][1]), reverse=True
         )
-        to_remove = set()
 
+        to_remove = set()
         for i in range(n):
             if i in to_remove:
                 continue
-            box_a = boxes_sorted[i]
+            box_a = boxes_and_idx_sorted[i]["bbox"]
             contained = 0
             for j in range(n):
                 if i == j or j in to_remove:
                     continue
-                box_b = boxes_sorted[j]
+                box_b = boxes_and_idx_sorted[j]["bbox"]
                 if _contains(box_a, box_b):
                     contained += 1
                     if contained >= min_contained:
@@ -197,14 +197,7 @@ def filter_redundant_boxes(response, min_contained=2):
                         _LOGGER.info(
                             f"Removing box {box_a} as it contains {contained} boxes."
                         )
+                        bboxes_to_remove.append(boxes_and_idx_sorted[i]["idx"])
                         break
 
-        # Add boxes that are not removed
-        for idx in range(n):
-            if idx not in to_remove:
-                filtered_bboxes.append(boxes_sorted[idx])
-                filtered_labels.append(label)
-
-    output_data = {"bboxes": filtered_bboxes, "labels": filtered_labels}
-
-    return output_data
+    return bboxes_to_remove

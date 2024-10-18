@@ -41,8 +41,8 @@ def test_caption_to_phrase_grounding_sheep(shared_large_model):
 
     assert len(response) == 1
     # this test case test the nms postprocessing where the model would output
-    # more than 15 bboxes for this image without nms
-    assert len(response[0]["bboxes"]) == 15
+    # more than 14 bboxes for this image without nms
+    assert len(response[0]["bboxes"]) == 14
 
 
 def test_caption_to_phrase_grounding_car_with_nms(shared_model):

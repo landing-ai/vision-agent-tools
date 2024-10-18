@@ -62,13 +62,13 @@ mypy = "^1.10.1"
 ipykernel = "^6.29.5"
 pytest-asyncio = "^0.23.7"
 opencv-stubs = "^0.0.10"
-opencv-python-headless = "^4.10.0.84"
+opencv-python = "^4.10.0.84"
 
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-material = "^9.5.28"
 griffe-fieldz = "^0.2.0"
-opencv-python-headless = "^4.10.0.84"
+opencv-python = "^4.10.0.84"
 
 [tool.poetry.extras]
 all = [

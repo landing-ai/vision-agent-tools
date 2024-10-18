@@ -89,7 +89,5 @@ def test_filter_redundant_boxes():
         ],
     }
 
-    filtered_data = filter_redundant_boxes(input_data)
-
-    assert len(filtered_data["bboxes"]) == 14
-    assert len(filtered_data["labels"]) == 14
+    filtered_data = filter_redundant_boxes(input_data["bboxes"], input_data["labels"])
+    assert filtered_data == [0]

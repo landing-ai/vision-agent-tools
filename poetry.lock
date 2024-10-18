@@ -733,7 +733,7 @@ develop = false
 [package.dependencies]
 filelock = "*"
 huggingface-hub = ">=0.23.2"
-importlib-metadata = "*"
+importlib_metadata = "*"
 numpy = "*"
 Pillow = "*"
 regex = "!=2019.12.17"
@@ -741,7 +741,7 @@ requests = "*"
 safetensors = ">=0.3.1"
 
 [package.extras]
-dev = ["GitPython (<3.1.19)", "Jinja2", "accelerate (>=0.31.0)", "compel (==0.1.8)", "datasets", "flax (>=0.4.1)", "hf-doc-builder (>=0.3.0)", "invisible-watermark (>=0.2.0)", "isort (>=5.5.4)", "jax (>=0.4.1)", "jaxlib (>=0.4.1)", "k-diffusion (>=0.0.12)", "librosa", "parameterized", "peft (>=0.6.0)", "protobuf (>=3.20.3,<4)", "pytest", "pytest-timeout", "pytest-xdist", "requests-mock (==1.10.0)", "ruff (==0.1.5)", "safetensors (>=0.3.1)", "scipy", "sentencepiece (>=0.1.91,!=0.1.92)", "tensorboard", "torch (>=1.4)", "torchvision", "transformers (>=4.41.2)", "urllib3 (<=2.0.0)"]
+dev = ["GitPython (<3.1.19)", "Jinja2", "Jinja2", "accelerate (>=0.31.0)", "accelerate (>=0.31.0)", "compel (==0.1.8)", "datasets", "datasets", "flax (>=0.4.1)", "hf-doc-builder (>=0.3.0)", "hf-doc-builder (>=0.3.0)", "invisible-watermark (>=0.2.0)", "isort (>=5.5.4)", "jax (>=0.4.1)", "jaxlib (>=0.4.1)", "k-diffusion (>=0.0.12)", "librosa", "parameterized", "peft (>=0.6.0)", "protobuf (>=3.20.3,<4)", "pytest", "pytest-timeout", "pytest-xdist", "requests-mock (==1.10.0)", "ruff (==0.1.5)", "safetensors (>=0.3.1)", "scipy", "sentencepiece (>=0.1.91,!=0.1.92)", "tensorboard", "torch (>=1.4)", "torchvision", "transformers (>=4.41.2)", "urllib3 (<=2.0.0)"]
 docs = ["hf-doc-builder (>=0.3.0)"]
 flax = ["flax (>=0.4.1)", "jax (>=0.4.1)", "jaxlib (>=0.4.1)"]
 quality = ["hf-doc-builder (>=0.3.0)", "isort (>=5.5.4)", "ruff (==0.1.5)", "urllib3 (<=2.0.0)"]
@@ -2630,7 +2630,7 @@ PyYAML = ">=5.1.0"
 name = "opencv-python"
 version = "4.10.0.84"
 description = "Wrapper package for OpenCV python bindings."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "opencv-python-4.10.0.84.tar.gz", hash = "sha256:72d234e4582e9658ffea8e9cae5b63d488ad06994ef12d81dc303b17472f3526"},
@@ -2654,7 +2654,7 @@ numpy = [
 name = "opencv-python-headless"
 version = "4.10.0.84"
 description = "Wrapper package for OpenCV python bindings."
-optional = false
+optional = true
 python-versions = ">=3.6"
 files = [
     {file = "opencv-python-headless-4.10.0.84.tar.gz", hash = "sha256:f2017c6101d7c2ef8d7bc3b414c37ff7f54d64413a1847d89970b6b7069b4e1a"},
@@ -5450,4 +5450,4 @@ qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transfor
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "ace975c5423b416d6fcdbefdc5ae3a0a3b16c12c5c40f1d0ba0b0c5c7cb62bb0"
+content-hash = "60652d1b53869c514b6bb3c93849bac3d03b5a06393c78f493c02911cbd1e965"
