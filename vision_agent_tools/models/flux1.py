@@ -50,11 +50,8 @@ class Flux1(BaseMLModel):
 
     def __init__(
         self,
-        hf_model: str = Field(
-            default="black-forest-labs/FLUX.1-schnell",
-            description="Name of the HuggingFace model",
-        ),
-        dtype=torch.bfloat16,
+        hf_model: str = "black-forest-labs/FLUX.1-schnell",
+        dtype: torch.dtype = torch.bfloat16,
         enable_sequential_cpu_offload: bool = True,
     ):
         """
