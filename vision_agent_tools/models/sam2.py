@@ -400,9 +400,11 @@ class Sam2(BaseMLModel):
         )
 
         for idx in range(len(preds)):
+            sam2_mask = sam2_image_pred.masks[idx]
+            mask=sam2_mask[0, :, :] if len(sam2_mask.shape) == 3 else sam2_mask[:, :]
             objs[annotation_id] = ObjBboxAndMaskLabel(
                 bbox=preds[idx]["bbox"],
-                mask=sam2_image_pred.masks[idx][:, :],
+                mask=mask,
                 label=preds[idx]["label"],
             )
             annotation_id += 1

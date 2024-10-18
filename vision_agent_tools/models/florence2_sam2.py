@@ -9,15 +9,13 @@ from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
     Device,
-    BboxAndMaskLabel,
     PromptTask,
-    Florence2ModelName,
-    ODResponse
+    ODResponse,
+    Florence2ModelName
 )
-from vision_agent_tools.models.sam2 import Sam2, Sam2Config
-from vision_agent_tools.models.florence2 import Florence2
-
 from vision_agent_tools.models.utils import get_device
+from vision_agent_tools.models.florence2 import Florence2
+from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 
 
 class Florence2SAM2Config(BaseModel):
@@ -75,6 +73,10 @@ class Florence2Sam2Request(BaseModel):
 
         if self.video is not None and self.images is not None:
             raise ValueError("Only one of them are required: video or images")
+    
+        if self.video is not None:
+            if self.video.ndim != 4:
+                raise ValueError("Video should have 4 dimensions")
 
         return self
 
@@ -149,17 +151,18 @@ class Florence2SAM2(BaseMLModel):
             nms_threshold=nms_threshold,
         )
 
-        # TODO: only run florence2 predictions based on the chunks for the video
-        # to optimize performance
-        florence2_response = self.florence2(
-            task=PromptTask.CAPTION_TO_PHRASE_GROUNDING,
-            prompt=prompt,
-            images=images,
-            video=video,
-            batch_size=5,
-            nms_threshold=nms_threshold,
-            chunk_length_frames=chunk_length_frames
-        )
+        florence2_payload = {
+            "task": PromptTask.CAPTION_TO_PHRASE_GROUNDING,
+            "prompt": prompt,
+            "images": images,
+            "video": video,
+            "batch_size": 5,
+            "nms_threshold": nms_threshold
+        }
+        if video is not None:
+            florence2_payload["chunk_length_frames"] = chunk_length_frames
+
+        florence2_response = self.florence2(**florence2_payload)
         od_response = [ODResponse(**item) if item is not None else None for item in florence2_response]
 
         if images is not None:
