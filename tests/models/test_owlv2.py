@@ -5,16 +5,19 @@ from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
 
 
 def test_successful_image_detection():
-    test_image = "000000039769.jpg"
-    prompts = ["a photo of a cat", "a photo of a dog"]
+    test_image = "Egg.jpeg"
+    prompts = ["white egg"]
 
     image = Image.open(f"tests/shared_data/images/{test_image}")
 
-    owlv2 = Owlv2()
+    owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2))
 
-    results = owlv2(prompts=prompts, image=image)
+    results = owlv2(
+        prompts=prompts,
+        image=image,
+    )
 
-    assert len(results[0]) > 0
+    assert len(results[0]) < 0
 
     for pred in results[0]:
         assert pred.label == "a photo of a cat"

@@ -1,14 +1,16 @@
-from typing import Optional
+from typing import List, Optional, Tuple, Union
+
 import numpy as np
 import torch
 from PIL import Image
-from typing import List, Tuple, Union
 from pydantic import BaseModel, Field
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
-from transformers.utils import TensorType
 from transformers.image_transforms import center_to_corners_format
 from transformers.models.owlv2.image_processing_owlv2 import box_iou
-from vision_agent_tools.shared_types import BaseMLModel, Device, VideoNumpy, BboxLabel
+from transformers.utils import TensorType
+
+from vision_agent_tools.models.utils import filter_redundant_boxes
+from vision_agent_tools.shared_types import BaseMLModel, BboxLabel, Device, VideoNumpy
 
 
 class OWLV2Config(BaseModel):
@@ -54,6 +56,37 @@ class Owlv2(BaseMLModel):
     and bounding boxes for detected objects with confidence exceeding a threshold.
     """
 
+    from typing import Dict, List
+
+    def filter_bboxes(self, bboxlabels: List[BboxLabel]) -> List[BboxLabel]:
+        """
+        Filters out redundant BboxLabel objects that fully contain multiple smaller boxes of the same label.
+
+        Parameters:
+            bboxlabels (List[BboxLabel]): List of BboxLabel objects to be filtered.
+
+        Returns:
+            List[BboxLabel]: Filtered list of BboxLabel objects.
+        """
+        bboxes = [bl.bbox for bl in bboxlabels]
+        labels = [bl.label for bl in bboxlabels]
+
+        filtered = filter_redundant_boxes({"bboxes": bboxes, "labels": labels})
+        filtered_bboxes = filtered["bboxes"]
+        filtered_labels = filtered["labels"]
+
+        filtered_pairs = list(zip(filtered_bboxes, filtered_labels))
+
+        # preserving the original order
+        output_bboxlabels = []
+        for bl in bboxlabels:
+            pair = (bl.bbox, bl.label)
+            if pair in filtered_pairs:
+                output_bboxlabels.append(bl)
+                filtered_pairs.remove(pair)  # Remove to handle duplicates correctly
+
+        return output_bboxlabels
+
     def __run_inference(
         self, image, texts, confidence, nms_threshold
     ) -> list[BboxLabel]:
@@ -91,7 +124,9 @@ class Owlv2(BaseMLModel):
                 BboxLabel(label=texts[i][label.item()], score=score.item(), bbox=box)
             )
 
-        return inferences
+        filtered_inferences = self.filter_bboxes(inferences)
+
+        return filtered_inferences
 
     def __init__(self, model_config: Optional[OWLV2Config] = None):
         """
@@ -247,10 +282,10 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
             boxes = boxes * scale_fct[:, None, :]
 
         results = []
-        for s, l, b in zip(scores, labels, boxes):
-            score = s[s > threshold]
-            label = l[s > threshold]
-            box = b[s > threshold]
+        for score, label, box in zip(scores, labels, boxes):
+            score = score[score > threshold]
+            label = label[score > threshold]
+            box = box[score > threshold]
             results.append({"scores": score, "labels": label, "boxes": box})
 
         return results
