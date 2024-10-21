@@ -9,7 +9,7 @@ import numpy as np
 from vision_agent_tools.shared_types import (
     BoundingBox,
     SegmentationBitMask,
-    Device,
+    Device
 )
 
 
@@ -92,6 +92,4 @@ def calculate_bbox_iou(bbox1: BoundingBox, bbox2: BoundingBox) -> float:
     union_area = bbox1_area + bbox2_area - inter_area
 
     # Calculate the IoU
-    iou = inter_area / union_area if union_area != 0 else 0
-
-    return iou
+    return inter_area / union_area if union_area != 0 else 0

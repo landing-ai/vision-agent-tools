@@ -21,7 +21,7 @@ def test_text_to_instance_segmentation_image(shared_tool, rle_decode_array):
         expected_results = json.load(dest)
 
     assert expected_results == response
-    reverted_masks = rle_decode_array(response[0]["masks"][0])
+    reverted_masks = rle_decode_array(response[0][0]["mask"])
     assert reverted_masks.shape == test_image.size[::-1]
 
 
@@ -41,7 +41,7 @@ def test_text_to_instance_segmentation_video(shared_tool, rle_decode_array):
 
     assert expected_results == response
     # only check the first frame since the second frame is all zeros
-    reverted_masks = rle_decode_array(response[0]["masks"][0])
+    reverted_masks =  rle_decode_array(response[0][0]["mask"])
     assert reverted_masks.shape == img_size[::-1]
 
 

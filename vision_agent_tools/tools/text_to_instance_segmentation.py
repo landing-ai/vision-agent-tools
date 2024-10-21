@@ -105,13 +105,14 @@ class TextToInstanceSegmentationTool(BaseTool):
                 Florence2 predictions.
 
         Returns:
-            list[dict[str, Any]]:
+            list[list[dict[str, Any]]]:
                 A list where each item represents each frames predictions.
-                [{
-                    "masks": [rle, rle],
-                    "labels": ["car", "person"],
-                    "bboxes": [[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]]
-                }]
+                [[{
+                    "id": 0,
+                    "mask": rle,
+                    "label": "car",
+                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                }]]
         """
         TextToInstanceSegmentationRequest(
             prompt=prompt,

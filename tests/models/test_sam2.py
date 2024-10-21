@@ -23,14 +23,17 @@ def test_sam2_point_segmentation_image(shared_model, rle_decode_array):
         multimask_output=multimask_output,
     )
 
-    assert len(response) == 1
-    masks = response[0]["masks"]
-    assert len(masks) == 1
-    assert response[0]["scores"] == [0.9140625]
-
-    for mask in masks:
-        reverted_masks = rle_decode_array(mask)
-        assert reverted_masks.shape == test_image.size[::-1]
+    assert len(response) == 1  # frames
+    frame = response[0]
+    assert len(frame) == 1  # annotations
+    annotations= frame[0]
+    
+    assert annotations.keys() == {"id", "score", "mask", "logits"}
+    assert annotations["id"] == 0
+    assert annotations["score"] == 0.9140625
+    reverted_masks = rle_decode_array(annotations["mask"])
+    assert reverted_masks.shape == test_image.size[::-1]
+    assert annotations["logits"].shape == (256, 256)
 
 
 def test_sam2_box_segmentation_image(shared_model, rle_decode_array):
@@ -55,14 +58,17 @@ def test_sam2_box_segmentation_image(shared_model, rle_decode_array):
         multimask_output=multimask_output,
     )
 
-    assert len(response) == 1
-    masks = response[0]["masks"]
-    assert len(masks) == 2
-    assert response[0]["scores"] == [0.953125, 0.921875]
-
-    for mask in masks:
-        reverted_masks = rle_decode_array(mask)
+    assert len(response) == 1  # frames
+    frame = response[0]
+    assert len(frame) == 2  # annotations
+    expected_scores = [0.953125, 0.921875]
+    for idx, (score, annotation) in enumerate(zip(expected_scores, frame)):
+        assert annotation.keys() == {"id", "score", "mask", "logits"}
+        assert annotation["id"] == idx
+        assert annotation["score"] == score
+        reverted_masks = rle_decode_array(annotation["mask"])
         assert reverted_masks.shape == test_image.size[::-1]
+        assert annotation["logits"].shape == (256, 256)
 
 
 def test_sam2_invalid_media(shared_model):
@@ -87,16 +93,16 @@ def test_sam2_video_detection_segmentation(shared_model, rle_decode_array):
         video=test_video, input_points=input_points, input_label=input_label
     )
 
-    assert len(response) == 2
-    for frame_idx in range(len(response)): 
-        masks = response[frame_idx]["masks"]
-        assert len(masks) == 1
-        assert response[frame_idx]["scores"] is None
-        assert response[frame_idx]["logits"] is None
-
-        for mask in masks:
-            reverted_masks = rle_decode_array(mask)
-            assert reverted_masks.shape == pil_test_image.size[::-1]
+    assert len(response) == 2  # frames
+    for frame in response:
+        assert len(frame) == 1  # annotations
+        annotation = frame[0]
+        assert annotation.keys() == {"id", "score", "mask", "logits"}
+        assert annotation["id"] == 0
+        assert annotation["score"] is None
+        reverted_masks = rle_decode_array(annotation["mask"])
+        assert reverted_masks.shape == pil_test_image.size[::-1]
+        assert annotation["logits"] is None
 
 
 @pytest.fixture(scope="session")

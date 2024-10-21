@@ -4,7 +4,7 @@ from typing import Annotated, Literal, TypeVar, Any
 import numpy as np
 import numpy.typing as npt
 from annotated_types import Len
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
 
 
 class Device(str, Enum):
@@ -68,15 +68,6 @@ class Polygon(BaseModel):
 
 # [x_min, y_min, x_max, y_max] bounding box
 BoundingBox = Annotated[list[int | float], Len(min_length=4, max_length=4)]
-
-
-class BboxLabel(BaseModel):
-    label: str
-    score: float
-    bbox: BoundingBox
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 # florence2
@@ -185,14 +176,39 @@ class BboxAndMaskLabel(ODResponse):
 class ObjBboxAndMaskLabel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    id: int
     label: str
     bbox: list[float]
     mask: SegmentationBitMask
+
+    @field_serializer('mask')
+    def serialize_mask(self, mask: SegmentationBitMask, _info):
+        return _binary_mask_to_rle(mask)
 
 
 class ObjMaskLabel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    id: int
     score: float | None
     logits: SegmentationBitMask | None
     mask: SegmentationBitMask
+
+    @field_serializer('mask')
+    def serialize_mask(self, mask: SegmentationBitMask, _info):
+        return _binary_mask_to_rle(mask)
+
+
+def _binary_mask_to_rle(binary_mask: np.ndarray) -> RLEEncoding:
+    counts = []
+    size = list(binary_mask.shape)
+
+    flattened_mask = binary_mask.ravel(order="F")
+    nonzero_indices = np.flatnonzero(flattened_mask[1:] != flattened_mask[:-1]) + 1
+    lengths = np.diff(np.concatenate(([0], nonzero_indices, [len(flattened_mask)])))
+
+    if flattened_mask[0] == 1:
+        lengths = np.insert(lengths, 0, 0)
+
+    counts = lengths.tolist()
+    return RLEEncoding(counts=counts, size=list(size))

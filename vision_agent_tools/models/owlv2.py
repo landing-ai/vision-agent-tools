@@ -82,9 +82,10 @@ class Owlv2(BaseMLModel):
     Tool for object detection using the pre-trained Owlv2 model from
     [Transformers](https://github.com/huggingface/transformers).
 
-    This tool takes an image and a list of prompts as input, performs object detection using the Owlv2 model,
-    and returns a list of `BboxLabel` objects containing the predicted labels, confidence scores,
-    and bounding boxes for detected objects with confidence exceeding a threshold.
+    This tool takes images and a prompt as input, performs object detection using
+    the Owlv2 model, and returns a list of objects containing the predicted labels,
+    confidence scores, and bounding boxes for detected objects with confidence
+    exceeding a threshold.
     """
 
     def __init__(self, model_config: OWLV2Config | None = OWLV2Config()):

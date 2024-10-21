@@ -113,7 +113,7 @@ class Florence2SAM2(BaseMLModel):
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         nms_threshold: float = 1.0,
-    ) -> list[dict[str, Any]]:
+    ) -> list[list[dict[str, Any]]]:
         """
         Florence2Sam2 model find objects in images and track objects in a video.
 
@@ -135,13 +135,14 @@ class Florence2SAM2(BaseMLModel):
                 Florence2 predictions.
 
         Returns:
-            list[dict[str, Any]]:
+            list[list[dict[str, Any]]]:
                 A list where each item represents each frames predictions.
-                [{
-                    "masks": [rle, rle],
-                    "labels": ["car", "person"],
-                    "bboxes": [[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]]
-                }]
+                [[{
+                    "id": 0,
+                    "mask": rle,
+                    "label": "car",
+                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                }]]
         """
         Florence2Sam2Request(
             prompt=prompt,
