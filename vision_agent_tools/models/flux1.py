@@ -87,7 +87,7 @@ class Flux1(BaseMLModel):
         num_images_per_prompt: int | None = 1,
         max_sequence_length: int | None = 512,
         seed: int | None = None,
-    ) -> List[Image.Image] | Image.Image | None:
+    ) -> List[Image.Image] | None:
         """
         Performs object detection on an image using the Flux1 model.
 
@@ -182,9 +182,6 @@ class Flux1(BaseMLModel):
             raise ValueError(
                 f"Unsupported task: {self.task}. Supported tasks are: {', '.join([task.value for task in Flux1Task])}."
             )
-
-        if num_images_per_prompt == 1:
-            return output.images[0]
 
         return output.images
 
