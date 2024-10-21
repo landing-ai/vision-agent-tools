@@ -118,24 +118,11 @@ class ODResponse(BaseModel):
         description="list of bounding boxes, each represented as [x_min, y_min, x_max, y_max]"
     )
 
-    class Config:
-        schema_extra = {
-            "bboxes": [
-                [
-                    33.599998474121094,
-                    159.59999084472656,
-                    596.7999877929688,
-                    371.7599792480469,
-                ],
-                [
-                    454.0799865722656,
-                    96.23999786376953,
-                    580.7999877929688,
-                    261.8399963378906,
-                ],
-            ],
-            "labels": ["car", "door"],
-        }
+
+class ODWithScoreResponse(ODResponse):
+    scores: list[float] = Field(
+        description="list of confidence scores for each bounding box"
+    )
 
 
 class Florence2OCRResponse(BaseModel):

@@ -1,99 +1,143 @@
-import cv2
+import json
+
+import pytest
 from PIL import Image
 
 from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
 
 
-def test_successful_image_detection():
-    test_image = "000000039769.jpg"
-    prompts = ["a photo of a cat", "a photo of a dog"]
+def test_owlv2_image(shared_model):
+    image_path = "tests/shared_data/images/000000039769.jpg"
+    image = Image.open(image_path)
+    prompt = "dog, cat, remote control"
 
-    image = Image.open(f"tests/shared_data/images/{test_image}")
+    response = shared_model(prompt=prompt, images=[image])
 
-    owlv2 = Owlv2()
-
-    results = owlv2(prompts=prompts, image=image)
-
-    assert len(results[0]) > 0
-
-    for pred in results[0]:
-        assert pred.label == "a photo of a cat"
-
-
-def test_successful_removing_extra_bbox():
-    test_image = "eggs-food-easter-food-drink-44c10e-1024.jpg"
-    prompts = ["egg"]
-
-    image = Image.open(f"tests/shared_data/images/{test_image}")
-
-    owlv2 = Owlv2()
-
-    results = owlv2(prompts=prompts, image=image)
-
-    assert len(results[0]) > 0
-
-    bboxlabels = results[0]
-
-    for bbox_label in bboxlabels:
-        assert bbox_label.label == "egg"
-    current_count = len(bboxlabels)
-    expected_max_count = 42
-    assert current_count <= expected_max_count
-
-
-def test_successful_video_detection():
-    test_video = "test_video_5_frames.mp4"
-    file_path = f"tests/shared_data/videos/{test_video}"
-    prompts = ["a car", "a tree"]
-
-    cap = cv2.VideoCapture(file_path)
-    frames = []
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frames.append(frame)
-    cap.release()
-
-    owlv2 = Owlv2()
-    results = owlv2(prompts=prompts, video=frames)
-    assert len(results) > 0
-
-
-def test_successful_image_detection_with_nms():
-    test_image = "surfers_with_shark.png"
-    prompts = ["surfer", "shark"]
-
-    image = Image.open(f"tests/shared_data/images/{test_image}")
-
-    owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
-    results = owlv2(prompts=prompts, image=image)
-
-    # without NMS (nms_threshold=1), there will be 4 detections
-    # shark 0.66888028383255 [118.4, 166.0, 281.6, 238.59]
-    # surfer 0.2894721031188965 [339.12, 129.7, 386.24, 217.09] <--- removed by NMS
-    # surfer 0.5477967262268066 [340.22, 142.03, 388.97, 199.28]
-    # surfer 0.4184592366218567 [165.45, 282.42, 203.8, 359.12]
-    assert len(results[0]) == 3
-
-    for pred in results[0]:
-        assert pred.label in prompts
-
-
-def test_successful_image_with_large_prompt():
-    test_image = "000000039769.jpg"
-    prompts = [
-        """a photo of a cat that is sleeping next to a remote control,
-            the cat has a light brown color with black spots and seems to be wearing a light green necklace.
-            It also seems to be stretching its right leg and next to its left leg, it is stepping on the tail"""
+    assert response == [
+        {
+            "scores": [
+                0.6933691501617432,
+                0.6252092719078064,
+                0.6656279563903809,
+                0.6483550071716309,
+            ],
+            "labels": ["remote control", "remote control", "cat", "cat"],
+            "bboxes": [
+                [41.71875, 72.65625, 173.75, 117.03125],
+                [334.0625, 78.3203125, 370.3125, 190.0],
+                [340.0, 24.6875, 639.375, 369.375],
+                [11.5625, 55.625, 315.625, 471.5625],
+            ],
+        }
     ]
 
-    image = Image.open(f"tests/shared_data/images/{test_image}")
 
-    owlv2 = Owlv2()
+def test_owlv2_removing_extra_bbox(shared_model):
+    image_path = "tests/shared_data/images/eggs-food-easter-food-drink-44c10e-1024.jpg"
+    image = Image.open(image_path)
+    prompt = "egg"
 
-    results = owlv2(prompts=prompts, image=image)
-    assert len(results[0]) > 0
+    response = shared_model(prompt=prompt, images=[image])
 
-    for pred in results[0]:
-        assert pred.label == prompts[0]
+    assert len(response) == 1
+    item = response[0]
+    assert len(item["bboxes"]) == 42
+    assert len([label == "egg" for label in item["labels"]]) == 42
+
+
+def test_owlv2_image_with_nms():
+    image_path = "tests/shared_data/images/surfers_with_shark.png"
+    image = Image.open(image_path)
+    prompt = "surfer, shark"
+
+    owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=1.0))
+    response = owlv2(prompt=prompt, images=[image])
+    assert response == [
+        {
+            "scores": [
+                0.6650843620300293,
+                0.28987398743629456,
+                0.5511208176612854,
+                0.420064240694046,
+            ],
+            "labels": ["shark", "surfer", "surfer", "surfer"],
+            "bboxes": [
+                [
+                    118.4044189453125,
+                    166.135986328125,
+                    281.32177734375,
+                    238.452392578125,
+                ],
+                [338.84619140625, 129.703857421875, 385.96142578125, 217.086181640625],
+                [340.2158203125, 142.030517578125, 388.974609375, 199.281005859375],
+                [165.451171875, 282.41748046875, 203.80078125, 359.11669921875],
+            ],
+        }
+    ]
+
+    owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
+    response = owlv2(prompt=prompt, images=[image])
+    assert response == [
+        {
+            "scores": [0.6650843620300293, 0.5511208176612854, 0.420064240694046],
+            "labels": ["shark", "surfer", "surfer"],
+            "bboxes": [
+                [
+                    118.4044189453125,
+                    166.135986328125,
+                    281.32177734375,
+                    238.452392578125,
+                ],
+                [340.2158203125, 142.030517578125, 388.974609375, 199.281005859375],
+                [165.451171875, 282.41748046875, 203.80078125, 359.11669921875],
+            ],
+        }
+    ]
+
+
+def test_owlv2_image_with_large_prompt(shared_model):
+    image_path = "tests/shared_data/images/000000039769.jpg"
+    image = Image.open(image_path)
+    prompt = """
+        A photo of a cat that is sleeping next to a remote control. The cat has a
+        light brown color with black spots and seems to be wearing a light green
+        necklace. It also seems to be stretching its right leg and next to its
+        left leg it is stepping on the tail
+    """
+
+    response = shared_model(prompt=prompt, images=[image])
+    assert response == [
+        {
+            "scores": [
+                0.35723111033439636,
+                0.3886180520057678,
+                0.18877223134040833,
+                0.22185605764389038,
+            ],
+            "labels": [prompt.strip(), prompt.strip(), prompt.strip(), prompt.strip()],
+            "bboxes": [
+                [41.71875, 72.65625, 173.75, 117.03125],
+                [334.0625, 78.3203125, 370.3125, 190.0],
+                [340.0, 24.6875, 639.375, 369.375],
+                [11.5625, 55.625, 315.625, 471.5625],
+            ],
+        }
+    ]
+
+
+def test_owlv2_video(shared_model, bytes_to_np):
+    test_video = "tests/shared_data/videos/test_video_5_frames.mp4"
+    prompt = "a car, a tree"
+    with open(test_video, "rb") as f:
+        video_bytes = f.read()
+        video = bytes_to_np(video_bytes)
+
+    response = shared_model(prompt=prompt, video=video)
+    with open("tests/models/data/owlv2_video_results.json", "r") as dest:
+        expected_results = json.load(dest)
+    assert expected_results == response
+
+
+@pytest.fixture(scope="session")
+def shared_model():
+    return Owlv2()

@@ -1,7 +1,5 @@
 import os
-import logging
 import os.path as osp
-from typing import Any
 
 import wget
 import gdown
@@ -14,7 +12,6 @@ from vision_agent_tools.shared_types import (
     Device,
 )
 
-_LOGGER = logging.getLogger(__name__)
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
 CHECKPOINT_DIR = osp.join(CURRENT_DIR, "checkpoints")
@@ -98,79 +95,3 @@ def calculate_bbox_iou(bbox1: BoundingBox, bbox2: BoundingBox) -> float:
     iou = inter_area / union_area if union_area != 0 else 0
 
     return iou
-
-
-def filter_redundant_boxes(
-    bboxes: list[list[float]], labels: list[str], min_contained: int = 2
-) -> dict[str, Any]:
-    """Filters out redundant bounding boxes that fully contain multiple smaller
-    boxes of the same label.
-
-    Parameters:
-        bboxes:
-            List of bounding boxes.
-        labels:
-            List of bounding labels.
-        min_contained:
-            Minimum number of contained boxes to consider a box redundant.
-
-    Returns:
-        list[int]:
-            Indexes to remove from the bboxes.
-    """
-    bboxes_to_remove = []
-
-    # Organize boxes by label and idx
-    label_to_boxes = {}
-    for idx, bbox, label in zip(range(len(bboxes)), bboxes, labels):
-        label_to_boxes.setdefault(label, []).append({"bbox": bbox, "idx": idx})
-
-    for label, boxes_and_idx in label_to_boxes.items():
-        n = len(boxes_and_idx)
-        if n < min_contained + 1:
-            # Not enough boxes to have redundancies
-            continue
-
-        # Sort boxes by area descending
-        boxes_and_idx_sorted = sorted(
-            boxes_and_idx,
-            key=lambda x: (x["bbox"][2] - x["bbox"][0]) * (x["bbox"][3] - x["bbox"][1]),
-            reverse=True,
-        )
-
-        to_remove = set()
-        for i in range(n):
-            if i in to_remove:
-                continue
-            box_a = boxes_and_idx_sorted[i]["bbox"]
-            contained = 0
-            for j in range(n):
-                if i == j or j in to_remove:
-                    continue
-                box_b = boxes_and_idx_sorted[j]["bbox"]
-                if _contains(box_a, box_b):
-                    contained += 1
-                    if contained >= min_contained:
-                        to_remove.add(i)
-                        _LOGGER.info(
-                            f"Removing box {box_a} as it contains {contained} boxes."
-                        )
-                        bboxes_to_remove.append(boxes_and_idx_sorted[i]["idx"])
-                        break
-
-    return bboxes_to_remove
-
-
-def _contains(box_a, box_b):
-    """
-    Checks if box_a fully contains box_b.
-    Each box is [x_min, y_min, x_max, y_max].
-    """
-    x_min_a, y_min_a, x_max_a, y_max_a = box_a
-    x_min_b, y_min_b, x_max_b, y_max_b = box_b
-    return (
-        x_min_a <= x_min_b
-        and y_min_a <= y_min_b
-        and x_max_a >= x_max_b
-        and y_max_a >= y_max_b
-    )

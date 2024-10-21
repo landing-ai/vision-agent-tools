@@ -21,14 +21,13 @@ from vision_agent_tools.shared_types import (
     Florence2OpenVocabularyResponse,
     Florence2SegmentationResponse,
 )
-from vision_agent_tools.models.utils import calculate_bbox_iou, filter_redundant_boxes
+from vision_agent_tools.helpers.filters import filter_bbox_predictions
 
 _MODEL_REVISION_PER_MODEL_NAME = {
     Florence2ModelName.FLORENCE_2_BASE_FT: "refs/pr/20",
     Florence2ModelName.FLORENCE_2_LARGE: "refs/pr/65",
 }
 _LOGGER = logging.getLogger(__name__)
-_AREA_THRESHOLD = 0.82
 
 
 class Florence2Request(BaseModel):
@@ -73,7 +72,10 @@ class Florence2(BaseMLModel):
     """
 
     def __init__(
-        self, model_name: Florence2ModelName = Florence2ModelName.FLORENCE_2_LARGE, *, device: Device | None = Device.GPU
+        self,
+        model_name: Florence2ModelName = Florence2ModelName.FLORENCE_2_LARGE,
+        *,
+        device: Device | None = Device.GPU,
     ):
         """Initializes the Florence2 model."""
         self._base_model_name = model_name
@@ -158,7 +160,7 @@ class Florence2(BaseMLModel):
             text_input = task
         else:
             text_input = task + prompt
-        
+
         if images is not None:
             images = [image.convert("RGB") for image in images]
 
@@ -175,13 +177,19 @@ class Florence2(BaseMLModel):
                 num_frames = video.shape[0]
                 idxs_to_pred = list(range(0, num_frames, chunk_length_frames))
                 images = [
-                    Image.fromarray(frame).convert("RGB") if idx in idxs_to_pred else None
+                    (
+                        Image.fromarray(frame).convert("RGB")
+                        if idx in idxs_to_pred
+                        else None
+                    )
                     for idx, frame in enumerate(video)
                 ]
                 result = self._predict_all(task, text_input, images, nms_threshold)
                 return _serialize(task, result)
 
-        result = self._predict_batch(task, text_input, images, batch_size, nms_threshold)
+        result = self._predict_batch(
+            task, text_input, images, batch_size, nms_threshold
+        )
         return _serialize(task, result)
 
     def _predict_all(
@@ -282,9 +290,13 @@ class Florence2(BaseMLModel):
                 or task == PromptTask.OPEN_VOCABULARY_DETECTION
                 or task == PromptTask.REGION_PROPOSAL
             ):
-                label_key = "bboxes_labels" if task is PromptTask.OPEN_VOCABULARY_DETECTION else "labels"
-                parsed_answer[task] = _filter_predictions(
-                    parsed_answer[task], image_size, nms_threshold, label_key
+                label_key = (
+                    "bboxes_labels"
+                    if task is PromptTask.OPEN_VOCABULARY_DETECTION
+                    else "labels"
+                )
+                parsed_answer[task] = filter_bbox_predictions(
+                    parsed_answer[task], image_size, nms_threshold, label_key=label_key
                 )
 
             parsed_answers.append(parsed_answer)
@@ -306,102 +318,6 @@ class Florence2(BaseMLModel):
 
     def to(self, device: Device) -> None:
         raise NotImplementedError("This method is not supported for Florence2 model.")
-
-
-def _filter_predictions(
-    predictions: dict[str, Any],
-    image_size: tuple[int, int],
-    nms_threshold: float,
-    label_key: str = "labels",
-) -> dict[str, Any]:
-    new_preds = {}
-
-    # Remove the whole image bounding box if it is predicted
-    bboxes_to_remove = _remove_whole_image_bbox(predictions, image_size)
-    new_preds = _remove_bboxes(predictions, bboxes_to_remove)
-
-    # Apply a dummy agnostic Non-Maximum Suppression (NMS) to get rid of any
-    # overlapping predictions on the same object
-    bboxes_to_remove = _dummy_agnostic_nms(new_preds, nms_threshold)
-    new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
-
-    # Remove redundant boxes (boxes that are completely covered by another box)
-    bboxes_to_remove = filter_redundant_boxes(new_preds["bboxes"], new_preds[label_key])
-    new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
-
-    return new_preds
-
-
-def _remove_whole_image_bbox(
-    predictions: dict[str, Any], image_size: tuple[int, int]
-) -> list[int]:
-    # TODO: remove polygons that covers the whole image
-    bboxes_to_remove = []
-    img_area = image_size[0] * image_size[1]
-    for idx, bbox in enumerate(predictions["bboxes"]):
-        x1, y1, x2, y2 = bbox
-        box_area = (x2 - x1) * (y2 - y1)
-        if box_area / img_area > _AREA_THRESHOLD:
-            _LOGGER.warning(
-                "Model predicted the whole image bounding box, therefore we are "
-                f"removing this prediction: {bbox}, image size: {image_size}."
-            )
-            bboxes_to_remove.append(idx)
-    return bboxes_to_remove
-
-
-def _remove_bboxes(
-    predictions: dict[str, Any], bboxes_to_remove: list[int]
-) -> dict[str, Any]:
-    new_preds = {}
-    for key, value in predictions.items():
-        new_preds[key] = [
-            value[idx] for idx in range(len(value)) if idx not in bboxes_to_remove
-        ]
-    return new_preds
-
-
-def _dummy_agnostic_nms(predictions: dict[str, Any], nms_threshold: float) -> list[int]:
-    """
-    Applies a dummy agnostic Non-Maximum Suppression (NMS) to filter overlapping predictions.
-
-    Parameters:
-        predictions:
-            All predictions, including bboxes and labels.
-        nms_threshold:
-            The IoU threshold value used for NMS.
-
-    Returns:
-        list[int]:
-            Indexes to remove from the predictions.
-    """
-    bboxes_to_keep = []
-    prediction_items = {idx: pred for idx, pred in enumerate(predictions["bboxes"])}
-
-    while prediction_items:
-        # the best prediction here is the first prediction since florence2 don't
-        # have score per prediction
-        best_prediction_idx = next(iter(prediction_items))
-        best_prediction_bbox = prediction_items[best_prediction_idx]
-        bboxes_to_keep.append(best_prediction_idx)
-
-        new_prediction_items = {}
-        for idx, pred in prediction_items.items():
-            if calculate_bbox_iou(best_prediction_bbox, pred) < nms_threshold:
-                bboxes_to_keep.append(idx)
-                new_prediction_items[idx] = pred
-        prediction_items = new_prediction_items
-
-    bboxes_to_remove = []
-    for idx, bbox in enumerate(predictions["bboxes"]):
-        if idx not in bboxes_to_keep:
-            _LOGGER.warning(
-                "Model predicted overlapping bounding boxes, therefore we are "
-                f"removing this prediction: {bbox}."
-            )
-            bboxes_to_remove.append(idx)
-
-    return bboxes_to_remove
 
 
 def _serialize(

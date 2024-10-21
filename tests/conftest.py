@@ -1,6 +1,8 @@
 import logging
+import tempfile
 from typing import Any
 
+import cv2
 import pytest
 import numpy as np
 
@@ -35,4 +37,24 @@ def rle_decode_array():
 
         binary_mask = flattened_mask.reshape(size, order="F")
         return binary_mask
+    return handler
+
+
+@pytest.fixture
+def bytes_to_np():
+    def handler(video_bytes: bytes):
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(video_bytes)
+            fp.flush()
+            video_temp_file = fp.name
+            cap = cv2.VideoCapture(video_temp_file)
+            frames = []
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frames.append(frame)
+            cap.release()
+            return np.array(frames)
+
     return handler
