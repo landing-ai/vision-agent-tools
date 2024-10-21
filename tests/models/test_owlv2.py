@@ -11,7 +11,7 @@ def test_owlv2_image(shared_model):
     image = Image.open(image_path)
     prompt = "dog, cat, remote control"
 
-    response = shared_model(prompt=prompt, images=[image])
+    response = shared_model(prompt, images=[image])
 
     assert response == [
         {
@@ -37,7 +37,7 @@ def test_owlv2_removing_extra_bbox(shared_model):
     image = Image.open(image_path)
     prompt = "egg"
 
-    response = shared_model(prompt=prompt, images=[image])
+    response = shared_model(prompt, images=[image])
 
     assert len(response) == 1
     item = response[0]
@@ -51,7 +51,7 @@ def test_owlv2_image_with_nms():
     prompt = "surfer, shark"
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=1.0))
-    response = owlv2(prompt=prompt, images=[image])
+    response = owlv2(prompt, images=[image])
     assert response == [
         {
             "scores": [
@@ -76,7 +76,7 @@ def test_owlv2_image_with_nms():
     ]
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
-    response = owlv2(prompt=prompt, images=[image])
+    response = owlv2(prompt, images=[image])
     assert response == [
         {
             "scores": [0.6650843620300293, 0.5511208176612854, 0.420064240694046],
@@ -105,7 +105,7 @@ def test_owlv2_image_with_large_prompt(shared_model):
         left leg it is stepping on the tail
     """
 
-    response = shared_model(prompt=prompt, images=[image])
+    response = shared_model(prompt, images=[image])
     assert response == [
         {
             "scores": [
@@ -132,7 +132,7 @@ def test_owlv2_video(shared_model, bytes_to_np):
         video_bytes = f.read()
         video = bytes_to_np(video_bytes)
 
-    response = shared_model(prompt=prompt, video=video)
+    response = shared_model(prompt, video=video)
     with open("tests/models/data/owlv2_video_results.json", "r") as dest:
         expected_results = json.load(dest)
     assert expected_results == response

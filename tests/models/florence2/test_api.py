@@ -3,7 +3,6 @@ from PIL import Image
 from pydantic import ValidationError
 
 from vision_agent_tools.shared_types import PromptTask
-from vision_agent_tools.models.florence2 import _filter_predictions
 
 
 def test_no_images_and_no_video(shared_model):
@@ -29,20 +28,6 @@ def test_images_and_video(shared_model, bytes_to_np):
     with pytest.raises(ValidationError) as exc:
         shared_model(**payload)
         assert exc.value == "Only one of them are required: video or images"
-
-
-def test_filter_predictions_remove_big_box():
-    predictions = {"bboxes": [[0, 0, 10, 10]], "labels": [0]}
-    new_predictions = _filter_predictions(predictions, (10, 10), 1.0)
-    assert new_predictions == {"bboxes": [], "labels": []}
-    # the result didn't change the original predictions
-    assert new_predictions != predictions
-
-
-def test_filter_predictions_dont_remove_big_box():
-    predictions = {"bboxes": [[0, 0, 10, 10]], "labels": [0]}
-    new_predictions = _filter_predictions(predictions, (100, 100), 1.0)
-    assert new_predictions == {"bboxes": [[0, 0, 10, 10]], "labels": [0]}
 
 
 def test_batch_size_validation(shared_model):

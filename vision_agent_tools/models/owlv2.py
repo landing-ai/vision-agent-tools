@@ -193,7 +193,7 @@ class Owlv2(BaseMLModel):
         for result, image in zip(results, images):
             result["bboxes"] = result.pop("boxes")
             filtered_bboxes = filter_bbox_predictions(
-                result, image.size, nms_threshold
+                result, image.size, nms_threshold=nms_threshold
             )
             filtered_bboxes["labels"] = [
                 texts[label] for label in filtered_bboxes["labels"]

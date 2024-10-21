@@ -296,7 +296,7 @@ class Florence2(BaseMLModel):
                     else "labels"
                 )
                 parsed_answer[task] = filter_bbox_predictions(
-                    parsed_answer[task], image_size, nms_threshold, label_key=label_key
+                    parsed_answer[task], image_size, nms_threshold=nms_threshold, label_key=label_key
                 )
 
             parsed_answers.append(parsed_answer)

@@ -6,16 +6,11 @@ from typing_extensions import Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from vision_agent_tools.shared_types import PromptTask
-from vision_agent_tools.models.utils import (
-    convert_florence_bboxes_to_bbox_labels,
-)
 from vision_agent_tools.models.model_registry import get_model_class
 from vision_agent_tools.shared_types import (
     BaseTool,
     Device,
     VideoNumpy,
-    BboxLabel,
-    ODResponse,
 )
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
@@ -57,18 +52,15 @@ class TextToObjectDetection(BaseTool):
     def __init__(
         self,
         model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
-        model_config: OWLV2Config | None = OWLV2Config(),
+        model_config: OWLV2Config | None = None,
     ):
         self.model_name = model
 
-        if model is TextToObjectDetectionModel.OWLV2:
-            self.model_config = model_config or OWLV2Config()
-        elif model is TextToObjectDetectionModel.FLORENCE2:
-            pass  # Note we don't need model config for Florence2
-
         self.model_class = get_model_class(model_name=model.value)
         model_instance = self.model_class()
+
         if model is TextToObjectDetectionModel.OWLV2:
+            self.model_config = model_config or OWLV2Config()
             super().__init__(model=model_instance(self.model_config))
         elif model is TextToObjectDetectionModel.FLORENCE2:
             super().__init__(model=model_instance())
@@ -85,11 +77,11 @@ class TextToObjectDetection(BaseTool):
 
         Args:
             prompt:
-                The text input that complements the prompt task.
-            image:
-                The input image for object detection.
+                The text input that complements the media to find or track objects.
+            images:
+                The images to be analyzed.
             video:
-                A NumPy representation of the video for inference. None if using images.
+                A numpy array containing the different images, representing the video.
             nms_threshold:
                 The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
 
@@ -102,7 +94,7 @@ class TextToObjectDetection(BaseTool):
         )
 
         if self.model_name is TextToObjectDetectionModel.OWLV2:
-            return self.model(image=image, prompts=prompts)
+            return self.model(prompt, images=images, video=video)
 
         if self.model_name is TextToObjectDetectionModel.FLORENCE2:
             task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
