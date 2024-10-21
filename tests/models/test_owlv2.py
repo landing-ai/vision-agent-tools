@@ -20,6 +20,27 @@ def test_successful_image_detection():
         assert pred.label == "a photo of a cat"
 
 
+def test_successful_removing_extra_bbox():
+    test_image = "eggs-food-easter-food-drink-44c10e-1024.jpg"
+    prompts = ["egg"]
+
+    image = Image.open(f"tests/shared_data/images/{test_image}")
+
+    owlv2 = Owlv2()
+
+    results = owlv2(prompts=prompts, image=image)
+
+    assert len(results[0]) > 0
+
+    bboxlabels = results[0]
+
+    for bbox_label in bboxlabels:
+        assert bbox_label.label == "egg"
+    current_count = len(bboxlabels)
+    expected_max_count = 42
+    assert current_count <= expected_max_count
+
+
 def test_successful_video_detection():
     test_video = "test_video_5_frames.mp4"
     file_path = f"tests/shared_data/videos/{test_video}"
