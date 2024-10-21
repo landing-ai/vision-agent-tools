@@ -64,6 +64,10 @@ pytest-asyncio = "^0.23.7"
 opencv-stubs = "^0.0.10"
 opencv-python = "^4.10.0.84"
 
+# notebooks
+av = "^13.1.0"
+matplotlib = "^3.9.2"
+
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-material = "^9.5.28"

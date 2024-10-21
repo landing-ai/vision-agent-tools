@@ -1,6 +1,9 @@
-import numpy as np
 from enum import Enum
+from typing import Any
+
 from PIL import Image
+from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from vision_agent_tools.shared_types import PromptTask
 from vision_agent_tools.models.utils import (
@@ -17,96 +20,101 @@ from vision_agent_tools.shared_types import (
 from vision_agent_tools.models.owlv2 import OWLV2Config
 
 
+class TextToObjectDetectionRequest(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    prompt: str | None = Field(
+        "", description="The text input that complements the prompt task."
+    )
+    images: list[Image.Image] | None = None
+    video: VideoNumpy | None = None
+    nms_threshold: float = Field(
+        1.0,
+        ge=0.1,
+        le=1.0,
+        description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
+    )
+
+    @model_validator(mode="after")
+    def check_images_and_video(self) -> Self:
+        if self.video is None and self.images is None:
+            raise ValueError("video or images is required")
+
+        if self.video is not None and self.images is not None:
+            raise ValueError("Only one of them are required: video or images")
+
+        return self
+
+
 class TextToObjectDetectionModel(str, Enum):
     OWLV2 = "owlv2"
     FLORENCE2 = "florence2"
 
 
 class TextToObjectDetection(BaseTool):
-    """
-    Tool to perform object detection based on text prompts using a specified ML model
-    """
+    """Tool to perform object detection based on text prompts using a specified ML model"""
 
     def __init__(
         self,
-        model: TextToObjectDetectionModel,
-        model_config: OWLV2Config | None = None,
+        model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
+        model_config: OWLV2Config | None = OWLV2Config(),
     ):
-        if model not in TextToObjectDetectionModel._value2member_map_:
-            raise ValueError(
-                f"Model '{model}' is not a valid model for {self.__class__.__name__}."
-            )
+        self.model_name = model
 
-        # Later modal is changed to actual model object
-        self.modelname: TextToObjectDetectionModel = model
-
-        if model == TextToObjectDetectionModel.OWLV2:
-            self.owlv2_config = model_config or OWLV2Config()
-        elif model == TextToObjectDetectionModel.FLORENCE2:
+        if model is TextToObjectDetectionModel.OWLV2:
+            self.model_config = model_config or OWLV2Config()
+        elif model is TextToObjectDetectionModel.FLORENCE2:
             pass  # Note we don't need model config for Florence2
-        else:
-            raise ValueError(f"Model is not supported: '{model}'")
 
-        self.model_class = get_model_class(model_name=model)
+        self.model_class = get_model_class(model_name=model.value)
         model_instance = self.model_class()
-        if model == TextToObjectDetectionModel.OWLV2:
-            super().__init__(model=model_instance(self.owlv2_config))
-        elif model == TextToObjectDetectionModel.FLORENCE2:
+        if model is TextToObjectDetectionModel.OWLV2:
+            super().__init__(model=model_instance(self.model_config))
+        elif model is TextToObjectDetectionModel.FLORENCE2:
             super().__init__(model=model_instance())
 
     def __call__(
         self,
-        prompts: list[str],
-        image: Image.Image | None = None,
-        video: VideoNumpy[np.uint8] | None = None,
-    ) -> list[list[BboxLabel]]:
-        """
-        Run object detection on the image based on text prompts.
+        prompt: str,
+        images: list[Image.Image] | None = None,
+        video: VideoNumpy | None = None,
+        *,
+        nms_threshold: float = 1.0,
+    ) -> list[dict[str, Any]]:
+        """Run object detection on the image based on text prompts.
 
         Args:
-            image (Image.Image): The input image for object detection.
-            prompts (list[str]): list of text prompts for object detection.
+            prompt:
+                The text input that complements the prompt task.
+            image:
+                The input image for object detection.
+            video:
+                A NumPy representation of the video for inference. None if using images.
+            nms_threshold:
+                The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
 
         Returns:
-            list[list[BboxLabel]]: A list of detection results for each prompt.
+            list[dict[str, Any]]:
+                A list of detection results for the prompt.
         """
-        prediction: list[list[BboxLabel]] = []
-        if image is None and video is None:
-            raise ValueError("Either 'image' or 'video' must be provided.")
-        if image is not None and video is not None:
-            raise ValueError("Only one of 'image' or 'video' can be provided.")
+        TextToObjectDetectionRequest(
+            prompt=prompt, images=images, video=video, nms_threshold=nms_threshold
+        )
 
-        if self.modelname == TextToObjectDetectionModel.OWLV2:
-            if image is not None:
-                prediction = self.model(image=image, prompts=prompts)
-            elif video is not None:
-                prediction = self.model(video=video, prompts=prompts)
+        if self.model_name is TextToObjectDetectionModel.OWLV2:
+            return self.model(image=image, prompts=prompts)
 
-        elif self.modelname == TextToObjectDetectionModel.FLORENCE2:
-            od_task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
-            prompt = ", ".join(prompts)
-            if image is not None:
-                fl_prediction = self.model(
-                    image=image,
-                    task=od_task,
-                    prompt=prompt,
-                )
-                fl_prediction = [ODResponse(**fl_prediction[od_task])]
-            elif video is not None:
-                fl_prediction = self.model(
-                    video=video,
-                    task=od_task,
-                    prompt=prompt,
-                )
-                fl_prediction = [ODResponse(**pred[od_task]) for pred in fl_prediction]
-            # Prediction should be a list of lists of BboxLabel objects
-            # We need to convert the output to the format that is used in the playground-tools
-            fv2_pred_output = []
-            for pred in fl_prediction:
-                fv2_pred_output.append(convert_florence_bboxes_to_bbox_labels(pred))
-            prediction = fv2_pred_output
-        return prediction
+        if self.model_name is TextToObjectDetectionModel.FLORENCE2:
+            task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+            return self.model(
+                task,
+                prompt=prompt,
+                images=images,
+                video=video,
+                nms_threshold=nms_threshold,
+            )
 
     def to(self, device: Device):
-        self.model.to(device)
-        return self
+        raise NotImplementedError(
+            "This method is not supported for TextToObjectDetection tool."
+        )

@@ -381,6 +381,7 @@ class Sam2(BaseMLModel):
         _LOGGER.info(
             f"Total amount of frames generated from sam2 {len(video_segments)}."
         )
+        # TODO: only convert mask to rle, but keep list of obj with idx
         for _, video_segment in video_segments.items():
             segment = None
             if len(video_segment) != 0:

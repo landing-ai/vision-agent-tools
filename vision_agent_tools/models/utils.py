@@ -9,9 +9,7 @@ import torch
 import numpy as np
 
 from vision_agent_tools.shared_types import (
-    BboxLabel,
     BoundingBox,
-    ODResponse,
     SegmentationBitMask,
     Device,
 )
@@ -100,25 +98,6 @@ def calculate_bbox_iou(bbox1: BoundingBox, bbox2: BoundingBox) -> float:
     iou = inter_area / union_area if union_area != 0 else 0
 
     return iou
-
-
-def convert_florence_bboxes_to_bbox_labels(
-    predictions: ODResponse,
-) -> list[BboxLabel]:
-    """
-    Converts the output of the Florence2 <OD> an
-    <CAPTION_TO_PHRASE_GROUNDING> tasks
-    to a much simpler list of BboxLabel labels
-    """
-    od_response = [
-        BboxLabel(
-            bbox=predictions.bboxes[i],
-            label=predictions.labels[i],
-            score=1.0,  # Florence2 doesn't provide confidence score
-        )
-        for i in range(len(predictions.labels))
-    ]
-    return od_response
 
 
 def filter_redundant_boxes(

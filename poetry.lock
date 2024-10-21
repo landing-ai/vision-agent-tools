@@ -171,7 +171,7 @@ tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 name = "av"
 version = "13.1.0"
 description = "Pythonic bindings for FFmpeg's libraries."
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
     {file = "av-13.1.0-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:a2af44fae6d16c3a40dd1c85bda41b449be08a2c172d8f44fb63395ccf6e6fb4"},
@@ -515,7 +515,7 @@ test = ["pytest"]
 name = "contourpy"
 version = "1.3.0"
 description = "Python library for calculating contours of 2D quadrilateral grids"
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
     {file = "contourpy-1.3.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:880ea32e5c774634f9fcd46504bf9f080a41ad855f4fef54f5380f5133d343c7"},
@@ -624,7 +624,7 @@ torchvision = "*"
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30"},
@@ -941,7 +941,7 @@ url = "https://github.com/Dao-AILab/flash-attention/releases/download/v2.6.1/fla
 name = "fonttools"
 version = "4.54.1"
 description = "Tools to manipulate font files"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "fonttools-4.54.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7ed7ee041ff7b34cc62f07545e55e1468808691dddfd315d51dd82a6b37ddef2"},
@@ -1635,7 +1635,7 @@ test = ["ipykernel", "pre-commit", "pytest (<8)", "pytest-cov", "pytest-timeout"
 name = "kiwisolver"
 version = "1.4.7"
 description = "A fast implementation of the Cassowary constraint solver"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "kiwisolver-1.4.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:8a9c83f75223d5e48b0bc9cb1bf2776cf01563e00ade8775ffe13b0b6e1af3a6"},
@@ -1954,7 +1954,7 @@ files = [
 name = "matplotlib"
 version = "3.9.2"
 description = "Python plotting package"
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
     {file = "matplotlib-3.9.2-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:9d78bbc0cbc891ad55b4f39a48c22182e9bdaea7fc0e5dbd364f49f729ca1bbb"},
@@ -3398,7 +3398,7 @@ files = [
 name = "pyparsing"
 version = "3.2.0"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
     {file = "pyparsing-3.2.0-py3-none-any.whl", hash = "sha256:93d9577b88da0bbea8cc8334ee8b918ed014968fd2ec383e868fb8afb1ccef84"},
@@ -5147,13 +5147,13 @@ files = [
 
 [[package]]
 name = "ultralytics"
-version = "8.3.16"
+version = "8.3.17"
 description = "Ultralytics YOLO 🚀 for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "ultralytics-8.3.16-py3-none-any.whl", hash = "sha256:8c24711bc9154bf5266fa2405b0d052e295438207e4fa922fbd93d43398c35d3"},
-    {file = "ultralytics-8.3.16.tar.gz", hash = "sha256:53f8a3e894d4fea1cbef27a3bdcbf78e86d758335cad518155e15753dfdbd0e6"},
+    {file = "ultralytics-8.3.17-py3-none-any.whl", hash = "sha256:8ddc3353370ce8dca7e0b144ec5cb97055558bc512d11deff52263c9bba6fe51"},
+    {file = "ultralytics-8.3.17.tar.gz", hash = "sha256:b8fb9cd2939bc6ceda3d8f199d283851bd5f11bbc287317c97bb7d9e8880302a"},
 ]
 
 [package.dependencies]
@@ -5450,4 +5450,4 @@ qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transfor
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "60652d1b53869c514b6bb3c93849bac3d03b5a06393c78f493c02911cbd1e965"
+content-hash = "4eaacce606b7f27a9b2bcb7f84069b43d664595b67f0734d1659dffeda23f20f"
