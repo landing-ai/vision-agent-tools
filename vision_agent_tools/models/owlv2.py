@@ -25,6 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class OWLV2Config(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_name: str = Field(
         default="google/owlv2-large-patch14-ensemble",
         description="Name of the model",

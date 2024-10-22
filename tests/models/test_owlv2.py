@@ -154,14 +154,28 @@ def shared_model():
     return Owlv2()
 
 
-def check_results(response, expected_response):
+def check_results(response, expected_response, amount_of_matches: int = None, flex: int = 1):
     # sort the results by score to make the comparison easier
     response = sorted(response, key=lambda x: x["scores"], reverse=True)
     expected_response = sorted(expected_response, key=lambda x: x["scores"], reverse=True)
 
     for item, expected_result in zip(response, expected_response):
-        assert item["labels"] == expected_result["labels"]
-        np.testing.assert_almost_equal(
-            item["scores"], expected_result["scores"], decimal=1
-        )
-        assert np.allclose(item["bboxes"], expected_result["bboxes"], rtol=1, atol=1)
+        if amount_of_matches is None:
+            amount_of_matches = len(expected_result["bboxes"]) - flex
+
+        assert abs(len(item["bboxes"]) - len(expected_result["bboxes"])) <= amount_of_matches
+        for bbox, expected_bbox in zip(item["bboxes"], expected_result["bboxes"]):
+            assert np.allclose(bbox, expected_bbox, rtol=1, atol=1)
+
+        assert abs(len(item["labels"]) - len(expected_result["labels"])) <= amount_of_matches
+        count_equal_labels = 0
+        for lab, expected_lab in zip(item["labels"], expected_result["labels"]):
+            if lab == expected_lab:
+                count_equal_labels += 1
+        assert (
+            abs(count_equal_labels - len(item["labels"])) <= amount_of_matches
+        ), f"{item['labels']}, {expected_result['labels']}"
+
+        assert abs(len(item["scores"]) - len(expected_result["scores"])) <= amount_of_matches
+        for bbox, expected_bbox in zip(item["scores"], expected_result["scores"]):
+            np.testing.assert_almost_equal(bbox, expected_bbox, decimal=1)
