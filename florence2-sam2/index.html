@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../depth_anything_v2/">
+        <link rel="prev" href="../florence2-qa/">
       
       
-        <link rel="next" href="../florencev2-qa/">
+        <link rel="next" href="../florence2/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -308,6 +308,26 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../florence2-qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    FlorenceQA
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -413,27 +433,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../florencev2-qa/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    FlorenceQA
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../florencev2/" class="md-nav__link">
+      <a href="../florence2/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -690,7 +690,7 @@
 
 
 <h1 id="florence2sam2">Florence2Sam2<a class="headerlink" href="#florence2sam2" title="Permanent link">#</a></h1>
-<p>This tool uses FlorenceV2 and the SAM-2 model to do text to instance segmentation on image or video inputs.</p>
+<p>This tool uses Florence2 and the SAM-2 model to do text to instance segmentation on image or video inputs.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">cv2</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.florence2_sam2</span> <span class="kn">import</span> <span class="n">Florence2SAM2</span>
@@ -713,21 +713,31 @@
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">florence2_sam2</span> <span class="o">=</span> <span class="n">Florence2SAM2</span><span class="p">()</span>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="c1"># segment all the instances of the prompt &quot;ball&quot; for all video frames</span>
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">results</span> <span class="o">=</span> <span class="n">florence2_sam2</span><span class="p">(</span><span class="n">video</span><span class="o">=</span><span class="n">frames</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ball&quot;</span><span class="p">])</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">results</span> <span class="o">=</span> <span class="n">florence2_sam2</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;ball&quot;</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="n">frames</span><span class="p">)</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="c1"># Returns a dictionary where the first key is the frame index then an annotation</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># ID, then an object with the mask, label and possibly bbox (for images) for each</span>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># annotation ID. For example:</span>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="c1"># {</span>
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="c1">#     0:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="c1">#         {</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1">#             0: ImageBboxMaskLabel({&quot;mask&quot;: np.ndarray, &quot;label&quot;: &quot;car&quot;}),</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="c1">#             1: ImageBboxMaskLabel({&quot;mask&quot;, np.ndarray, &quot;label&quot;: &quot;person&quot;})</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="c1">#         },</span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="c1">#     1: ...</span>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="c1"># }</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Instance segmentation complete!&quot;</span><span class="p">)</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="c1"># Returns a list of list where the first list represents the frames and the inner</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># list contains all the predictions per frame. The annotation ID can be used</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># to track the same object across different frames. For example:</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">[</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="p">[</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        <span class="p">{</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>            <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">rle</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;ball&quot;</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>            <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">]</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        <span class="p">}</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>    <span class="p">],</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="p">[</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        <span class="p">{</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">0</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>            <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">rle</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;ball&quot;</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>            <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">]</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        <span class="p">}</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    <span class="p">]</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="p">]</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Instance segmentation complete!&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>You can also run similarity against an image and get additionally bounding boxes doing the following:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">results</span> <span class="o">=</span> <span class="n">florence2_sam2</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ball&quot;</span><span class="p">])</span>
@@ -768,8 +778,8 @@
               Bases: <code><span title="vision_agent_tools.shared_types.BaseMLModel">BaseMLModel</span></code></p>
 
 
-      <p>A class that receives a video or an image plus a list of text prompts and
-returns the instance segmentation for the text prompts in each frame.</p>
+      <p>A class that receives a video or images, a text prompt and returns the instance
+segmentation based on the input for each frame.</p>
 
 
 
@@ -788,14 +798,14 @@ returns the instance segmentation for the text prompts in each frame.</p>
 
 
 <h3 id="vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">chunk_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">chunk_length_frames</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florence2_sam2.Florence2SAM2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Florence2Sam2 model find objects in an image and track objects in a video.</p>
+      <p>Florence2Sam2 model find objects in images and track objects in a video.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -812,11 +822,11 @@ returns the instance segmentation for the text prompts in each frame.</p>
           <tr class="doc-section-item">
             <td><code>prompt</code></td>
             <td>
-                  <code>list[str]</code>
+                  <code>str</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The list of objects to be found.</p>
+                <p>The text input that complements the media to find or track objects.</p>
               </div>
             </td>
             <td>
@@ -824,13 +834,13 @@ returns the instance segmentation for the text prompts in each frame.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>image</code></td>
+            <td><code>images</code></td>
             <td>
-                  <code><span title="PIL.Image.Image">Image</span> | None</code>
+                  <code>list[<span title="PIL.Image.Image">Image</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The image to be analyzed.</p>
+                <p>The images to be analyzed.</p>
               </div>
             </td>
             <td>
@@ -852,13 +862,14 @@ returns the instance segmentation for the text prompts in each frame.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>chunk_length</code></td>
+            <td><code>chunk_length_frames</code></td>
             <td>
-                  <code>int</code>
+                  <code>int | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.</p>
+                <p>The number of frames for each chunk of video to analyze.
+The last chunk may have fewer frames.</p>
               </div>
             </td>
             <td>
@@ -872,7 +883,8 @@ returns the instance segmentation for the text prompts in each frame.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The IoU threshold value used to compare last_predictions and new_predictions objects.</p>
+                <p>The IoU threshold value used to compare last_predictions and
+new_predictions objects.</p>
               </div>
             </td>
             <td>
@@ -886,7 +898,8 @@ returns the instance segmentation for the text prompts in each frame.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The non-maximum suppression threshold value used to filter the Florencev2 predictions.</p>
+                <p>The non-maximum suppression threshold value used to filter the
+Florence2 predictions.</p>
               </div>
             </td>
             <td>
@@ -908,38 +921,18 @@ returns the instance segmentation for the text prompts in each frame.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
+                  <code>list[list[dict[str, <span title="typing.Any">Any</span>]]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>list[list[ImageBboxMaskLabel]]: a list where the first list contains the frames predictions,</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>then the second list contains the annotation, where the annotations are objects with the mask,</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxAndMaskLabel">BboxAndMaskLabel</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>label and bbox (for images) for each annotation. For example:
-[
-    [
-        BboxAndMaskLabel({"mask": np.ndarray, "label": "car", score: 0.9}),
-        BboxAndMaskLabel({"mask", np.ndarray, "label": "person", score: 0.8}),
-    ],
-    ...
-]</p>
+                <p>list[list[dict[str, Any]]]:
+A list where each item represents each frames predictions.
+[[{
+    "id": 0,
+    "mask": rle,
+    "label": "car",
+    "bbox": [0.1, 0.2, 0.3, 0.4]
+}]]</p>
               </div>
             </td>
           </tr>
@@ -954,14 +947,14 @@ returns the instance segmentation for the text prompts in each frame.</p>
 
 
 <h3 id="vision_agent_tools.models.florence2_sam2.Florence2SAM2.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">Florence2SAM2Config</span><span class="p">())</span></code>
 
 <a href="#vision_agent_tools.models.florence2_sam2.Florence2SAM2.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Initializes the Florence2SAM2 object with a pre-trained Florencev2 model
+      <p>Initializes the Florence2SAM2 object with a pre-trained Florence2 model
 and a SAM2 model.</p>
 
     </div>

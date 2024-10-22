@@ -311,6 +311,26 @@
   
   
     <li class="md-nav__item">
+      <a href="../florence2-qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    FlorenceQA
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../florence2-sam2/" class="md-nav__link">
         
   
@@ -331,27 +351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../florencev2-qa/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    FlorenceQA
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../florencev2/" class="md-nav__link">
+      <a href="../florence2/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -752,13 +752,13 @@
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">owlv2</span> <span class="o">=</span> <span class="n">Owlv2</span><span class="p">()</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># Time to put Owlv2 to work! Let&#39;s see what it finds...</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">results</span> <span class="o">=</span> <span class="n">owlv2</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">results</span> <span class="o">=</span> <span class="n">owlv2</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># Did Owlv2 sniff out any objects? Let&#39;s see the results!</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="k">if</span> <span class="n">results</span><span class="p">:</span>
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found it! It looks like a </span><span class="si">{</span><span class="n">detection</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2"> with a confidence of </span><span class="si">{</span><span class="n">detection</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here&#39;s where it&#39;s hiding: </span><span class="si">{</span><span class="n">detection</span><span class="o">.</span><span class="n">bbox</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found it! It looks like a </span><span class="si">{</span><span class="n">detection</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> with a confidence of </span><span class="si">{</span><span class="n">detection</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here&#39;s where it&#39;s hiding: </span><span class="si">{</span><span class="n">detection</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="k">else</span><span class="p">:</span>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hmm, Owlv2 couldn&#39;t find anything this time. Maybe try a different prompt?&quot;</span><span class="p">)</span>
 </span></code></pre></div>
@@ -800,9 +800,10 @@
 
       <p>Tool for object detection using the pre-trained Owlv2 model from
 <a href="https://github.com/huggingface/transformers">Transformers</a>.</p>
-<p>This tool takes an image and a list of prompts as input, performs object detection using the Owlv2 model,
-and returns a list of <code>BboxLabel</code> objects containing the predicted labels, confidence scores,
-and bounding boxes for detected objects with confidence exceeding a threshold.</p>
+<p>This tool takes images and a prompt as input, performs object detection using
+the Owlv2 model, and returns a list of objects containing the predicted labels,
+confidence scores, and bounding boxes for detected objects with confidence
+exceeding a threshold.</p>
 
 
 
@@ -821,14 +822,14 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
 
 
 <h3 id="vision_agent_tools.models.owlv2.Owlv2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.owlv2.Owlv2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Performs object detection on an image using the Owlv2 model.</p>
+      <p>Performs object detection on images using the Owlv2 model.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -843,28 +844,13 @@ and bounding boxes for detected objects with confidence exceeding a threshold.</
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>image</code></td>
-            <td>
-                  <code><span title="PIL.Image.Image">Image</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The input image for object detection.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
             <td><code>prompts</code></td>
             <td>
                   <code>list[str]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of prompts to be used during inference.
-Currently, only one prompt is supported (list length of 1).</p>
+                <p>The prompt to be used for object detection.</p>
               </div>
             </td>
             <td>
@@ -872,17 +858,45 @@ Currently, only one prompt is supported (list length of 1).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>video</code></td>
+            <td><code>images</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span>]</code>
+                  <code>list[<span title="PIL.Image.Image">Image</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The input video for object detection.</p>
+                <p>The images to be analyzed.</p>
               </div>
             </td>
             <td>
                   <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>video</code></td>
+            <td>
+                  <code><span title="vision_agent_tools.shared_types.VideoNumpy">VideoNumpy</span>[<span title="numpy.uint8">uint8</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A numpy array containing the different images, representing the video.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>batch_size</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The batch size used for processing multiple images or video frames.</p>
+              </div>
+            </td>
+            <td>
+                  <code>2</code>
             </td>
           </tr>
       </tbody>
@@ -900,14 +914,16 @@ Currently, only one prompt is supported (list length of 1).</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>list[list[<span title="vision_agent_tools.shared_types.BboxLabel">BboxLabel</span>]]</code>
+                  <code>list[<span title="vision_agent_tools.shared_types.ODWithScoreResponse">ODWithScoreResponse</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>list[list[BboxLabel]]: A list of <code>BboxLabel</code> objects containing the predicted
+                <p>list[ODWithScoreResponse]:
+A list of <code>ODWithScoreResponse</code> objects containing the predicted
 labels, confidence scores, and bounding boxes for detected objects
-with confidence exceeding the threshold. Returns None if no objects
-are detected above the confidence threshold.</p>
+with confidence exceeding the threshold. The item will be None if
+no objects are detected above the confidence threshold for an specific
+image / frame.</p>
               </div>
             </td>
           </tr>
@@ -922,15 +938,14 @@ are detected above the confidence threshold.</p>
 
 
 <h3 id="vision_agent_tools.models.owlv2.Owlv2.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">OWLV2Config</span><span class="p">())</span></code>
 
 <a href="#vision_agent_tools.models.owlv2.Owlv2.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Initializes the Owlv2 object detection tool.</p>
-<p>Loads the pre-trained Owlv2 processor and model from Transformers.</p>
+      <p>Loads the pre-trained Owlv2 processor and model from Transformers.</p>
 
     </div>
 
@@ -977,15 +992,15 @@ are detected above the confidence threshold.</p>
 
 
 <h3 id="vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">post_process_object_detection_with_nms</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">target_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">post_process_object_detection_with_nms</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">target_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.owlv2.Owlv2ProcessorWithNMS.post_process_object_detection_with_nms" class="headerlink" title="Permanent link">#</a></h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>Converts the raw output of [<code>OwlViTForObjectDetection</code>] into final bounding boxes in (top_left_x, top_left_y,
-bottom_right_x, bottom_right_y) format.</p>
+      <p>Converts the raw output of [<code>OwlViTForObjectDetection</code>] into final
+bounding boxes in (top_left_x, top_left_y, bottom_right_x, bottom_right_y) format.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1002,7 +1017,7 @@ bottom_right_x, bottom_right_y) format.</p>
           <tr class="doc-section-item">
             <td><code>outputs</code></td>
             <td>
-                  <code>[`OwlViTObjectDetectionOutput`]</code>
+                  <code><span title="transformers.models.owlvit.modeling_owlvit.OwlViTObjectDetectionOutput">OwlViTObjectDetectionOutput</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1016,7 +1031,7 @@ bottom_right_x, bottom_right_y) format.</p>
           <tr class="doc-section-item">
             <td><code>threshold</code></td>
             <td>
-                  <code>`float`, *optional*</code>
+                  <code>float</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1030,7 +1045,7 @@ bottom_right_x, bottom_right_y) format.</p>
           <tr class="doc-section-item">
             <td><code>nms_threshold</code></td>
             <td>
-                  <code>`float`, *optional*</code>
+                  <code>float</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1044,12 +1059,13 @@ bottom_right_x, bottom_right_y) format.</p>
           <tr class="doc-section-item">
             <td><code>target_sizes</code></td>
             <td>
-                  <code>`torch.Tensor` or `List[Tuple[int, int]]`, *optional*</code>
+                  <code><span title="transformers.utils.TensorType">TensorType</span> | list[<span title="typing.Tuple">Tuple</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Tensor of shape <code>(batch_size, 2)</code> or list of tuples (<code>Tuple[int, int]</code>) containing the target size
-<code>(height, width)</code> of each image in the batch. If unset, predictions will not be resized.</p>
+                <p>Tensor of shape <code>(batch_size, 2)</code> or list of tuples (<code>Tuple[int, int]</code>)
+containing the target size <code>(height, width)</code> of each image in the batch.
+If unset, predictions will not be resized.</p>
               </div>
             </td>
             <td>
@@ -1059,8 +1075,9 @@ bottom_right_x, bottom_right_y) format.</p>
       </tbody>
     </table>
       <p>Returns:
-    <code>List[dict]</code>: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
-    in the batch as predicted by the model.</p>
+    <code>list[dict]</code>:
+        A list of dictionaries, each dictionary containing the scores, labels
+        and boxes for an image in the batch as predicted by the model.</p>
 
     </div>
 
