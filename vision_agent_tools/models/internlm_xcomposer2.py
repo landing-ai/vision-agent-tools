@@ -5,6 +5,7 @@ from PIL import Image
 from pydantic import Field, validate_call
 from lmdeploy import GenerationConfig, TurbomindEngineConfig, pipeline
 
+from vision_agent_tools.models.utils import get_device
 from vision_agent_tools.shared_types import BaseMLModel, VideoNumpy
 from vision_agent_tools.helpers.ixc_utils import frame2img, Video_transform, get_font
 
@@ -26,38 +27,19 @@ class InternLMXComposer2(BaseMLModel):
     _MAX_NUMBER_OF_FRAMES = MAX_NUMBER_OF_FRAMES
     _MAX_IMAGE_SIZE = 1024
 
-    def _transform_image(self, image: Image.Image) -> Image.Image:
-        image = image.convert("RGB")
-        if image.size[0] > self._MAX_IMAGE_SIZE or image.size[1] > self._MAX_IMAGE_SIZE:
-            image.thumbnail((self._MAX_IMAGE_SIZE, self._MAX_IMAGE_SIZE))
-        return image
-
-    def _process_video(self, images: VideoNumpy, num_frames: int) -> list[Image.Image]:
-        if len(images) > num_frames:
-            num_frames = min(num_frames, len(images))
-            step_size = len(images) / (num_frames + 1)
-            indices = [int(i * step_size) for i in range(num_frames)]
-            images = [images[i] for i in indices]
-        images = [self._transform_image(Image.fromarray(arr)) for arr in images]
-        return images
-
     def __init__(self) -> None:
         """
         Initializes the InternLMXComposer2.5 model.
         """
-        self.device = (
-            "cuda"
-            if torch.cuda.is_available()
-            else "mps"
-            if torch.backends.mps.is_available()
-            else "cpu"
-        )
+        self.device = get_device()
         self._gen_config = GenerationConfig(top_k=0, top_p=0.8, temperature=0.1)
         engine_config = TurbomindEngineConfig(
             model_format="awq", cache_max_entry_count=0.2
         )
         self._pipe = pipeline(
-            self._HF_MODEL + "-4bit", backend_config=engine_config, device=self.device
+            self._HF_MODEL + "-4bit",
+            backend_config=engine_config,
+            device=self.device.value,
         )
 
     @validate_call(config={"arbitrary_types_allowed": True})
@@ -106,3 +88,18 @@ class InternLMXComposer2(BaseMLModel):
                 response = sess.response.text
                 answers.append(response)
             return answers
+
+    def _transform_image(self, image: Image.Image) -> Image.Image:
+        image = image.convert("RGB")
+        if image.size[0] > self._MAX_IMAGE_SIZE or image.size[1] > self._MAX_IMAGE_SIZE:
+            image.thumbnail((self._MAX_IMAGE_SIZE, self._MAX_IMAGE_SIZE))
+        return image
+
+    def _process_video(self, images: VideoNumpy, num_frames: int) -> list[Image.Image]:
+        if len(images) > num_frames:
+            num_frames = min(num_frames, len(images))
+            step_size = len(images) / (num_frames + 1)
+            indices = [int(i * step_size) for i in range(num_frames)]
+            images = [images[i] for i in indices]
+        images = [self._transform_image(Image.fromarray(arr)) for arr in images]
+        return images

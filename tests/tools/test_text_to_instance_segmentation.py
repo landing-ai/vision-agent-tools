@@ -23,10 +23,15 @@ def test_text_to_instance_segmentation_image(shared_tool, rle_decode_array):
     assert len(response) == len(expected_results)
     for result_frame, expected_result_frame in zip(response, expected_results):
         assert len(result_frame) == len(expected_result_frame)
-        for result_annotation, expected_result_annotation in zip(result_frame, expected_result_frame):
+        for result_annotation, expected_result_annotation in zip(
+            result_frame, expected_result_frame
+        ):
             assert result_annotation["id"] == expected_result_annotation["id"]
             assert result_annotation["bbox"] == expected_result_annotation["bbox"]
-            assert rle_decode_array(result_annotation["mask"]).shape == test_image.size[::-1]
+            assert (
+                rle_decode_array(result_annotation["mask"]).shape
+                == test_image.size[::-1]
+            )
             assert result_annotation["label"] == expected_result_annotation["label"]
 
 
@@ -47,7 +52,9 @@ def test_text_to_instance_segmentation_video(shared_tool, rle_decode_array):
     assert len(response) == len(expected_results)
     for result_frame, expected_result_frame in zip(response, expected_results):
         assert len(result_frame) == len(expected_result_frame)
-        for result_annotation, expected_result_annotation in zip(result_frame, expected_result_frame):
+        for result_annotation, expected_result_annotation in zip(
+            result_frame, expected_result_frame
+        ):
             assert result_annotation["id"] == expected_result_annotation["id"]
             assert result_annotation["bbox"] == expected_result_annotation["bbox"]
             assert rle_decode_array(result_annotation["mask"]).shape == img_size[::-1]
@@ -67,7 +74,7 @@ def test_text_to_instance_segmentation_invalid_media(shared_tool):
         shared_tool(prompt, video=np.array([1, 2, 3]))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_tool():
     return TextToInstanceSegmentationTool(
         model=TextToInstanceSegmentationModel.FLORENCE2SAM2

@@ -144,6 +144,6 @@ def test_multiple_images_per_prompt(model):
         assert image.size == (32, 32)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def model():
     return Flux1()

@@ -26,8 +26,8 @@ def test_sam2_point_segmentation_image(shared_model, rle_decode_array):
     assert len(response) == 1  # frames
     frame = response[0]
     assert len(frame) == 1  # annotations
-    annotations= frame[0]
-    
+    annotations = frame[0]
+
     assert annotations.keys() == {"id", "score", "mask", "logits"}
     assert annotations["id"] == 0
     assert annotations["score"] == 0.9140625
@@ -105,7 +105,7 @@ def test_sam2_video_detection_segmentation(shared_model, rle_decode_array):
         assert annotation["logits"] is None
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_model():
     return Sam2(
         model_config=Sam2Config(

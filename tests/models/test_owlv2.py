@@ -98,12 +98,14 @@ def test_owlv2_image_with_nms():
 def test_owlv2_image_with_large_prompt(shared_model):
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompts = ["""
+    prompts = [
+        """
         A photo of a cat that is sleeping next to a remote control. The cat has a
         light brown color with black spots and seems to be wearing a light green
         necklace. It also seems to be stretching its right leg and next to its
         left leg it is stepping on the tail
-    """]
+    """
+    ]
 
     response = shared_model(prompts, images=[image])
     assert response == [
@@ -138,6 +140,6 @@ def test_owlv2_video(shared_model, bytes_to_np):
     assert expected_results == response
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_model():
     return Owlv2()

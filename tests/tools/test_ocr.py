@@ -70,11 +70,12 @@ def test_ocr_with_florence2_invalid_task(shared_tool):
 
     with pytest.raises(ValueError) as exc:
         shared_tool(images=[image], task=PromptTask.OBJECT_DETECTION)
-        assert "Invalid task: <OD>. Supported tasks are: ['<OCR>', '<OCR_WITH_REGION>']" in str(
-            exc
+        assert (
+            "Invalid task: <OD>. Supported tasks are: ['<OCR>', '<OCR_WITH_REGION>']"
+            in str(exc)
         )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_tool():
     return OCR(model=OCRModel.FLORENCE2)

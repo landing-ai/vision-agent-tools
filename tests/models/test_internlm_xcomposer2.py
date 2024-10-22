@@ -22,6 +22,6 @@ def test_internlm_xcomposer2_image(shared_model):
     assert len(answer) > 0
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_model():
     return InternLMXComposer2()

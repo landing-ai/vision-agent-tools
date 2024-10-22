@@ -63,11 +63,11 @@ def test_text_to_object_detection_custom_confidence():
     assert response == [{"scores": [], "labels": [], "bboxes": []}]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_tool_owlv2():
     return TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def shared_tool_florence2():
     return TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCE2)
