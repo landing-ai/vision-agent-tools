@@ -273,7 +273,7 @@ class Florence2(BaseMLModel):
         parsed_answers = []
         inputs = self._processor(
             text=text_input_chunk, images=images_chunk, return_tensors="pt"
-        ).to(self._device.value)
+        ).to(self._model_config.device.value)
 
         generated_ids = self._model.generate(
             input_ids=inputs["input_ids"],
@@ -333,7 +333,7 @@ class Florence2(BaseMLModel):
         self._processor = AutoProcessor.from_pretrained(
             processor_name, trust_remote_code=True, revision=revision
         )
-        self._model.to(self._device.value)
+        self._model.to(self._model_config.device.value)
         self._model.eval()
         _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
 
