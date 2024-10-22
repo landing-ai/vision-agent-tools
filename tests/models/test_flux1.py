@@ -1,6 +1,6 @@
 import pytest
-from pydantic import ValidationError
 from PIL import Image
+from pydantic import ValidationError
 
 from vision_agent_tools.models.flux1 import Flux1, Flux1Task, Flux1Config
 
@@ -196,6 +196,6 @@ def test_image_to_image(model):
     assert image.size == (32, 32)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def model():
     return Flux1()

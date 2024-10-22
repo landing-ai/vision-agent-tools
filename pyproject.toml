@@ -10,6 +10,10 @@ readme = "README.md"
 "repository" = "https://github.com/landing-ai/vision-agent-tools"
 "documentation" = "https://github.com/landing-ai/vision-agent-tools"
 
+[build-system]
+requires = ["poetry-core>=1.8.0", "setuptools", "packaging", "wheel", "torch"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 
@@ -58,13 +62,17 @@ mypy = "^1.10.1"
 ipykernel = "^6.29.5"
 pytest-asyncio = "^0.23.7"
 opencv-stubs = "^0.0.10"
-opencv-python-headless = "^4.10.0.84"
+opencv-python = "^4.10.0.84"
+
+# notebooks
+av = "^13.1.0"
+matplotlib = "^3.9.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-material = "^9.5.28"
 griffe-fieldz = "^0.2.0"
-opencv-python-headless = "^4.10.0.84"
+opencv-python = "^4.10.0.84"
 
 [tool.poetry.extras]
 all = [
@@ -93,15 +101,14 @@ depth-anything-v2-model = ["depth-anything-v2"]
 nsfw-classification = ["transformers", "scipy"]
 controlnet-aux = ["controlnet-aux"]
 
-florence2-ft = ["flash-attn", "transformers", "timm", "einops", "peft"]
-florencev2 = ["flash-attn", "transformers", "scipy", "timm", "einops"]
-florencev2-qa = ["flash-attn", "transformers", "scipy", "timm", "einops"]
+florence2 = ["flash-attn", "transformers", "timm", "einops", "peft"]
+florence2-qa = ["flash-attn", "transformers", "timm", "einops", "peft"]
 florence2-sam2 = [
     "flash-attn",
     "transformers",
-    "scipy",
     "timm",
     "einops",
+    "peft",
     "sam-2",
 ]
 
@@ -114,10 +121,6 @@ qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
 name = "torch_cuda118"
 url = "https://download.pytorch.org/whl/cu118"
 priority = "explicit"
-
-[build-system]
-requires = ["poetry-core", "setuptools", "packaging", "wheel", "torch"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 install-dependencies = "scripts.install_dependencies:install_dependencies"

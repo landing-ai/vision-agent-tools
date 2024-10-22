@@ -1,6 +1,6 @@
 # Florence2Sam2
 
-This tool uses FlorenceV2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
+This tool uses Florence2 and the SAM-2 model to do text to instance segmentation on image or video inputs.
 
 ```python
 import cv2
@@ -25,19 +25,29 @@ cap.release()
 florence2_sam2 = Florence2SAM2()
 
 # segment all the instances of the prompt "ball" for all video frames
-results = florence2_sam2(video=frames, prompts=["ball"])
+results = florence2_sam2(prompt="ball", video=frames)
 
-# Returns a dictionary where the first key is the frame index then an annotation
-# ID, then an object with the mask, label and possibly bbox (for images) for each
-# annotation ID. For example:
-# {
-#     0:
-#         {
-#             0: ImageBboxMaskLabel({"mask": np.ndarray, "label": "car"}),
-#             1: ImageBboxMaskLabel({"mask", np.ndarray, "label": "person"})
-#         },
-#     1: ...
-# }
+# Returns a list of list where the first list represents the frames and the inner
+# list contains all the predictions per frame. The annotation ID can be used
+# to track the same object across different frames. For example:
+[
+    [
+        {
+            "id": 0
+            "mask": rle
+            "label": "ball"
+            "bbox": [x_min, y_min, x_max, y_max]
+        }
+    ],
+    [
+        {
+            "id": 0
+            "mask": rle
+            "label": "ball"
+            "bbox": [x_min, y_min, x_max, y_max]
+        }
+    ]
+]
 
 print("Instance segmentation complete!")
 

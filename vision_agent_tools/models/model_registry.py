@@ -1,6 +1,8 @@
 import re
 from typing import Dict, Type
+
 from pydantic import BaseModel, field_validator
+
 from vision_agent_tools.shared_types import BaseMLModel
 
 MODELS_PATH = "vision_agent_tools.models"
@@ -29,9 +31,13 @@ class ModelRegistryEntry(BaseModel):
 
 
 MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
-    "florencev2": ModelRegistryEntry(
-        model_name="florencev2",
-        class_name="Florencev2",
+    "florence2": ModelRegistryEntry(
+        model_name="florence2",
+        class_name="Florence2",
+    ),
+    "florence2sam2": ModelRegistryEntry(
+        model_name="florence2_sam2",
+        class_name="Florence2SAM2",
     ),
     "owlv2": ModelRegistryEntry(model_name="owlv2", class_name="Owlv2"),
     "qr_reader": ModelRegistryEntry(

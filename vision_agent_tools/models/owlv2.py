@@ -1,19 +1,32 @@
-from typing import List, Optional, Tuple, Union
+import logging
+from typing import Tuple
 
-import numpy as np
 import torch
+import numpy as np
 from PIL import Image
-from pydantic import BaseModel, Field
+from typing_extensions import Self
+from pydantic import BaseModel, Field, model_validator, ConfigDict
+from transformers.utils import TensorType
 from transformers import Owlv2ForObjectDetection, Owlv2Processor
 from transformers.image_transforms import center_to_corners_format
 from transformers.models.owlv2.image_processing_owlv2 import box_iou
-from transformers.utils import TensorType
+from transformers.models.owlvit.modeling_owlvit import OwlViTObjectDetectionOutput
 
-from vision_agent_tools.models.utils import filter_redundant_boxes
-from vision_agent_tools.shared_types import BaseMLModel, BboxLabel, Device, VideoNumpy
+from vision_agent_tools.helpers.filters import filter_bbox_predictions
+from vision_agent_tools.models.utils import get_device
+from vision_agent_tools.shared_types import (
+    BaseMLModel,
+    Device,
+    VideoNumpy,
+    ODWithScoreResponse,
+)
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class OWLV2Config(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_name: str = Field(
         default="google/owlv2-large-patch14-ensemble",
         description="Name of the model",
@@ -29,14 +42,9 @@ class OWLV2Config(BaseModel):
         description="Confidence threshold for model predictions",
     )
     device: Device = Field(
-        default=(
-            Device.GPU
-            if torch.cuda.is_available()
-            else Device.MPS
-            if torch.backends.mps.is_available()
-            else Device.CPU
-        ),
-        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. Default is the first available GPU.",
+        default=get_device(),
+        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. "
+        "Default is the first available GPU.",
     )
     nms_threshold: float = Field(
         default=0.3,
@@ -46,95 +54,43 @@ class OWLV2Config(BaseModel):
     )
 
 
+class Owlv2Request(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    prompts: list[str] = Field(description="The prompt to be used for object detection.")
+    images: list[Image.Image] | None = None
+    video: VideoNumpy | None = None
+    batch_size: int = Field(
+        2,
+        ge=1,
+        description="The batch size used for processing multiple images or video frames.",
+    )
+
+    @model_validator(mode="after")
+    def check_images_and_video(self) -> Self:
+        if self.video is None and self.images is None:
+            raise ValueError("video or images is required")
+
+        if self.video is not None and self.images is not None:
+            raise ValueError("Only one of them are required: video or images")
+
+        return self
+
+
 class Owlv2(BaseMLModel):
     """
     Tool for object detection using the pre-trained Owlv2 model from
     [Transformers](https://github.com/huggingface/transformers).
 
-    This tool takes an image and a list of prompts as input, performs object detection using the Owlv2 model,
-    and returns a list of `BboxLabel` objects containing the predicted labels, confidence scores,
-    and bounding boxes for detected objects with confidence exceeding a threshold.
+    This tool takes images and a prompt as input, performs object detection using
+    the Owlv2 model, and returns a list of objects containing the predicted labels,
+    confidence scores, and bounding boxes for detected objects with confidence
+    exceeding a threshold.
     """
 
-    from typing import Dict, List
-
-    def _filter_bboxes(self, bboxlabels: List[BboxLabel]) -> List[BboxLabel]:
-        """
-        Filters out redundant BboxLabel objects that fully contain multiple smaller boxes of the same label.
-
-        Parameters:
-            bboxlabels (List[BboxLabel]): List of BboxLabel objects to be filtered.
-
-        Returns:
-            List[BboxLabel]: Filtered list of BboxLabel objects.
-        """
-        bboxes = [bl.bbox for bl in bboxlabels]
-        labels = [bl.label for bl in bboxlabels]
-
-        filtered = filter_redundant_boxes({"bboxes": bboxes, "labels": labels})
-        filtered_bboxes = filtered["bboxes"]
-        filtered_labels = filtered["labels"]
-
-        filtered_pairs = list(zip(filtered_bboxes, filtered_labels))
-
-        # preserving the original order
-        output_bboxlabels = []
-        for bl in bboxlabels:
-            pair = (bl.bbox, bl.label)
-            if pair in filtered_pairs:
-                output_bboxlabels.append(bl)
-                filtered_pairs.remove(pair)  # Remove to handle duplicates correctly
-
-        return output_bboxlabels
-
-    def __run_inference(
-        self, image, texts, confidence, nms_threshold
-    ) -> list[BboxLabel]:
-        # Run model inference here
-        inputs = self._processor(
-            text=texts,
-            images=image,
-            return_tensors="pt",
-            truncation=True,
-        ).to(self.model_config.device)
-        # Forward pass
-        with torch.autocast(self.model_config.device):
-            outputs = self._model(**inputs)
-
-        target_sizes = torch.Tensor([image.size[::-1]])
-
-        # Convert outputs (bounding boxes and class logits) to the final predictions type
-        results = self._processor.post_process_object_detection_with_nms(
-            outputs=outputs,
-            threshold=confidence,
-            nms_threshold=nms_threshold,
-            target_sizes=target_sizes,
-        )
-        i = 0  # given that we are predicting on only one image
-        boxes, scores, labels = (
-            results[i]["boxes"],
-            results[i]["scores"],
-            results[i]["labels"],
-        )
-
-        inferences: list[BboxLabel] = []
-        for box, score, label in zip(boxes, scores, labels):
-            box = [round(i, 2) for i in box.tolist()]
-            inferences.append(
-                BboxLabel(label=texts[i][label.item()], score=score.item(), bbox=box)
-            )
-
-        filtered_inferences = self._filter_bboxes(inferences)
-
-        return filtered_inferences
-
-    def __init__(self, model_config: Optional[OWLV2Config] = None):
-        """
-        Initializes the Owlv2 object detection tool.
-
-        Loads the pre-trained Owlv2 processor and model from Transformers.
-        """
-        self.model_config = model_config or OWLV2Config()
+    def __init__(self, model_config: OWLV2Config | None = OWLV2Config()):
+        """Loads the pre-trained Owlv2 processor and model from Transformers."""
+        self.model_config = model_config
         self._model = Owlv2ForObjectDetection.from_pretrained(
             self.model_config.model_name
         )
@@ -148,93 +104,140 @@ class Owlv2(BaseMLModel):
     def __call__(
         self,
         prompts: list[str],
-        image: Image.Image | None = None,
+        images: list[Image.Image] | None = None,
         video: VideoNumpy[np.uint8] | None = None,
-    ) -> list[list[BboxLabel]]:
-        """
-        Performs object detection on an image using the Owlv2 model.
+        *,
+        batch_size: int = 2,
+    ) -> list[ODWithScoreResponse]:
+        """Performs object detection on images using the Owlv2 model.
 
         Args:
-            image (Image.Image): The input image for object detection.
-            prompts (list[str]): A list of prompts to be used during inference.
-                Currently, only one prompt is supported (list length of 1).
-            video (Optional[VideoNumpy]: The input video for object detection.
+            prompts:
+                The prompt to be used for object detection.
+            images:
+                The images to be analyzed.
+            video:
+                A numpy array containing the different images, representing the video.
+            batch_size:
+                The batch size used for processing multiple images or video frames.
 
         Returns:
-            list[list[BboxLabel]]: A list of `BboxLabel` objects containing the predicted
+            list[ODWithScoreResponse]:
+                A list of `ODWithScoreResponse` objects containing the predicted
                 labels, confidence scores, and bounding boxes for detected objects
-                with confidence exceeding the threshold. Returns None if no objects
-                are detected above the confidence threshold.
+                with confidence exceeding the threshold. The item will be None if
+                no objects are detected above the confidence threshold for an specific
+                image / frame.
         """
-        texts = [prompts]
+        Owlv2Request(prompts=prompts, images=images, video=video, batch_size=batch_size)
 
-        if image is None and video is None:
-            raise ValueError("Either 'image' or 'video' must be provided.")
-        if image is not None and video is not None:
-            raise ValueError("Only one of 'image' or 'video' can be provided.")
+        if images is not None:
+            images = [image.convert("RGB") for image in images]
 
-        if image is not None:
-            image = image.convert("RGB")
-            inferences = []
-            inferences.append(
-                self.__run_inference(
-                    image=image,
-                    texts=texts,
-                    confidence=self.model_config.confidence,
-                    nms_threshold=self.model_config.nms_threshold,
+        if video is not None:
+            images = [Image.fromarray(frame).convert("RGB") for frame in video]
+
+        return self._run_inference(
+            prompts,
+            images,
+            batch_size=batch_size,
+            confidence=self.model_config.confidence,
+            nms_threshold=self.model_config.nms_threshold,
+        )
+
+    def to(self, device: Device) -> None:
+        raise NotImplementedError("This method is not supported for Owlv2 model.")
+
+    def _run_inference(
+        self,
+        prompts: list[str],
+        images: list[Image.Image],
+        *,
+        batch_size: int,
+        confidence: float,
+        nms_threshold: float,
+    ) -> list[ODWithScoreResponse]:
+        results = []
+        for idx in range(0, len(images), batch_size):
+            end_frame = idx + batch_size
+            if end_frame >= len(images):
+                end_frame = len(images)
+
+            _LOGGER.info(
+                f"Processing chunk, start frame: {idx}, end frame: {end_frame - 1}"
+            )
+            images_chunk = images[idx:end_frame]
+
+            inputs = self._processor(
+                text=prompts,
+                images=images_chunk,
+                return_tensors="pt",
+                truncation=True,
+            ).to(self.model_config.device)
+
+            # Forward pass
+            with torch.autocast(self.model_config.device):
+                outputs = self._model(**inputs)
+
+            target_sizes = [image.size[::-1] for image in images_chunk]
+            results.extend(
+                self._processor.post_process_object_detection_with_nms(
+                    outputs=outputs,
+                    threshold=confidence,
+                    nms_threshold=nms_threshold,
+                    target_sizes=target_sizes,
                 )
             )
-        if video is not None:
-            inferences = []
-            for frame in video:
-                image = Image.fromarray(frame).convert("RGB")
-                inferences.append(
-                    self.__run_inference(
-                        image=image,
-                        texts=texts,
-                        confidence=self.model_config.confidence,
-                        nms_threshold=self.model_config.nms_threshold,
-                    )
-                )
 
-        return inferences
+        filtered_bboxes_all_frames = []
+        for result, image in zip(results, images):
+            result["bboxes"] = result.pop("boxes")
+            filtered_bboxes = filter_bbox_predictions(
+                result, image.size, nms_threshold=nms_threshold
+            )
+            filtered_bboxes["labels"] = [
+                prompts[label] for label in filtered_bboxes["labels"]
+            ]
+            filtered_bboxes_all_frames.append(filtered_bboxes)
 
-    def to(self, device: Device):
-        self._model.to(device=device.value)
+        return filtered_bboxes_all_frames
 
 
 class Owlv2ProcessorWithNMS(Owlv2Processor):
     def post_process_object_detection_with_nms(
         self,
-        outputs,
+        outputs: OwlViTObjectDetectionOutput,
+        *,
         threshold: float = 0.1,
         nms_threshold: float = 0.3,
-        target_sizes: Union[TensorType, List[Tuple]] = None,
-    ):
-        """
-        Converts the raw output of [`OwlViTForObjectDetection`] into final bounding boxes in (top_left_x, top_left_y,
-        bottom_right_x, bottom_right_y) format.
+        target_sizes: TensorType | list[Tuple] | None = None,
+    ) -> list[dict[str, torch.Tensor]]:
+        """Converts the raw output of [`OwlViTForObjectDetection`] into final
+        bounding boxes in (top_left_x, top_left_y, bottom_right_x, bottom_right_y) format.
 
         Args:
-            outputs ([`OwlViTObjectDetectionOutput`]):
+            outputs:
                 Raw outputs of the model.
-            threshold (`float`, *optional*):
+            threshold:
                 Score threshold to keep object detection predictions.
-            nms_threshold (`float`, *optional*):
+            nms_threshold:
                 IoU threshold to filter overlapping objects the raw detections.
-            target_sizes (`torch.Tensor` or `List[Tuple[int, int]]`, *optional*):
-                Tensor of shape `(batch_size, 2)` or list of tuples (`Tuple[int, int]`) containing the target size
-                `(height, width)` of each image in the batch. If unset, predictions will not be resized.
+            target_sizes:
+                Tensor of shape `(batch_size, 2)` or list of tuples (`Tuple[int, int]`)
+                containing the target size `(height, width)` of each image in the batch.
+                If unset, predictions will not be resized.
         Returns:
-            `List[dict]`: A list of dictionaries, each dictionary containing the scores, labels and boxes for an image
-            in the batch as predicted by the model.
+            `list[dict]`:
+                A list of dictionaries, each dictionary containing the scores, labels
+                and boxes for an image in the batch as predicted by the model.
         """
         logits, boxes = outputs.logits, outputs.pred_boxes
 
         if target_sizes is not None:
             if len(logits) != len(target_sizes):
                 raise ValueError(
-                    "Make sure that you pass in as many target sizes as the batch dimension of the logits"
+                    "Make sure that you pass in as many target sizes as the batch "
+                    "dimension of the logits"
                 )
 
         probs = torch.max(logits, dim=-1)
@@ -258,27 +261,16 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
 
         # Convert from relative [0, 1] to absolute [0, height] coordinates
         if target_sizes is not None:
-            if isinstance(target_sizes, List):
+            if isinstance(target_sizes, list):
                 img_h = torch.Tensor([i[0] for i in target_sizes])
                 img_w = torch.Tensor([i[1] for i in target_sizes])
             else:
                 img_h, img_w = target_sizes.unbind(1)
 
-            # rescale coordinates
-            width_ratio = 1
-            height_ratio = 1
-
-            if img_w < img_h:
-                width_ratio = img_w / img_h
-            elif img_h < img_w:
-                height_ratio = img_h / img_w
-
-            img_w = img_w / width_ratio
-            img_h = img_h / height_ratio
-
-            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(
-                boxes.device
-            )
+            # Rescale coordinates, image is padded to square for inference,
+            # that is why we need to scale boxes to the max size
+            size = torch.max(img_h, img_w)
+            scale_fct = torch.stack([size, size, size, size], dim=1).to(boxes.device)
             boxes = boxes * scale_fct[:, None, :]
 
         results = []
@@ -290,9 +282,9 @@ class Owlv2ProcessorWithNMS(Owlv2Processor):
 
             results.append(
                 {
-                    "scores": filtered_scores,
-                    "labels": filtered_labels,
-                    "boxes": filtered_boxes,
+                    "scores": filtered_scores.cpu().tolist(),
+                    "labels": filtered_labels.cpu().tolist(),
+                    "boxes": filtered_boxes.cpu().tolist(),
                 }
             )
 
