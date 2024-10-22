@@ -423,6 +423,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flux1config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flux1Config
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -435,9 +450,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternatively-perform-mask-inpainting" class="md-nav__link">
+  <a href="#perform-mask-inpainting" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternatively, perform mask inpainting
+      Perform mask inpainting
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#perform-image-to-image-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform image-to-image generation
     </span>
   </a>
   
@@ -482,6 +506,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.flux1.Flux1Config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flux1Config
+    </span>
+  </a>
   
 </li>
       
@@ -666,6 +699,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flux1config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flux1Config
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -678,9 +726,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternatively-perform-mask-inpainting" class="md-nav__link">
+  <a href="#perform-mask-inpainting" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternatively, perform mask inpainting
+      Perform mask inpainting
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#perform-image-to-image-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform image-to-image generation
     </span>
   </a>
   
@@ -728,6 +785,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vision_agent_tools.models.flux1.Flux1Config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flux1Config
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -746,74 +812,107 @@
 <h1 id="flux1">Flux1<a class="headerlink" href="#flux1" title="Permanent link">#</a></h1>
 <p>This example demonstrates using the Flux1 model to perform tasks such as image generation and mask inpainting based on text prompts.</p>
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">#</a></h3>
-<p>The following parameters can be passed to the model: </p>
 <ul>
 <li>task: The task to perform using the model - either image generation ("generation") or mask inpainting ("inpainting").</li>
 <li>prompt: The text prompt describing the desired modifications.</li>
-<li>height: The height in pixels of the generated image. Defaults to 1024 for best results.</li>
-<li>width: The width in pixels of the generated image. Defaults to 1024 for best results.</li>
+<li>config: The <code>Flux1Config</code> class allows you to configure the parameters for the Flux1 model.</li>
+<li>image (Image.Image): The original image to be modified - 
+used for the mask inpainting and image to image tasks.</li>
+<li>mask_image (Image.Image): The mask image indicating areas to be inpainted - used for the mask inpainting task</li>
+</ul>
+<h4 id="flux1config">Flux1Config<a class="headerlink" href="#flux1config" title="Permanent link">#</a></h4>
+<p>Below is an example of how to create and use a <code>Flux1Config</code> object:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.flux1</span> <span class="kn">import</span> <span class="n">Flux1Config</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">Flux1Config</span><span class="p">(</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">height</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">width</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">num_inference_steps</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">guidance_scale</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">num_images_per_prompt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">max_sequence_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
+</span></code></pre></div>
+<ul>
+<li>height: The height in pixels of the generated image. Defaults to 512.</li>
+<li>width: The width in pixels of the generated image. Defaults to 512.</li>
 <li>num_inference_steps: The number of inference steps to perform. Defaults to 28.</li>
 <li>guidance_scale: Guidance scale as defined in Classifier-Free Diffusion Guidance. Defaults to 3.5.</li>
 <li>num_images_per_prompt: The number of images to generate per prompt. Defaults to 1.</li>
 <li>max_sequence_length: Maximum sequence length to use with the prompt. Defaults to 512.</li>
 <li>seed: Seed for the random number generator. If not provided, a random seed is used.</li>
+<li>strength: Indicates extent to transform the reference <code>image</code>.
+Must be between 0 and 1. A value of 1 essentially ignores <code>image</code>.</li>
 </ul>
 <h2 id="perform-image-generation">Perform image generation<a class="headerlink" href="#perform-image-generation" title="Permanent link">#</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">torch</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.flux1</span> <span class="kn">import</span> <span class="n">Flux1</span><span class="p">,</span> <span class="n">Flux1Task</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># To perform image generation</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">flux1</span> <span class="o">=</span> <span class="n">Flux1</span><span class="p">()</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">generated_image</span> <span class="o">=</span> <span class="n">flux_model</span><span class="p">(</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">IMAGE_GENERATION</span><span class="p">,</span>  <span class="c1"># Image Generation Task</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;A purple car in a futuristic cityscape&quot;</span><span class="p">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">height</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">width</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">num_inference_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">guidance_scale</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">num_images_per_prompt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">max_sequence_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="p">)</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">generated_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;generated_car.png&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<hr />
-<h2 id="alternatively-perform-mask-inpainting">Alternatively, perform mask inpainting<a class="headerlink" href="#alternatively-perform-mask-inpainting" title="Permanent link">#</a></h2>
-<p>To perform mask inpainting, both the original image and the mask image need to be provided. These images have the same dimensions. The mask should clearly delineate the areas that you want to modify in the original image. Additionally, the inpainting process includes a strength  parameter, which controls the intensity of the modifications applied to the masked areas.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">torch</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.flux1</span> <span class="kn">import</span> <span class="n">Flux1</span><span class="p">,</span> <span class="n">Flux1Task</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># You have a cat image named &quot;cat_image.jpg&quot; that you want to use for mask inpainting</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">image_to_edit</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;path/to/your/cat_image.jpg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>  <span class="c1"># Image to inpaint</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># To perform image generation</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">flux1</span> <span class="o">=</span> <span class="n">Flux1</span><span class="p">()</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Make sure to provide a mask image with the same dimensions, delineating the cat</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">mask_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;path/to/your/mask.png&quot;</span><span class="p">)</span>  <span class="c1"># Mask image indicating areas to change</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Set a new prompt for inpainting</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">inpainting_prompt</span> <span class="o">=</span> <span class="s2">&quot;A cute dog&quot;</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># To perform image mask inpainting</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">flux1</span> <span class="o">=</span> <span class="n">Flux1</span><span class="p">()</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">inpainted_image</span> <span class="o">=</span> <span class="n">flux_model</span><span class="p">(</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">MASK_INPAINTING</span><span class="p">,</span>  <span class="c1"># Image Mask Inpainting Task</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">prompt</span><span class="o">=</span><span class="n">inpainting_prompt</span><span class="p">,</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">image</span><span class="o">=</span><span class="n">image_to_edit</span><span class="p">,</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">mask_image</span><span class="o">=</span><span class="n">mask_image</span><span class="p">,</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="n">height</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="n">width</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="n">strength</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="n">num_inference_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="n">guidance_scale</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">num_images_per_prompt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="n">max_sequence_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="p">)</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="n">inpainted_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;inpainted_dog_over_cat.png&quot;</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">generated_image</span> <span class="o">=</span> <span class="n">flux_model</span><span class="p">(</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">IMAGE_GENERATION</span><span class="p">,</span>  <span class="c1"># Image Generation Task</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;A purple car in a futuristic cityscape&quot;</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">config</span><span class="o">=</span><span class="n">config</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">)</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">generated_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;generated_car.png&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="perform-mask-inpainting">Perform mask inpainting<a class="headerlink" href="#perform-mask-inpainting" title="Permanent link">#</a></h2>
+<p>To perform mask inpainting, both the original image and the mask image need to be provided. These images have the same dimensions. The mask should clearly delineate the areas that you want to modify in the original image. Additionally, the inpainting process includes a strength  parameter, which controls the intensity of the modifications applied to the masked areas.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span> <span class="nn">torch</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.flux1</span> <span class="kn">import</span> <span class="n">Flux1</span><span class="p">,</span> <span class="n">Flux1Task</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># You have a cat image named &quot;cat_image.jpg&quot; that you want to use for mask inpainting</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">image_to_edit</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;path/to/your/cat_image.jpg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>  <span class="c1"># Image to inpaint</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># Make sure to provide a mask image with the same dimensions, delineating the cat</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">mask_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;path/to/your/mask.png&quot;</span><span class="p">)</span>  <span class="c1"># Mask image indicating areas to change</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Set a new prompt for inpainting</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">inpainting_prompt</span> <span class="o">=</span> <span class="s2">&quot;A cute dog&quot;</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># To perform image mask inpainting</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">flux1</span> <span class="o">=</span> <span class="n">Flux1</span><span class="p">()</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">inpainted_image</span> <span class="o">=</span> <span class="n">flux_model</span><span class="p">(</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">MASK_INPAINTING</span><span class="p">,</span>  <span class="c1"># Image Mask Inpainting Task</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="n">prompt</span><span class="o">=</span><span class="n">inpainting_prompt</span><span class="p">,</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="n">image</span><span class="o">=</span><span class="n">image_to_edit</span><span class="p">,</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="n">mask_image</span><span class="o">=</span><span class="n">mask_image</span><span class="p">,</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span class="n">config</span><span class="o">=</span><span class="n">config</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">)</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="n">inpainted_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;inpainted_dog_over_cat.png&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="perform-image-to-image-generation">Perform image-to-image generation<a class="headerlink" href="#perform-image-to-image-generation" title="Permanent link">#</a></h2>
+<p>To perform image-to-image generation, you need to provide an original image along with a text prompt describing the desired modifications. The original image serves as the base, and the model will generate a new image based on the prompt.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span> <span class="nn">torch</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span> <span class="nn">vision_agent_tools.models.flux1</span> <span class="kn">import</span> <span class="n">Flux1</span><span class="p">,</span> <span class="n">Flux1Task</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># You have an original image named &quot;original_image.jpg&quot; that you want to use for image-to-image generation</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">original_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;path/to/your/original_image.jpg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>  <span class="c1"># Original image</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># Set a new prompt for image-to-image generation</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">image_to_image_prompt</span> <span class="o">=</span> <span class="s2">&quot;A sunny beach with palm trees&quot;</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># To perform image-to-image generation</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">flux1</span> <span class="o">=</span> <span class="n">Flux1</span><span class="p">()</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">generated_image</span> <span class="o">=</span> <span class="n">flux_model</span><span class="p">(</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">IMAGE_TO_IMAGE</span><span class="p">,</span>  <span class="c1"># Image-to-Image Generation Task</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">prompt</span><span class="o">=</span><span class="n">image_to_image_prompt</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="n">image</span><span class="o">=</span><span class="n">original_image</span><span class="p">,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="n">config</span><span class="o">=</span><span class="n">config</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="p">)</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="n">generated_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;generated_beach.png&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 
 
@@ -871,7 +970,7 @@ This tool takes a prompt as input and generates an image using the Flux1 model.<
 
 
 <h3 id="vision_agent_tools.models.flux1.Flux1.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">IMAGE_GENERATION</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">strength</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">num_inference_steps</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">guidance_scale</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">num_images_per_prompt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_sequence_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">Field</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">),</span> <span class="n">task</span><span class="o">=</span><span class="n">Flux1Task</span><span class="o">.</span><span class="n">IMAGE_GENERATION</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">Flux1Config</span><span class="p">(),</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_image</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.flux1.Flux1.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -909,6 +1008,61 @@ This tool takes a prompt as input and generates an image using the Flux1 model.<
           <tr class="doc-section-item">
             <td><code>-</code></td>
             <td>
+                  <code>task (Flux1Task</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The task to perform using the model:
+- image generation - "generation",
+- mask inpainting - "inpainting",
+- image-to-image generation - "img2img".</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>-</code></td>
+            <td>
+                  <code>config (Flux1Config</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <ul>
+<li>height (<code>int</code>, <em>optional</em>):
+    The height in pixels of the generated image.
+    This is set to 512 by default.</li>
+<li>width (<code>int</code>, <em>optional</em>):
+    The width in pixels of the generated image.
+    This is set to 512 by default.</li>
+<li>num_inference_steps (<code>int</code>, <em>optional</em>, defaults to 28):</li>
+<li>guidance_scale (<code>float</code>, <em>optional</em>, defaults to 3.5):
+    Guidance scale as defined in Classifier-Free Diffusion Guidance.
+    Higher guidance scale encourages to generate images
+    that are closely linked to the text <code>prompt</code>,
+    usually at the expense of lower image quality.</li>
+<li>num_images_per_prompt (<code>int</code>, <em>optional</em>, defaults to 1):
+    The number of images to generate per prompt.</li>
+<li>max_sequence_length (<code>int</code> defaults to 512):
+    Maximum sequence length to use with the <code>prompt</code>.
+    to make generation deterministic.</li>
+<li>seed (<code>int</code>, <em>optional</em>): The seed to use for the random number generator.
+    If not provided, a random seed is used.</li>
+<li>strength (<code>float</code>, <em>optional</em>, defaults to 0.6):
+    Indicates extent to transform the reference <code>image</code>.
+    Must be between 0 and 1.
+    A value of 1 essentially ignores <code>image</code>.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>-</code></td>
+            <td>
                   <code>image (Image.Image</code>
             </td>
             <td>
@@ -934,127 +1088,6 @@ This tool takes a prompt as input and generates an image using the Flux1 model.<
                 <em>required</em>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>height (`int`, *optional*</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The height in pixels of the generated image.
-This is set to 1024 by default for the best results.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>width (`int`, *optional*</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The width in pixels of the generated image.
-This is set to 1024 by default for the best results.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>num_inference_steps (`int`, *optional*, defaults to 28</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>guidance_scale (`float`, *optional*, defaults to 3.5</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Guidance scale as defined in Classifier-Free Diffusion Guidance.
-Higher guidance scale encourages to generate images
-that are closely linked to the text <code>prompt</code>,
-usually at the expense of lower image quality.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>num_images_per_prompt (`int`, *optional*, defaults to 1</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The number of images to generate per prompt.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>max_sequence_length (`int` defaults to 512</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Maximum sequence length to use with the <code>prompt</code>.
-to make generation deterministic.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>strength (`float`, *optional*, defaults to 0.6</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Indicates extent to transform the reference <code>image</code>.
-Must be between 0 and 1.
-A value of 1 essentially ignores <code>image</code>.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code>-</code></td>
-            <td>
-                  <code>seed (`int`, *optional*</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The seed to use for the random number generator.
-If not provided, a random seed is used.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -1074,8 +1107,7 @@ If not provided, a random seed is used.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Image.Image | None: The output image if the Flux1 process is successful;
-None if an error occurred.</p>
+                <p>List[Image.Image]: The list of generated image(s) if successful; None if an error occurred.</p>
               </div>
             </td>
           </tr>
@@ -1090,7 +1122,7 @@ None if an error occurred.</p>
 
 
 <h3 id="vision_agent_tools.models.flux1.Flux1.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">hf_model</span><span class="o">=</span><span class="s1">&#39;black-forest-labs/FLUX.1-schnell&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">enable_sequential_cpu_offload</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.flux1.Flux1.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -1098,7 +1130,7 @@ None if an error occurred.</p>
     <div class="doc doc-contents ">
 
       <p>Initializes the Flux1 image generation tool.
-Loads the pre-trained Flux1 model from HuggingFace and enables sequential CPU offload.</p>
+Loads the pre-trained Flux1 model from HuggingFace and sets model configurations.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1131,11 +1163,39 @@ or mask inpainting ("inpainting").</p>
           <tr class="doc-section-item">
             <td><code>-</code></td>
             <td>
-                  <code><span title="vision_agent_tools.models.flux1.Flux1.model_config">model_config</span></code>
+                  <code>model_config</code>
             </td>
             <td>
               <div class="doc-md-description">
                 <p>The configuration for the model, hf_model, and device.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>-</code></td>
+            <td>
+                  <code>dtype (torch.dtype</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data type to use for the model.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>-</code></td>
+            <td>
+                  <code>enable_sequential_cpu_offload (bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to enable sequential CPU offload.</p>
               </div>
             </td>
             <td>
@@ -1148,6 +1208,45 @@ or mask inpainting ("inpainting").</p>
     </div>
 
 </div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="vision_agent_tools.models.flux1.Flux1Config" class="doc doc-heading">
+            <code>Flux1Config</code>
+
+
+<a href="#vision_agent_tools.models.flux1.Flux1Config" class="headerlink" title="Permanent link">#</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+      <p>Configuration for the Flux1 model.</p>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
 
 
 
