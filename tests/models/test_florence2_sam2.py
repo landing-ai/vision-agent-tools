@@ -4,8 +4,7 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from vision_agent_tools.shared_types import Florence2ModelName
-from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
 
 
 def test_florence2sam2_image(shared_model, rle_decode_array):
@@ -76,9 +75,4 @@ def test_florence2sam2_invalid_media(shared_model):
 
 @pytest.fixture(scope="module")
 def shared_model():
-    return Florence2SAM2(
-        model_config=Florence2SAM2Config(
-            hf_florence2_model=Florence2ModelName.FLORENCE_2_LARGE,
-            hf_sam2_model="facebook/sam2-hiera-large",
-        )
-    )
+    return Florence2SAM2()
