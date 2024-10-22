@@ -18,8 +18,8 @@ from vision_agent_tools.models.owlv2 import OWLV2Config
 class TextToObjectDetectionRequest(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    prompt: str | None = Field(
-        "", description="The text input that complements the prompt task."
+    prompts: list[str] = Field(
+        description="The prompt to be used for object detection."
     )
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
@@ -67,7 +67,7 @@ class TextToObjectDetection(BaseTool):
 
     def __call__(
         self,
-        prompt: str,
+        prompts: list[str],
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         *,
@@ -76,8 +76,8 @@ class TextToObjectDetection(BaseTool):
         """Run object detection on the image based on text prompts.
 
         Args:
-            prompt:
-                The text input that complements the media to find or track objects.
+            prompts:
+                The prompt to be used for object detection.
             images:
                 The images to be analyzed.
             video:
@@ -87,17 +87,18 @@ class TextToObjectDetection(BaseTool):
 
         Returns:
             list[dict[str, Any]]:
-                A list of detection results for the prompt.
+                A list of detection results for the prompts.
         """
         TextToObjectDetectionRequest(
-            prompt=prompt, images=images, video=video, nms_threshold=nms_threshold
+            prompts=prompts, images=images, video=video, nms_threshold=nms_threshold
         )
 
         if self.model_name is TextToObjectDetectionModel.OWLV2:
-            return self.model(prompt, images=images, video=video)
+            return self.model(prompts, images=images, video=video)
 
         if self.model_name is TextToObjectDetectionModel.FLORENCE2:
             task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+            prompt = ", ".join(prompts)
             return self.model(
                 task,
                 prompt=prompt,

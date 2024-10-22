@@ -18,9 +18,14 @@ def test_florence2sam2_image(shared_model, rle_decode_array):
     with open("tests/models/data/florence2sam2_image_results.json", "r") as dest:
         expected_results = json.load(dest)
 
-    assert expected_results == response
-    reverted_masks = rle_decode_array(response[0][0]["mask"])
-    assert reverted_masks.shape == test_image.size[::-1]
+    assert len(response) == len(expected_results)
+    for result_frame, expected_result_frame in zip(response, expected_results):
+        assert len(result_frame) == len(expected_result_frame)
+        for result_annotation, expected_result_annotation in zip(result_frame, expected_result_frame):
+            assert result_annotation["id"] == expected_result_annotation["id"]
+            assert result_annotation["bbox"] == expected_result_annotation["bbox"]
+            assert rle_decode_array(result_annotation["mask"]).shape == test_image.size[::-1]
+            assert result_annotation["label"] == expected_result_annotation["label"]
 
 
 def test_florence2sam2_video(shared_model, rle_decode_array):
@@ -36,10 +41,14 @@ def test_florence2sam2_video(shared_model, rle_decode_array):
     with open("tests/models/data/florence2sam2_video_results.json", "r") as dest:
         expected_results = json.load(dest)
 
-    assert expected_results == response
-    # only check the first frame since the second frame is all zeros
-    reverted_masks =  rle_decode_array(response[0][0]["mask"])
-    assert reverted_masks.shape == img_size[::-1]
+    assert len(response) == len(expected_results)
+    for result_frame, expected_result_frame in zip(response, expected_results):
+        assert len(result_frame) == len(expected_result_frame)
+        for result_annotation, expected_result_annotation in zip(result_frame, expected_result_frame):
+            assert result_annotation["id"] == expected_result_annotation["id"]
+            assert result_annotation["bbox"] == expected_result_annotation["bbox"]
+            assert rle_decode_array(result_annotation["mask"]).shape == img_size[::-1]
+            assert result_annotation["label"] == expected_result_annotation["label"]
 
 
 def test_florence2sam2_invalid_media(shared_model):
@@ -59,7 +68,6 @@ def shared_model():
     return Florence2SAM2(
         model_config=Florence2SAM2Config(
             hf_florence2_model=Florence2ModelName.FLORENCE_2_LARGE,
-            hf_sam2_model="facebook/sam2-hiera-large",
-            device=Device.GPU,
+            hf_sam2_model="facebook/sam2-hiera-large"
         )
     )

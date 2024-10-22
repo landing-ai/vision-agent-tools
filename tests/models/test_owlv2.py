@@ -9,9 +9,9 @@ from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
 def test_owlv2_image(shared_model):
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompt = "dog, cat, remote control"
+    prompts = ["dog", "cat", "remote control"]
 
-    response = shared_model(prompt, images=[image])
+    response = shared_model(prompts, images=[image])
 
     assert response == [
         {
@@ -35,9 +35,9 @@ def test_owlv2_image(shared_model):
 def test_owlv2_removing_extra_bbox(shared_model):
     image_path = "tests/shared_data/images/eggs-food-easter-food-drink-44c10e-1024.jpg"
     image = Image.open(image_path)
-    prompt = "egg"
+    prompts = ["egg"]
 
-    response = shared_model(prompt, images=[image])
+    response = shared_model(prompts, images=[image])
 
     assert len(response) == 1
     item = response[0]
@@ -48,10 +48,10 @@ def test_owlv2_removing_extra_bbox(shared_model):
 def test_owlv2_image_with_nms():
     image_path = "tests/shared_data/images/surfers_with_shark.png"
     image = Image.open(image_path)
-    prompt = "surfer, shark"
+    prompts = ["surfer", "shark"]
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=1.0))
-    response = owlv2(prompt, images=[image])
+    response = owlv2(prompts, images=[image])
     assert response == [
         {
             "scores": [
@@ -76,7 +76,7 @@ def test_owlv2_image_with_nms():
     ]
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
-    response = owlv2(prompt, images=[image])
+    response = owlv2(prompts, images=[image])
     assert response == [
         {
             "scores": [0.6650843620300293, 0.5511208176612854, 0.420064240694046],
@@ -98,14 +98,14 @@ def test_owlv2_image_with_nms():
 def test_owlv2_image_with_large_prompt(shared_model):
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompt = """
+    prompts = ["""
         A photo of a cat that is sleeping next to a remote control. The cat has a
         light brown color with black spots and seems to be wearing a light green
         necklace. It also seems to be stretching its right leg and next to its
         left leg it is stepping on the tail
-    """
+    """]
 
-    response = shared_model(prompt, images=[image])
+    response = shared_model(prompts, images=[image])
     assert response == [
         {
             "scores": [
@@ -114,7 +114,7 @@ def test_owlv2_image_with_large_prompt(shared_model):
                 0.18877223134040833,
                 0.22185605764389038,
             ],
-            "labels": [prompt.strip(), prompt.strip(), prompt.strip(), prompt.strip()],
+            "labels": [prompts[0], prompts[0], prompts[0], prompts[0]],
             "bboxes": [
                 [41.71875, 72.65625, 173.75, 117.03125],
                 [334.0625, 78.3203125, 370.3125, 190.0],
@@ -127,12 +127,12 @@ def test_owlv2_image_with_large_prompt(shared_model):
 
 def test_owlv2_video(shared_model, bytes_to_np):
     test_video = "tests/shared_data/videos/test_video_5_frames.mp4"
-    prompt = "a car, a tree"
+    prompts = ["a car", "a tree"]
     with open(test_video, "rb") as f:
         video_bytes = f.read()
         video = bytes_to_np(video_bytes)
 
-    response = shared_model(prompt, video=video)
+    response = shared_model(prompts, video=video)
     with open("tests/models/data/owlv2_video_results.json", "r") as dest:
         expected_results = json.load(dest)
     assert expected_results == response

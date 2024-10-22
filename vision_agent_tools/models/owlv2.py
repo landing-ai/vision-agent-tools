@@ -55,9 +55,7 @@ class OWLV2Config(BaseModel):
 class Owlv2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    prompt: str | None = Field(
-        "", description="The text input that complements the prompt task."
-    )
+    prompts: list[str] = Field(description="The prompt to be used for object detection.")
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
     batch_size: int = Field(
@@ -103,7 +101,7 @@ class Owlv2(BaseMLModel):
     @torch.inference_mode()
     def __call__(
         self,
-        prompt: str,
+        prompts: list[str],
         images: list[Image.Image] | None = None,
         video: VideoNumpy[np.uint8] | None = None,
         *,
@@ -112,8 +110,8 @@ class Owlv2(BaseMLModel):
         """Performs object detection on images using the Owlv2 model.
 
         Args:
-            prompt:
-                The text input that complements the media to find or track objects.
+            prompts:
+                The prompt to be used for object detection.
             images:
                 The images to be analyzed.
             video:
@@ -129,7 +127,7 @@ class Owlv2(BaseMLModel):
                 no objects are detected above the confidence threshold for an specific
                 image / frame.
         """
-        Owlv2Request(prompt=prompt, images=images, video=video, batch_size=batch_size)
+        Owlv2Request(prompts=prompts, images=images, video=video, batch_size=batch_size)
 
         if images is not None:
             images = [image.convert("RGB") for image in images]
@@ -138,7 +136,7 @@ class Owlv2(BaseMLModel):
             images = [Image.fromarray(frame).convert("RGB") for frame in video]
 
         return self._run_inference(
-            prompt,
+            prompts,
             images,
             batch_size=batch_size,
             confidence=self.model_config.confidence,
@@ -150,7 +148,7 @@ class Owlv2(BaseMLModel):
 
     def _run_inference(
         self,
-        prompt: str,
+        prompts: list[str],
         images: list[Image.Image],
         *,
         batch_size: int,
@@ -158,7 +156,6 @@ class Owlv2(BaseMLModel):
         nms_threshold: float,
     ) -> list[ODWithScoreResponse]:
         results = []
-        texts = [text.strip() for text in prompt.split(",")]
         for idx in range(0, len(images), batch_size):
             end_frame = idx + batch_size
             if end_frame >= len(images):
@@ -170,7 +167,7 @@ class Owlv2(BaseMLModel):
             images_chunk = images[idx:end_frame]
 
             inputs = self._processor(
-                text=texts,
+                text=prompts,
                 images=images_chunk,
                 return_tensors="pt",
                 truncation=True,
@@ -197,7 +194,7 @@ class Owlv2(BaseMLModel):
                 result, image.size, nms_threshold=nms_threshold
             )
             filtered_bboxes["labels"] = [
-                texts[label] for label in filtered_bboxes["labels"]
+                prompts[label] for label in filtered_bboxes["labels"]
             ]
             filtered_bboxes_all_frames.append(filtered_bboxes)
 

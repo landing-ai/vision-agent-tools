@@ -11,9 +11,9 @@ from vision_agent_tools.models.owlv2 import OWLV2Config
 def test_text_to_object_detection_owlv2(shared_tool_owlv2):
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompt = "dog, cat, remote control"
+    prompts = ["dog", "cat", "remote control"]
 
-    response = shared_tool_owlv2(prompt, images=[image])
+    response = shared_tool_owlv2(prompts, images=[image])
 
     assert response == [
         {
@@ -37,9 +37,9 @@ def test_text_to_object_detection_owlv2(shared_tool_owlv2):
 def test_text_to_object_detection_florence2(shared_tool_florence2):
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompt = "dog, cat, remote control"
+    prompts = ["dog", "cat", "remote control"]
 
-    response = shared_tool_florence2(prompt, images=[image])
+    response = shared_tool_florence2(prompts, images=[image])
 
     assert response == [
         {
@@ -54,12 +54,12 @@ def test_text_to_object_detection_florence2(shared_tool_florence2):
 def test_text_to_object_detection_custom_confidence():
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
-    prompt = "dog, cat, remote control"
+    prompts = ["dog", "cat", "remote control"]
 
     tool = TextToObjectDetection(
         model=TextToObjectDetectionModel.OWLV2, model_config=OWLV2Config(confidence=0.7)
     )
-    response = tool(prompt, images=[image])
+    response = tool(prompts, images=[image])
     assert response == [{"scores": [], "labels": [], "bboxes": []}]
 
 
