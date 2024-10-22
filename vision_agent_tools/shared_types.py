@@ -161,14 +161,6 @@ class Sam2BitMask(BaseModel):
     logits: list[SegmentationBitMask]
 
 
-class Sam2Response(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    masks: list[RLEEncoding]
-    scores: list[float] | None
-    logits: list[SegmentationBitMask] | None
-
-
 class BboxAndMaskLabel(ODResponse):
     masks: list[RLEEncoding]
 
