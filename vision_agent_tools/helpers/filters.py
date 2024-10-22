@@ -11,7 +11,7 @@ def filter_bbox_predictions(
     predictions: dict[str, Any],
     image_size: tuple[int, int],
     *,
-    nms_threshold: float = 1.0,
+    nms_threshold: float = 0.3,
     bboxes_key: str = "bboxes",
     label_key: str = "labels",
 ) -> dict[str, Any]:

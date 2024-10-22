@@ -15,7 +15,9 @@ def test_florence2sam2_image(shared_model, rle_decode_array):
 
     response = shared_model(prompt, images=[test_image])
 
-    with open("tests/models/data/florence2sam2_image_results.json", "r") as dest:
+    with open(
+        "tests/models/data/results/florence2sam2_image_results.json", "r"
+    ) as dest:
         expected_results = json.load(dest)
 
     assert len(response) == len(expected_results)
@@ -43,7 +45,9 @@ def test_florence2sam2_video(shared_model, rle_decode_array):
 
     response = shared_model(prompt, video=test_video)
 
-    with open("tests/models/data/florence2sam2_video_results.json", "r") as dest:
+    with open(
+        "tests/models/data/results/florence2sam2_video_results.json", "r"
+    ) as dest:
         expected_results = json.load(dest)
 
     assert len(response) == len(expected_results)

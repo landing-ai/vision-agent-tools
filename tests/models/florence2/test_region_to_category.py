@@ -1,7 +1,8 @@
 import pytest
 from PIL import Image
 
-from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+from vision_agent_tools.shared_types import PromptTask, Florence2ModelName
 
 
 def test_region_to_category(shared_model):
@@ -18,14 +19,18 @@ def test_region_to_category(shared_model):
     assert response == [{"text": "doughnut<loc_0><loc_0><loc_998><loc_998>"}]
 
 
-def test_region_to_category_ft(small_model, unzip_model):
+def test_region_to_category_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.REGION_TO_CATEGORY
     model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
     image = Image.open(image_path)
 
-    small_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    small_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,

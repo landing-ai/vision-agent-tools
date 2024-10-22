@@ -1,6 +1,7 @@
 from PIL import Image
 
-from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+from vision_agent_tools.shared_types import PromptTask, Florence2ModelName
 
 
 def test_caption_cereal(shared_model):
@@ -35,7 +36,7 @@ def test_caption_car(shared_model):
     assert response == [{"text": "A green car parked in front of a yellow building."}]
 
 
-def test_caption_ft(small_model, unzip_model):
+def test_caption_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.CAPTION
     model_zip_path = "tests/models/florence2/data/models/caption_checkpoint.zip"
@@ -44,7 +45,11 @@ def test_caption_ft(small_model, unzip_model):
     prompt = ""
     image = Image.open(image_path)
 
-    small_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    small_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,

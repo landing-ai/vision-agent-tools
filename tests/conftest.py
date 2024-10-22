@@ -1,3 +1,5 @@
+import os
+import shutil
 import logging
 import tempfile
 from typing import Any
@@ -37,6 +39,7 @@ def rle_decode_array():
 
         binary_mask = flattened_mask.reshape(size, order="F")
         return binary_mask
+
     return handler
 
 
@@ -58,3 +61,19 @@ def bytes_to_np():
             return np.array(frames)
 
     return handler
+
+
+@pytest.fixture
+def unzip_model(tmp_path):
+    def handler(model_zip_path):
+        local_model_path = _unzip(model_zip_path, tmp_path, folder_name="model")
+        return os.path.join(local_model_path, "checkpoint")
+
+    return handler
+
+
+def _unzip(zip_file_path: str, tmp_path: str, folder_name) -> None:
+    local_file_path = os.path.join(tmp_path, folder_name)
+    os.makedirs(local_file_path, exist_ok=True)
+    shutil.unpack_archive(zip_file_path, local_file_path, "zip")
+    return local_file_path
