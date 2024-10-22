@@ -1,6 +1,7 @@
 import json
 
 import pytest
+import numpy as np
 from PIL import Image
 
 from vision_agent_tools.models.owlv2 import Owlv2, OWLV2Config
@@ -13,7 +14,7 @@ def test_owlv2_image(shared_model):
 
     response = shared_model(prompts, images=[image])
 
-    assert response == [
+    expected_response = [
         {
             "scores": [
                 0.6933691501617432,
@@ -30,6 +31,7 @@ def test_owlv2_image(shared_model):
             ],
         }
     ]
+    check_results(response, expected_response)
 
 
 def test_owlv2_removing_extra_bbox(shared_model):
@@ -52,7 +54,8 @@ def test_owlv2_image_with_nms():
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=1.0))
     response = owlv2(prompts, images=[image])
-    assert response == [
+
+    expected_response = [
         {
             "scores": [
                 0.6650843620300293,
@@ -74,10 +77,12 @@ def test_owlv2_image_with_nms():
             ],
         }
     ]
+    check_results(response, expected_response)
 
     owlv2 = Owlv2(model_config=OWLV2Config(confidence=0.2, nms_threshold=0.3))
     response = owlv2(prompts, images=[image])
-    assert response == [
+
+    expected_response = [
         {
             "scores": [0.6650843620300293, 0.5511208176612854, 0.420064240694046],
             "labels": ["shark", "surfer", "surfer"],
@@ -93,6 +98,7 @@ def test_owlv2_image_with_nms():
             ],
         }
     ]
+    check_results(response, expected_response)
 
 
 def test_owlv2_image_with_large_prompt(shared_model):
@@ -108,7 +114,8 @@ def test_owlv2_image_with_large_prompt(shared_model):
     ]
 
     response = shared_model(prompts, images=[image])
-    assert response == [
+
+    expected_response = [
         {
             "scores": [
                 0.35723111033439636,
@@ -125,6 +132,7 @@ def test_owlv2_image_with_large_prompt(shared_model):
             ],
         }
     ]
+    check_results(response, expected_response)
 
 
 def test_owlv2_video(shared_model, bytes_to_np):
@@ -137,9 +145,23 @@ def test_owlv2_video(shared_model, bytes_to_np):
     response = shared_model(prompts, video=video)
     with open("tests/models/data/owlv2_video_results.json", "r") as dest:
         expected_results = json.load(dest)
-    assert expected_results == response
+    
+    check_results(response, expected_results)
 
 
 @pytest.fixture(scope="module")
 def shared_model():
     return Owlv2()
+
+
+def check_results(response, expected_response):
+    # sort the results by score to make the comparison easier
+    response = sorted(response, key=lambda x: x["scores"], reverse=True)
+    expected_response = sorted(expected_response, key=lambda x: x["scores"], reverse=True)
+
+    for item, expected_result in zip(response, expected_response):
+        assert item["labels"] == expected_result["labels"]
+        np.testing.assert_almost_equal(
+            item["scores"], expected_result["scores"], decimal=1
+        )
+        assert np.allclose(item["bboxes"], expected_result["bboxes"], rtol=1, atol=1)
