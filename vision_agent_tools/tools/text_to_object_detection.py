@@ -74,7 +74,7 @@ class TextToObjectDetection(BaseTool):
             super().__init__(model=model_instance(self.model_config))
         elif model is TextToObjectDetectionModel.FLORENCE2:
             self.model_config = model_config or Florence2Config()
-            super().__init__(model=model_instance())
+            super().__init__(model=model_instance(self.model_config))
 
     def __call__(
         self,

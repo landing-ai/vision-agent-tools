@@ -69,9 +69,7 @@ def test_text_to_object_detection_florence2_ft(unzip_model):
         model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
         fine_tuned_model_path=model_path,
     )
-    tool = TextToObjectDetection(
-        model=TextToObjectDetectionModel.FLORENCE2, model_config=model_config
-    )
+    tool = TextToObjectDetection(TextToObjectDetectionModel.FLORENCE2, model_config)
     response = tool(prompts, images=[image])
 
     assert response == [
