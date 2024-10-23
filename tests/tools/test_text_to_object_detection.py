@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from PIL import Image
 
@@ -7,14 +6,17 @@ from vision_agent_tools.tools.text_to_object_detection import (
     TextToObjectDetectionModel,
 )
 from vision_agent_tools.models.owlv2 import OWLV2Config
+from vision_agent_tools.shared_types import Florence2ModelName
+from vision_agent_tools.models.florence2 import Florence2Config
 
 
-def test_text_to_object_detection_owlv2(shared_tool_owlv2):
+def test_text_to_object_detection_owlv2():
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
     prompts = ["dog", "cat", "remote control"]
 
-    response = shared_tool_owlv2(prompts, images=[image])
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
+    response = tool(prompts, images=[image])
 
     expected_response = [
         {
@@ -36,12 +38,13 @@ def test_text_to_object_detection_owlv2(shared_tool_owlv2):
     check_results(response, expected_response)
 
 
-def test_text_to_object_detection_florence2(shared_tool_florence2):
+def test_text_to_object_detection_florence2():
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
     prompts = ["dog", "cat", "remote control"]
 
-    response = shared_tool_florence2(prompts, images=[image])
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCE2)
+    response = tool(prompts, images=[image])
 
     assert response == [
         {
@@ -53,26 +56,45 @@ def test_text_to_object_detection_florence2(shared_tool_florence2):
     ]
 
 
+def test_text_to_object_detection_florence2_ft(unzip_model):
+    image_path = "tests/shared_data/images/cereal.jpg"
+    image = Image.open(image_path)
+    model_zip_path = (
+        "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"
+    )
+    model_path = unzip_model(model_zip_path)
+    prompts = ["screw"]
+
+    model_config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    tool = TextToObjectDetection(TextToObjectDetectionModel.FLORENCE2, model_config)
+    response = tool(prompts, images=[image])
+
+    assert response == [
+        {
+            "bboxes": [
+                [
+                    723.968017578125,
+                    1373.18408203125,
+                    902.14404296875,
+                    1577.984130859375,
+                ]
+            ],
+            "labels": ["screw"],
+        }
+    ]
+
+
 def test_text_to_object_detection_custom_confidence():
     image_path = "tests/shared_data/images/000000039769.jpg"
     image = Image.open(image_path)
     prompts = ["dog", "cat", "remote control"]
 
-    tool = TextToObjectDetection(
-        model=TextToObjectDetectionModel.OWLV2, model_config=OWLV2Config(confidence=0.7)
-    )
-    response = tool(prompts, images=[image])
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
+    response = tool(prompts, images=[image], confidence=0.7)
     assert response == [{"scores": [], "labels": [], "bboxes": []}]
-
-
-@pytest.fixture(scope="module")
-def shared_tool_owlv2():
-    return TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
-
-
-@pytest.fixture(scope="module")
-def shared_tool_florence2():
-    return TextToObjectDetection(model=TextToObjectDetectionModel.FLORENCE2)
 
 
 def check_results(

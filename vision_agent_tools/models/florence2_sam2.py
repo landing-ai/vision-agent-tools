@@ -8,30 +8,16 @@ from pydantic import BaseModel, Field, ConfigDict, model_validator
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
-    Device,
     PromptTask,
     ODResponse,
-    Florence2ModelName
 )
-from vision_agent_tools.models.utils import get_device
-from vision_agent_tools.models.florence2 import Florence2
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
+from vision_agent_tools.models.florence2 import Florence2, Florence2Config
 
 
 class Florence2SAM2Config(BaseModel):
-    hf_florence2_model: Florence2ModelName = Field(
-        default=Florence2ModelName.FLORENCE_2_LARGE,
-        description="Name of the Florence2 HuggingFace model",
-    )
-    hf_sam2_model: str = Field(
-        default="facebook/sam2-hiera-large",
-        description="Name of the Sam2 HuggingFace model",
-    )
-    device: Device = Field(
-        default=get_device(),
-        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. "
-        "Default is the first available GPU.",
-    )
+    sam2_config: Sam2Config | None = Sam2Config()
+    florence2_config: Florence2Config | None = Florence2Config()
 
 
 class Florence2Sam2Request(BaseModel):
@@ -73,7 +59,7 @@ class Florence2Sam2Request(BaseModel):
 
         if self.video is not None and self.images is not None:
             raise ValueError("Only one of them are required: video or images")
-    
+
         if self.video is not None:
             if self.video.ndim != 4:
                 raise ValueError("Video should have 4 dimensions")
@@ -94,14 +80,8 @@ class Florence2SAM2(BaseMLModel):
         and a SAM2 model.
         """
         self._model_config = model_config
-        self.florence2 = Florence2(
-            self._model_config.hf_florence2_model, device=self._model_config.device
-        )
-
-        sam2_config = Sam2Config(
-            hf_model=self._model_config.hf_sam2_model, device=self._model_config.device
-        )
-        self.sam2 = Sam2(sam2_config)
+        self.florence2 = Florence2(self._model_config.florence2_config)
+        self.sam2 = Sam2(self._model_config.sam2_config)
 
     @torch.inference_mode()
     def __call__(
@@ -112,7 +92,7 @@ class Florence2SAM2(BaseMLModel):
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
-        nms_threshold: float = 1.0,
+        nms_threshold: float = 0.3,
     ) -> list[list[dict[str, Any]]]:
         """
         Florence2Sam2 model find objects in images and track objects in a video.
@@ -159,13 +139,16 @@ class Florence2SAM2(BaseMLModel):
             "images": images,
             "video": video,
             "batch_size": 5,
-            "nms_threshold": nms_threshold
+            "nms_threshold": nms_threshold,
         }
         if video is not None:
             florence2_payload["chunk_length_frames"] = chunk_length_frames
 
         florence2_response = self.florence2(**florence2_payload)
-        od_response = [ODResponse(**item) if item is not None else None for item in florence2_response]
+        od_response = [
+            ODResponse(**item) if item is not None else None
+            for item in florence2_response
+        ]
 
         if images is not None:
             return self.sam2(

@@ -1,9 +1,10 @@
 from PIL import Image
 
-from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+from vision_agent_tools.shared_types import PromptTask, Florence2ModelName
 
 
-def test_large_model_od_image(large_model):
+def test_large_model_od_image(shared_large_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     task = PromptTask.OBJECT_DETECTION
     # cannot have prompt
@@ -11,7 +12,7 @@ def test_large_model_od_image(large_model):
     image = Image.open(image_path)
 
     request = {"images": [image], "task": task, "prompt": prompt}
-    response = large_model(**request)
+    response = shared_large_model(**request)
     assert response == [
         {
             "bboxes": [],
@@ -37,7 +38,7 @@ def test_small_model_od_image(shared_model):
     ]
 
 
-def test_od_ft(small_model, unzip_model):
+def test_od_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
@@ -46,7 +47,11 @@ def test_od_ft(small_model, unzip_model):
     prompt = ""
     image = Image.open(image_path)
 
-    small_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    small_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,
@@ -63,7 +68,7 @@ def test_od_ft(small_model, unzip_model):
     ]
 
 
-def test_large_model_base_with_small_model_od_ft(large_model, unzip_model):
+def test_large_model_base_with_small_model_od_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
@@ -72,7 +77,11 @@ def test_large_model_base_with_small_model_od_ft(large_model, unzip_model):
     prompt = ""
     image = Image.open(image_path)
 
-    large_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_LARGE,
+        fine_tuned_model_path=model_path,
+    )
+    large_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,
@@ -89,7 +98,7 @@ def test_large_model_base_with_small_model_od_ft(large_model, unzip_model):
     ]
 
 
-def test_od_ft_and_base(small_model, unzip_model):
+def test_od_ft_and_base(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
@@ -98,7 +107,11 @@ def test_od_ft_and_base(small_model, unzip_model):
     prompt = ""
     image = Image.open(image_path)
 
-    small_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    small_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,

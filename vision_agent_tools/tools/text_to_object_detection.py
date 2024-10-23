@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from typing import Any
 
@@ -13,6 +14,9 @@ from vision_agent_tools.shared_types import (
     VideoNumpy,
 )
 from vision_agent_tools.models.owlv2 import OWLV2Config
+from vision_agent_tools.models.florence2 import Florence2Config
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TextToObjectDetectionRequest(BaseModel):
@@ -24,10 +28,16 @@ class TextToObjectDetectionRequest(BaseModel):
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
     nms_threshold: float = Field(
-        1.0,
+        0.3,
         ge=0.1,
         le=1.0,
         description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
+    )
+    confidence: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Confidence threshold for model predictions",
     )
 
     @model_validator(mode="after")
@@ -63,7 +73,8 @@ class TextToObjectDetection(BaseTool):
             self.model_config = model_config or OWLV2Config()
             super().__init__(model=model_instance(self.model_config))
         elif model is TextToObjectDetectionModel.FLORENCE2:
-            super().__init__(model=model_instance())
+            self.model_config = model_config or Florence2Config()
+            super().__init__(model=model_instance(self.model_config))
 
     def __call__(
         self,
@@ -71,7 +82,8 @@ class TextToObjectDetection(BaseTool):
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         *,
-        nms_threshold: float = 1.0,
+        nms_threshold: float = 0.3,
+        confidence: float | None = None,
     ) -> list[dict[str, Any]]:
         """Run object detection on the image based on text prompts.
 
@@ -84,19 +96,39 @@ class TextToObjectDetection(BaseTool):
                 A numpy array containing the different images, representing the video.
             nms_threshold:
                 The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
+            confidence:
+                Confidence threshold for model predictions.
 
         Returns:
             list[dict[str, Any]]:
                 A list of detection results for the prompts.
         """
         TextToObjectDetectionRequest(
-            prompts=prompts, images=images, video=video, nms_threshold=nms_threshold
+            prompts=prompts,
+            images=images,
+            video=video,
+            nms_threshold=nms_threshold,
+            confidence=confidence,
         )
 
         if self.model_name is TextToObjectDetectionModel.OWLV2:
-            return self.model(prompts, images=images, video=video)
+            payload = {
+                "prompts": prompts,
+                "images": images,
+                "video": video,
+                "nms_threshold": nms_threshold,
+            }
+            if confidence is not None:
+                payload["confidence"] = confidence
+
+            return self.model(**payload)
 
         if self.model_name is TextToObjectDetectionModel.FLORENCE2:
+            if confidence is not None:
+                _LOGGER.warning(
+                    "Confidence threshold is not supported for Florence2 model."
+                )
+
             task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
             prompt = ", ".join(prompts)
             return self.model(

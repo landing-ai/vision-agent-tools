@@ -1,7 +1,8 @@
 import json
 from PIL import Image
 
-from vision_agent_tools.shared_types import PromptTask
+from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+from vision_agent_tools.shared_types import PromptTask, Florence2ModelName
 
 
 def test_caption_to_phrase_grounding_cereal(shared_model):
@@ -92,17 +93,21 @@ def test_caption_to_phrase_grounding_video(shared_model, bytes_to_np):
     assert response == expected_response
 
 
-def test_caption_to_phrase_grounding_ft(small_model, unzip_model):
+def test_caption_to_phrase_grounding_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = (
-        "tests/models/florence2/data/models/caption_to_phrase_grounding_checkpoint.zip"
+        "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"
     )
     model_path = unzip_model(model_zip_path)
     task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
     prompt = "screw"
     image = Image.open(image_path)
 
-    small_model.fine_tune(model_path)
+    config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    small_model = Florence2(config)
     payload = {
         "images": [image],
         "task": task,

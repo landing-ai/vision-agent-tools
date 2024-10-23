@@ -21,6 +21,7 @@ from vision_agent_tools.shared_types import (
     Florence2OpenVocabularyResponse,
     Florence2SegmentationResponse,
 )
+from vision_agent_tools.models.utils import get_device
 from vision_agent_tools.helpers.filters import filter_bbox_predictions
 
 _MODEL_REVISION_PER_MODEL_NAME = {
@@ -28,6 +29,24 @@ _MODEL_REVISION_PER_MODEL_NAME = {
     Florence2ModelName.FLORENCE_2_LARGE: "refs/pr/65",
 }
 _LOGGER = logging.getLogger(__name__)
+
+
+class Florence2Config(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
+    model_name: Florence2ModelName = Field(
+        default=Florence2ModelName.FLORENCE_2_LARGE,
+        description="Name of the model",
+    )
+    device: Device = Field(
+        default=get_device(),
+        description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. "
+        "Default is the first available GPU.",
+    )
+    fine_tuned_model_path: str | None = Field(
+        default=None,
+        description="Path to the fine-tuned model checkpoint. If provided, the model will be fine-tuned.",
+    )
 
 
 class Florence2Request(BaseModel):
@@ -45,7 +64,7 @@ class Florence2Request(BaseModel):
         description="The batch size used for processing multiple images or video frames.",
     )
     nms_threshold: float = Field(
-        1.0,
+        0.3,
         ge=0.1,
         le=1.0,
         description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
@@ -71,15 +90,9 @@ class Florence2(BaseMLModel):
     This model can interpret simple text prompts to perform tasks like captioning, object detection, and segmentation.
     """
 
-    def __init__(
-        self,
-        model_name: Florence2ModelName = Florence2ModelName.FLORENCE_2_LARGE,
-        *,
-        device: Device | None = Device.GPU,
-    ):
+    def __init__(self, model_config: Florence2Config | None = Florence2Config()):
         """Initializes the Florence2 model."""
-        self._base_model_name = model_name
-        self._device = device
+        self._model_config = model_config
         self._fine_tuned = False
         self._fine_tune_supported_tasks = [
             PromptTask.CAPTION_TO_PHRASE_GROUNDING,
@@ -87,14 +100,19 @@ class Florence2(BaseMLModel):
             PromptTask.CAPTION,
             PromptTask.OCR_WITH_REGION,
         ]
-        self.load_base()
+        if self._model_config.fine_tuned_model_path is not None:
+            self.fine_tune(self._model_config.fine_tuned_model_path)
+        else:
+            self.load_base()
 
     def load_base(self) -> None:
         """Load the base Florence-2 model."""
         self.load(
-            self._base_model_name.value,
-            self._base_model_name.value,
-            revision=_MODEL_REVISION_PER_MODEL_NAME[self._base_model_name.value],
+            self._model_config.model_name.value,
+            self._model_config.model_name.value,
+            revision=_MODEL_REVISION_PER_MODEL_NAME[
+                self._model_config.model_name.value
+            ],
         )
         self._fine_tuned = False
 
@@ -113,7 +131,7 @@ class Florence2(BaseMLModel):
         video: VideoNumpy | None = None,
         *,
         batch_size: int = 5,
-        nms_threshold: float = 1.0,
+        nms_threshold: float = 0.3,
         chunk_length_frames: int | None = None,
     ) -> Florence2ResponseType:
         """
@@ -255,7 +273,7 @@ class Florence2(BaseMLModel):
         parsed_answers = []
         inputs = self._processor(
             text=text_input_chunk, images=images_chunk, return_tensors="pt"
-        ).to(self._device.value)
+        ).to(self._model_config.device.value)
 
         generated_ids = self._model.generate(
             input_ids=inputs["input_ids"],
@@ -296,7 +314,10 @@ class Florence2(BaseMLModel):
                     else "labels"
                 )
                 parsed_answer[task] = filter_bbox_predictions(
-                    parsed_answer[task], image_size, nms_threshold=nms_threshold, label_key=label_key
+                    parsed_answer[task],
+                    image_size,
+                    nms_threshold=nms_threshold,
+                    label_key=label_key,
                 )
 
             parsed_answers.append(parsed_answer)
@@ -312,7 +333,7 @@ class Florence2(BaseMLModel):
         self._processor = AutoProcessor.from_pretrained(
             processor_name, trust_remote_code=True, revision=revision
         )
-        self._model.to(self._device.value)
+        self._model.to(self._model_config.device.value)
         self._model.eval()
         _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
 

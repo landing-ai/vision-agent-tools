@@ -31,39 +31,37 @@ class OWLV2Config(BaseModel):
         default="google/owlv2-large-patch14-ensemble",
         description="Name of the model",
     )
-    processor_name: str = Field(
-        default="google/owlv2-large-patch14-ensemble",
-        description="Name of the processor",
-    )
-    confidence: float = Field(
-        default=0.1,
-        ge=0.0,
-        le=1.0,
-        description="Confidence threshold for model predictions",
-    )
     device: Device = Field(
         default=get_device(),
         description="Device to run the model on. Options are 'cpu', 'gpu', and 'mps'. "
         "Default is the first available GPU.",
-    )
-    nms_threshold: float = Field(
-        default=0.3,
-        ge=0.0,
-        le=1.0,
-        description="IoU threshold for non-maximum suppression of overlapping boxes",
     )
 
 
 class Owlv2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    prompts: list[str] = Field(description="The prompt to be used for object detection.")
+    prompts: list[str] = Field(
+        description="The prompt to be used for object detection."
+    )
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
     batch_size: int = Field(
         2,
         ge=1,
         description="The batch size used for processing multiple images or video frames.",
+    )
+    nms_threshold: float = Field(
+        0.3,
+        ge=0.1,
+        le=1.0,
+        description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
+    )
+    confidence: float = Field(
+        default=0.1,
+        ge=0.0,
+        le=1.0,
+        description="Confidence threshold for model predictions",
     )
 
     @model_validator(mode="after")
@@ -95,7 +93,7 @@ class Owlv2(BaseMLModel):
             self.model_config.model_name
         )
         self._processor = Owlv2ProcessorWithNMS.from_pretrained(
-            self.model_config.processor_name
+            self.model_config.model_name
         )
         self._model.to(self.model_config.device)
         self._model.eval()
@@ -108,6 +106,8 @@ class Owlv2(BaseMLModel):
         video: VideoNumpy[np.uint8] | None = None,
         *,
         batch_size: int = 2,
+        nms_threshold: float = 0.3,
+        confidence: float = 0.1,
     ) -> list[ODWithScoreResponse]:
         """Performs object detection on images using the Owlv2 model.
 
@@ -120,6 +120,10 @@ class Owlv2(BaseMLModel):
                 A numpy array containing the different images, representing the video.
             batch_size:
                 The batch size used for processing multiple images or video frames.
+            nms_threshold:
+                The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
+            confidence:
+                Confidence threshold for model predictions.
 
         Returns:
             list[ODWithScoreResponse]:
@@ -129,7 +133,14 @@ class Owlv2(BaseMLModel):
                 no objects are detected above the confidence threshold for an specific
                 image / frame.
         """
-        Owlv2Request(prompts=prompts, images=images, video=video, batch_size=batch_size)
+        Owlv2Request(
+            prompts=prompts,
+            images=images,
+            video=video,
+            batch_size=batch_size,
+            nms_threshold=nms_threshold,
+            confidence=confidence,
+        )
 
         if images is not None:
             images = [image.convert("RGB") for image in images]
@@ -141,8 +152,8 @@ class Owlv2(BaseMLModel):
             prompts,
             images,
             batch_size=batch_size,
-            confidence=self.model_config.confidence,
-            nms_threshold=self.model_config.nms_threshold,
+            confidence=confidence,
+            nms_threshold=nms_threshold,
         )
 
     def to(self, device: Device) -> None:

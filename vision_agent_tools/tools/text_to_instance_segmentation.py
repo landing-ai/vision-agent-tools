@@ -83,7 +83,7 @@ class TextToInstanceSegmentationTool(BaseTool):
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
-        nms_threshold: float = 1.0,
+        nms_threshold: float = 0.3,
     ) -> list[dict[str, Any]]:
         """TextToInstanceSegmentationTool model find segments in images and track objects in a video.
 
