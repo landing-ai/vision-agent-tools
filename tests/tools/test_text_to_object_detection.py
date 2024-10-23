@@ -92,10 +92,8 @@ def test_text_to_object_detection_custom_confidence():
     image = Image.open(image_path)
     prompts = ["dog", "cat", "remote control"]
 
-    tool = TextToObjectDetection(
-        model=TextToObjectDetectionModel.OWLV2, model_config=OWLV2Config(confidence=0.7)
-    )
-    response = tool(prompts, images=[image])
+    tool = TextToObjectDetection(model=TextToObjectDetectionModel.OWLV2)
+    response = tool(prompts, images=[image], confidence=0.7)
     assert response == [{"scores": [], "labels": [], "bboxes": []}]
 
 
