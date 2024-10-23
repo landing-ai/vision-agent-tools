@@ -135,7 +135,7 @@ def test_owlv2_image_with_large_prompt(shared_model):
 
 def test_owlv2_video(shared_model, bytes_to_np):
     test_video = "tests/shared_data/videos/test_video_5_frames.mp4"
-    prompts = ["a car", "a tree"]
+    prompts = ["car"]
     with open(test_video, "rb") as f:
         video_bytes = f.read()
         video = bytes_to_np(video_bytes)

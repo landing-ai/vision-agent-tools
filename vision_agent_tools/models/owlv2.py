@@ -38,6 +38,10 @@ class OWLV2Config(BaseModel):
     )
 
 
+# TODO: fix batch_size bigger than 1, for some cases it's not working
+# it raises the error "RuntimeError: shape '[2, 0, 768]' is invalid for input of size 768"
+# location: `query_embeds = query_embeds.reshape(batch_size, max_text_queries, query_embeds.shape[-1])`
+# transformers/models/owlv2/modeling_owlv2.py, line 1697, in forward
 class Owlv2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -47,7 +51,7 @@ class Owlv2Request(BaseModel):
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
     batch_size: int = Field(
-        2,
+        1,
         ge=1,
         description="The batch size used for processing multiple images or video frames.",
     )
@@ -105,7 +109,7 @@ class Owlv2(BaseMLModel):
         images: list[Image.Image] | None = None,
         video: VideoNumpy[np.uint8] | None = None,
         *,
-        batch_size: int = 2,
+        batch_size: int = 1,
         nms_threshold: float = 0.3,
         confidence: float = 0.1,
     ) -> list[ODWithScoreResponse]:
