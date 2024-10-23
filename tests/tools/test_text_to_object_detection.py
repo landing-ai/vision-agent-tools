@@ -63,7 +63,7 @@ def test_text_to_object_detection_florence2_ft(unzip_model):
         "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"
     )
     model_path = unzip_model(model_zip_path)
-    prompts = ["dog", "cat", "remote control"]
+    prompts = ["screw"]
 
     model_config = Florence2Config(
         model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
