@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -805,7 +805,7 @@ This model can interpret simple text prompts to perform tasks like captioning, o
 
 
 <h3 id="vision_agent_tools.models.florence2.Florence2.__call__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">chunk_length_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">images</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">video</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">nms_threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">chunk_length_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#vision_agent_tools.models.florence2.Florence2.__call__" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -908,7 +908,7 @@ images or video, and prompt.</p>
               </div>
             </td>
             <td>
-                  <code>1.0</code>
+                  <code>0.3</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -960,7 +960,7 @@ The last chunk may have fewer frames.</p>
 
 
 <h3 id="vision_agent_tools.models.florence2.Florence2.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">Florence2ModelName</span><span class="o">.</span><span class="n">FLORENCE_2_LARGE</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">Device</span><span class="o">.</span><span class="n">GPU</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">Florence2Config</span><span class="p">())</span></code>
 
 <a href="#vision_agent_tools.models.florence2.Florence2.__init__" class="headerlink" title="Permanent link">#</a></h3>
 
