@@ -112,13 +112,16 @@ class TextToObjectDetection(BaseTool):
         )
 
         if self.model_name is TextToObjectDetectionModel.OWLV2:
-            return self.model(
-                prompts,
-                images=images,
-                video=video,
-                nms_threshold=nms_threshold,
-                confidence=confidence,
-            )
+            payload = {
+                "prompts": prompts,
+                "images": images,
+                "video": video,
+                "nms_threshold": nms_threshold,
+            }
+            if confidence is not None:
+                payload["confidence"] = confidence
+
+            return self.model(**payload)
 
         if self.model_name is TextToObjectDetectionModel.FLORENCE2:
             if confidence is not None:
