@@ -4,7 +4,9 @@ import pytest
 import numpy as np
 from PIL import Image
 
-from vision_agent_tools.models.florence2_sam2 import Florence2SAM2
+from vision_agent_tools.shared_types import Florence2ModelName
+from vision_agent_tools.models.florence2 import Florence2Config
+from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
 
 
 def test_florence2sam2_image(shared_model, rle_decode_array):
@@ -32,6 +34,44 @@ def test_florence2sam2_image(shared_model, rle_decode_array):
                 == test_image.size[::-1]
             )
             assert result_annotation["label"] == expected_result_annotation["label"]
+
+
+def test_florence2sam2_image_ft(unzip_model, rle_decode_array):
+    image_path = "tests/shared_data/images/cereal.jpg"
+    model_zip_path = (
+        "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"
+    )
+    model_path = unzip_model(model_zip_path)
+    prompt = "screw"
+    image = Image.open(image_path)
+
+    florence2_config = Florence2Config(
+        model_name=Florence2ModelName.FLORENCE_2_BASE_FT,
+        fine_tuned_model_path=model_path,
+    )
+    config = Florence2SAM2Config(florence2_config=florence2_config)
+    model = Florence2SAM2(config)
+    response = model(prompt, images=[image])
+
+    with open(
+        "tests/models/data/results/florence2sam2_image_ft_results.json", "w"
+    ) as dest:
+        # expected_results = json.load(dest)
+        json.dump(response, dest, indent=4)
+
+    # assert len(response) == len(expected_results)
+    # for result_frame, expected_result_frame in zip(response, expected_results):
+    #     assert len(result_frame) == len(expected_result_frame)
+    #     for result_annotation, expected_result_annotation in zip(
+    #         result_frame, expected_result_frame
+    #     ):
+    #         assert result_annotation["id"] == expected_result_annotation["id"]
+    #         assert result_annotation["bbox"] == expected_result_annotation["bbox"]
+    #         assert (
+    #             rle_decode_array(result_annotation["mask"]).shape
+    #             == test_image.size[::-1]
+    #         )
+    #         assert result_annotation["label"] == expected_result_annotation["label"]
 
 
 def test_florence2sam2_video(shared_model, rle_decode_array):

@@ -101,26 +101,9 @@ class Florence2(BaseMLModel):
             PromptTask.OCR_WITH_REGION,
         ]
         if self._model_config.fine_tuned_model_path is not None:
-            self.fine_tune(self._model_config.fine_tuned_model_path)
+            self._fine_tune(self._model_config.fine_tuned_model_path)
         else:
             self.load_base()
-
-    def load_base(self) -> None:
-        """Load the base Florence-2 model."""
-        self.load(
-            self._model_config.model_name.value,
-            self._model_config.model_name.value,
-            revision=_MODEL_REVISION_PER_MODEL_NAME[
-                self._model_config.model_name.value
-            ],
-        )
-        self._fine_tuned = False
-
-    def fine_tune(self, checkpoint: str) -> None:
-        """Load the fine-tuned Florence-2 model."""
-        _LOGGER.info("Fine-tuning the Florence-2 model.")
-        self.load(checkpoint, checkpoint)
-        self._fine_tuned = True
 
     @torch.inference_mode()
     def __call__(
@@ -209,6 +192,40 @@ class Florence2(BaseMLModel):
             task, text_input, images, batch_size, nms_threshold
         )
         return _serialize(task, result)
+
+    def load_base(self) -> None:
+        """Load the base Florence-2 model."""
+        self._load(
+            self._model_config.model_name.value,
+            self._model_config.model_name.value,
+            revision=_MODEL_REVISION_PER_MODEL_NAME[
+                self._model_config.model_name.value
+            ],
+        )
+        self._fine_tuned = False
+
+    def fine_tune(self, checkpoint: str) -> None:
+        """Load the fine-tuned Florence-2 model."""
+        _LOGGER.info("Fine-tuning the Florence-2 model.")
+        self._load(checkpoint, checkpoint)
+        self._fine_tuned = True
+
+    def to(self, device: Device) -> None:
+        raise NotImplementedError("This method is not supported for Florence2 model.")
+
+    def _load(
+        self, model_name: str, processor_name: str, revision: str | None = None
+    ) -> None:
+        _LOGGER.info(f"Loading: {model_name=}, {processor_name=}, {revision=}")
+        self._model = AutoModelForCausalLM.from_pretrained(
+            model_name, trust_remote_code=True, revision=revision
+        )
+        self._processor = AutoProcessor.from_pretrained(
+            processor_name, trust_remote_code=True, revision=revision
+        )
+        self._model.to(self._model_config.device.value)
+        self._model.eval()
+        _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
 
     def _predict_all(
         self,
@@ -322,23 +339,6 @@ class Florence2(BaseMLModel):
 
             parsed_answers.append(parsed_answer)
         return parsed_answers
-
-    def load(
-        self, model_name: str, processor_name: str, revision: str | None = None
-    ) -> None:
-        _LOGGER.info(f"Loading: {model_name=}, {processor_name=}, {revision=}")
-        self._model = AutoModelForCausalLM.from_pretrained(
-            model_name, trust_remote_code=True, revision=revision
-        )
-        self._processor = AutoProcessor.from_pretrained(
-            processor_name, trust_remote_code=True, revision=revision
-        )
-        self._model.to(self._model_config.device.value)
-        self._model.eval()
-        _LOGGER.info(f"Model loaded: {model_name=}, {processor_name=}, {revision=}")
-
-    def to(self, device: Device) -> None:
-        raise NotImplementedError("This method is not supported for Florence2 model.")
 
 
 def _serialize(
