@@ -93,7 +93,7 @@ def test_caption_to_phrase_grounding_video(shared_model, bytes_to_np):
     assert response == expected_response
 
 
-def test_caption_to_phrase_grounding_ft(unzip_model):
+def test_caption_to_phrase_grounding_image_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = (
         "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"

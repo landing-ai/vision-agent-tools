@@ -70,6 +70,7 @@ class TextToInstanceSegmentationTool(BaseTool):
         model: TextToInstanceSegmentationModel = TextToInstanceSegmentationModel.FLORENCE2SAM2,
         model_config: Florence2SAM2Config | None = Florence2SAM2Config(),
     ):
+        self._model_name = model
         model_class = get_model_class(model_name=model.value)
         model_instance = model_class()
         super().__init__(model=model_instance(model_config))
@@ -131,3 +132,21 @@ class TextToInstanceSegmentationTool(BaseTool):
             iou_threshold=iou_threshold,
             nms_threshold=nms_threshold,
         )
+
+    def load_base(self) -> None:
+        """Load the base model."""
+        if self._model_name != TextToInstanceSegmentationModel.FLORENCE2SAM2:
+            raise NotImplementedError(
+                f"Loading base model is not supported for {self._model_name}"
+            )
+
+        self.model.load_base()
+
+    def fine_tune(self, checkpoint: str) -> None:
+        """Load the fine-tuned model."""
+        if self._model_name != TextToInstanceSegmentationModel.FLORENCE2SAM2:
+            raise NotImplementedError(
+                f"Loading fine-tuned model is not supported for {self._model_name}"
+            )
+
+        self.model.fine_tune(checkpoint)

@@ -101,7 +101,7 @@ class Florence2(BaseMLModel):
             PromptTask.OCR_WITH_REGION,
         ]
         if self._model_config.fine_tuned_model_path is not None:
-            self._fine_tune(self._model_config.fine_tuned_model_path)
+            self.fine_tune(self._model_config.fine_tuned_model_path)
         else:
             self.load_base()
 
@@ -195,6 +195,7 @@ class Florence2(BaseMLModel):
 
     def load_base(self) -> None:
         """Load the base Florence-2 model."""
+        _LOGGER.info("Loading base model for Florence-2 model.")
         self._load(
             self._model_config.model_name.value,
             self._model_config.model_name.value,

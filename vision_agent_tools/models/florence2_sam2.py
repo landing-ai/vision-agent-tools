@@ -167,10 +167,10 @@ class Florence2SAM2(BaseMLModel):
                 iou_threshold=iou_threshold,
             )
 
-    def load_base_florence2(self) -> None:
+    def load_base(self) -> None:
         """Load the base Florence-2 model."""
         self._florence2.load_base()
 
-    def fine_tune_florence2(self, checkpoint: str) -> None:
+    def fine_tune(self, checkpoint: str) -> None:
         """Load the fine-tuned Florence-2 model."""
         self._florence2.fine_tune(checkpoint)
