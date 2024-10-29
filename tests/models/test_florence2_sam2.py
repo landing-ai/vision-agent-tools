@@ -151,15 +151,30 @@ def shared_model():
 
 @pytest.fixture
 def assert_predictions(rle_decode_array):
-    def handler(response, expected_results, image_size):
+    def handler(
+        response,
+        expected_results,
+        image_size,
+        amount_of_matches: int = None,
+        flex: int = 1,
+    ):
         assert len(response) == len(expected_results)
         for result_frame, expected_result_frame in zip(response, expected_results):
             assert len(result_frame) == len(expected_result_frame)
+            if amount_of_matches is None:
+                amount_of_matches = len(expected_result_frame) - flex
             for result_annotation, expected_result_annotation in zip(
                 result_frame, expected_result_frame
             ):
+                assert result_annotation.keys() == expected_result_annotation.keys()
                 assert result_annotation["id"] == expected_result_annotation["id"]
                 assert result_annotation["bbox"] == expected_result_annotation["bbox"]
+                assert np.allclose(
+                    result_annotation["bbox"],
+                    expected_result_annotation["bbox"],
+                    rtol=1,
+                    atol=1,
+                )
                 assert rle_decode_array(result_annotation["mask"]).shape == image_size
                 assert result_annotation["label"] == expected_result_annotation["label"]
 
