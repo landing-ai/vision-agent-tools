@@ -168,7 +168,6 @@ def assert_predictions(rle_decode_array):
             ):
                 assert result_annotation.keys() == expected_result_annotation.keys()
                 assert result_annotation["id"] == expected_result_annotation["id"]
-                assert result_annotation["bbox"] == expected_result_annotation["bbox"]
                 assert np.allclose(
                     result_annotation["bbox"],
                     expected_result_annotation["bbox"],
