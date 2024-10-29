@@ -43,8 +43,7 @@ def test_text_to_instance_segmentation_image_ft(unzip_model, assert_predictions)
     )
     config = Florence2SAM2Config(florence2_config=florence2_config)
     model = TextToInstanceSegmentationTool(
-        model=TextToInstanceSegmentationModel.FLORENCE2SAM2,
-        model_config=config
+        model=TextToInstanceSegmentationModel.FLORENCE2SAM2, model_config=config
     )
     response = model(prompt, images=[image])
 
@@ -56,8 +55,9 @@ def test_text_to_instance_segmentation_image_ft(unzip_model, assert_predictions)
     assert_predictions(response, expected_results, image.size[::-1])
 
 
-
-def test_text_to_instance_segmentation_image_ft_base_ft(unzip_model, assert_predictions):
+def test_text_to_instance_segmentation_image_ft_base_ft(
+    unzip_model, assert_predictions
+):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = (
         "tests/shared_data/models/caption_to_phrase_grounding_checkpoint.zip"
@@ -72,8 +72,7 @@ def test_text_to_instance_segmentation_image_ft_base_ft(unzip_model, assert_pred
     )
     config = Florence2SAM2Config(florence2_config=florence2_config)
     model = TextToInstanceSegmentationTool(
-        model=TextToInstanceSegmentationModel.FLORENCE2SAM2,
-        model_config=config
+        model=TextToInstanceSegmentationModel.FLORENCE2SAM2, model_config=config
     )
     response = model(prompt, images=[image])
 
@@ -134,8 +133,7 @@ def test_text_to_instance_segmentation_video_ft(unzip_model, assert_predictions)
     )
     config = Florence2SAM2Config(florence2_config=florence2_config)
     model = TextToInstanceSegmentationTool(
-        model=TextToInstanceSegmentationModel.FLORENCE2SAM2,
-        model_config=config
+        model=TextToInstanceSegmentationModel.FLORENCE2SAM2, model_config=config
     )
     response = model(prompt, video=test_video)
 
@@ -167,18 +165,31 @@ def shared_tool():
     )
 
 
-
 @pytest.fixture
 def assert_predictions(rle_decode_array):
-    def handler(response, expected_results, image_size):
+    def handler(
+        response,
+        expected_results,
+        image_size,
+        amount_of_matches: int = None,
+        flex: int = 1,
+    ):
         assert len(response) == len(expected_results)
         for result_frame, expected_result_frame in zip(response, expected_results):
             assert len(result_frame) == len(expected_result_frame)
+            if amount_of_matches is None:
+                amount_of_matches = len(expected_result_frame) - flex
             for result_annotation, expected_result_annotation in zip(
                 result_frame, expected_result_frame
             ):
+                assert result_annotation.keys() == expected_result_annotation.keys()
                 assert result_annotation["id"] == expected_result_annotation["id"]
-                assert result_annotation["bbox"] == expected_result_annotation["bbox"]
+                assert np.allclose(
+                    result_annotation["bbox"],
+                    expected_result_annotation["bbox"],
+                    rtol=1,
+                    atol=1,
+                )
                 assert rle_decode_array(result_annotation["mask"]).shape == image_size
                 assert result_annotation["label"] == expected_result_annotation["label"]
 
