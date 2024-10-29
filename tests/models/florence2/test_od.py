@@ -98,7 +98,7 @@ def test_large_model_base_with_small_model_od_ft(unzip_model):
     ]
 
 
-def test_od_ft_and_base(unzip_model):
+def test_od_ft_and_base_and_ft(unzip_model):
     image_path = "tests/shared_data/images/cereal.jpg"
     model_zip_path = "tests/models/florence2/data/models/od_checkpoint.zip"
     model_path = unzip_model(model_zip_path)
@@ -139,5 +139,22 @@ def test_od_ft_and_base(unzip_model):
         {
             "bboxes": [],
             "labels": [],
+        }
+    ]
+
+    # running prediction again with fine_tuning
+    small_model.fine_tune(model_path)
+    payload = {
+        "images": [image],
+        "task": task,
+        "prompt": prompt,
+    }
+    response = small_model(**payload)
+    assert response == [
+        {
+            "bboxes": [
+                [738.3040161132812, 1373.18408203125, 881.6640625, 1557.5040283203125]
+            ],
+            "labels": ["screw"],
         }
     ]

@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 import torch
@@ -13,6 +14,8 @@ from vision_agent_tools.shared_types import (
 )
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Florence2SAM2Config(BaseModel):
@@ -80,8 +83,8 @@ class Florence2SAM2(BaseMLModel):
         and a SAM2 model.
         """
         self._model_config = model_config
-        self.florence2 = Florence2(self._model_config.florence2_config)
-        self.sam2 = Sam2(self._model_config.sam2_config)
+        self._florence2 = Florence2(self._model_config.florence2_config)
+        self._sam2 = Sam2(self._model_config.sam2_config)
 
     @torch.inference_mode()
     def __call__(
@@ -144,22 +147,30 @@ class Florence2SAM2(BaseMLModel):
         if video is not None:
             florence2_payload["chunk_length_frames"] = chunk_length_frames
 
-        florence2_response = self.florence2(**florence2_payload)
+        florence2_response = self._florence2(**florence2_payload)
         od_response = [
             ODResponse(**item) if item is not None else None
             for item in florence2_response
         ]
 
         if images is not None:
-            return self.sam2(
+            return self._sam2(
                 images=images,
                 bboxes=od_response,
             )
 
         if video is not None:
-            return self.sam2(
+            return self._sam2(
                 video=video,
                 bboxes=od_response,
                 chunk_length_frames=chunk_length_frames,
                 iou_threshold=iou_threshold,
             )
+
+    def load_base(self) -> None:
+        """Load the base Florence-2 model."""
+        self._florence2.load_base()
+
+    def fine_tune(self, checkpoint: str) -> None:
+        """Load the fine-tuned Florence-2 model."""
+        self._florence2.fine_tune(checkpoint)

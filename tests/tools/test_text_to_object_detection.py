@@ -5,7 +5,6 @@ from vision_agent_tools.tools.text_to_object_detection import (
     TextToObjectDetection,
     TextToObjectDetectionModel,
 )
-from vision_agent_tools.models.owlv2 import OWLV2Config
 from vision_agent_tools.shared_types import Florence2ModelName
 from vision_agent_tools.models.florence2 import Florence2Config
 

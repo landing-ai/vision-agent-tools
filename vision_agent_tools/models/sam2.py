@@ -346,6 +346,7 @@ class Sam2(BaseMLModel):
                         pred_mask = (out_mask_logits[i][0] > 0.0).cpu().numpy()
                         if np.max(pred_mask) == 0:
                             continue
+
                         bbox = _mask_to_bbox(pred_mask)
                         video_segments[out_frame_idx].append(
                             ObjBboxAndMaskLabel(
@@ -484,6 +485,10 @@ class Sam2(BaseMLModel):
             }
             for idx in range(len(bboxes_per_frame.labels))
         ]
+
+        # there was no bbox
+        if len(preds) == 0:
+            return annotations
 
         sam2_image_pred = self._predict_image_model(
             image,
