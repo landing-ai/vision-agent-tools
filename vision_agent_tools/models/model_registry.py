@@ -73,6 +73,7 @@ MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
         model_name="qwen2_vl",
         class_name="Qwen2VL",
     ),
+    "siglip": ModelRegistryEntry(model_name="siglip", class_name="Siglip"),
 }
 
 
