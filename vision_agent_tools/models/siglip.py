@@ -66,7 +66,7 @@ class Siglip(BaseMLModel):
                 - zero-shot image classification - "zero-shot-image-classification".
 
         Returns:
-            List[Dict[str, Any]]: The list of classification results, each containing a label and a score.
+            Dict[str, List[Any]]: The classification results, containing the labels list and scores list.
         """
 
         if task == SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION:
