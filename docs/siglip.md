@@ -8,7 +8,7 @@ This example demonstrates using the SigLIP model to perform image classification
 - **device** (`Device`, optional): The device to run the model on. If not specified, it will default to GPU if available, otherwise CPU.
 - **image** (`Image.Image`): The image to classify.
 - **candidate_labels** (`List[str]`): The list of candidate labels to classify the image.
-- **task** (`SiglipTask`, optional): The task to perform using the model. Defaults to `SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION`.
+- **task** (`SiglipTask`, optional): The task to perform using the model. Defaults to `SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION`.
 
 ### Perform Zero-Shot Image Classification
 
@@ -34,7 +34,7 @@ The model processes a given image and provided labels and produces classificatio
     results = model(
         image=image,
         candidate_labels=candidate_labels,
-        task=SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION,
+        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
     ```
 

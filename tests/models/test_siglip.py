@@ -11,7 +11,7 @@ def test_zero_shot_image_classification(model):
     result = model(
         image=image,
         candidate_labels=candidate_labels,
-        task=SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION,
+        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
 
     assert result is not None
@@ -41,7 +41,7 @@ def test_zero_shot_image_classification_correctness(model):
     result = model(
         image=image,
         candidate_labels=candidate_labels,
-        task=SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION,
+        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
 
     assert result is not None

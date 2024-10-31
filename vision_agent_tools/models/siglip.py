@@ -2,15 +2,23 @@ from enum import Enum
 from typing import List, Dict, Any
 import torch
 from PIL import Image
-from pydantic import ConfigDict, validate_arguments
+from pydantic import Field, ConfigDict, validate_arguments
 from transformers import AutoProcessor, AutoModel
 from transformers import SiglipProcessor, SiglipModel
 
 from vision_agent_tools.shared_types import BaseMLModel, Device
+from pydantic import BaseModel
 
 
 class SiglipTask(str, Enum):
-    ZERO_SHOT_IMG_CLASSIFICATION = "zero-shot-image-classification"
+    ZERO_SHOT_IMAGE_CLASSIFICATION = "zero-shot-image-classification"
+
+
+class SiglipResponseItem(BaseModel):
+    label: str = Field(..., description="The label of the classification result.")
+    score: float = Field(
+        ..., ge=0, le=1, description="The score of the classification result."
+    )
 
 
 class Siglip(BaseMLModel):
@@ -54,7 +62,7 @@ class Siglip(BaseMLModel):
         self,
         image: Image.Image,
         candidate_labels: List[str],
-        task: SiglipTask = SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION,
+        task: SiglipTask = SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     ) -> List[Dict[str, Any]]:
         """
         Performs image classification using the Siglip model and candidate labels.
@@ -69,7 +77,7 @@ class Siglip(BaseMLModel):
             List[Dict[str, Any]]: The list of classification results, each containing a label and a score.
         """
 
-        if task == SiglipTask.ZERO_SHOT_IMG_CLASSIFICATION:
+        if task == SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION:
             output = self._zero_shot_classification(image, candidate_labels)
         else:
             raise ValueError(
@@ -115,6 +123,7 @@ class Siglip(BaseMLModel):
 
         results = []
         for i, label in enumerate(candidate_labels):
-            results.append({"label": label, "score": probs[0, i].item()})
+            result = SiglipResponseItem(label=label, score=round(probs[0, i].item(), 4))
+            results.append({"label": result.label, "score": result.score})
 
         return results
