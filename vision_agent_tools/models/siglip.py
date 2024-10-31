@@ -2,23 +2,15 @@ from enum import Enum
 from typing import List, Dict, Any
 import torch
 from PIL import Image
-from pydantic import Field, ConfigDict, validate_arguments
+from pydantic import ConfigDict, validate_arguments
 from transformers import AutoProcessor, AutoModel
 from transformers import SiglipProcessor, SiglipModel
 
 from vision_agent_tools.shared_types import BaseMLModel, Device
-from pydantic import BaseModel
 
 
 class SiglipTask(str, Enum):
     ZERO_SHOT_IMAGE_CLASSIFICATION = "zero-shot-image-classification"
-
-
-class SiglipResponseItem(BaseModel):
-    label: str = Field(..., description="The label of the classification result.")
-    score: float = Field(
-        ..., ge=0, le=1, description="The score of the classification result."
-    )
 
 
 class Siglip(BaseMLModel):
@@ -93,7 +85,7 @@ class Siglip(BaseMLModel):
 
     def _zero_shot_classification(
         self, image: Image.Image, candidate_labels: List[str]
-    ) -> List[Dict[str, Any]]:
+    ) -> Dict[str, List[Any]]:
         """
         Classifies the image using the Siglip model and candidate labels.
 
@@ -102,7 +94,7 @@ class Siglip(BaseMLModel):
             - candidate_labels (List[str]): The list of candidate labels to classify the image.
 
         Returns:
-            List[Dict[str, Any]]: The list of classification results, each containing a label and a score.
+            Dict[str, List[Any]]: The classification results, containing the labels list and scores list.
         """
 
         texts = [f"This is a photo of {label}." for label in candidate_labels]
@@ -121,9 +113,9 @@ class Siglip(BaseMLModel):
         logits_per_image = outputs.logits_per_image
         probs = torch.sigmoid(logits_per_image)
 
-        results = []
+        results = {"scores": [], "labels": []}
         for i, label in enumerate(candidate_labels):
-            result = SiglipResponseItem(label=label, score=round(probs[0, i].item(), 4))
-            results.append({"label": result.label, "score": result.score})
+            results["labels"].append(label)
+            results["scores"].append(round(probs[0, i].item(), 4))
 
         return results

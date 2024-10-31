@@ -40,8 +40,8 @@ The model processes a given image and provided labels and produces classificatio
 
 4. **Interpret the Results**:
     ```python
-    for result in results:
-        print(f"Label: {result['label']}, Score: {result['score']:.2%}")
+    for i, result in enumerate(results['scores']):
+        print(f"Label: {results['labels'][i]}, Score: {result:.2f}")
     ```
  
  The higher the score, the more confident the model is that the label is the correct classification.
