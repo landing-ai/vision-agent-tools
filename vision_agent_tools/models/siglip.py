@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 import torch
 from PIL import Image
-from pydantic import ConfigDict, validate_arguments
+from pydantic import validate_arguments
 from transformers import AutoProcessor, AutoModel
 from transformers import SiglipProcessor, SiglipModel
 
@@ -13,8 +13,6 @@ class Siglip(BaseMLModel):
     Tool for object detection using the pre-trained Siglip model.
     This tool takes a prompt as input and generates an image using the Siglip model.
     """
-
-    config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(
         self,
@@ -44,7 +42,7 @@ class Siglip(BaseMLModel):
             self._processor = AutoProcessor.from_pretrained(model_name)
 
     @torch.inference_mode()
-    @validate_arguments(config=config)
+    @validate_arguments()
     def __call__(
         self,
         image: Image.Image,

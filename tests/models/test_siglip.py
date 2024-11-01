@@ -49,6 +49,7 @@ def test_zero_shot_image_classification_single_label(model):
     assert len(result["labels"]) == 1
     assert len(result["scores"]) == 1
     assert result["labels"][0] == "a car"
+    assert result["scores"][0] > 0
 
 
 def test_zero_shot_image_classification_no_image(model):
