@@ -8,7 +8,6 @@ This example demonstrates using the SigLIP model to perform image classification
 - **device** (`Device`, optional): The device to run the model on. If not specified, it will default to GPU if available, otherwise CPU.
 - **image** (`Image.Image`): The image to classify.
 - **labels** (`List[str]`): The list of candidate labels to classify the image.
-- **task** (`SiglipTask`, optional): The task to perform using the model. Defaults to `SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION`.
 
 ### Perform Zero-Shot Image Classification
 
@@ -16,7 +15,7 @@ The model processes a given image and provided labels and produces classificatio
 
 1. **Initialize the Model**:
     ```python
-    from vision_agent_tools.models.siglip import Siglip, SiglipTask
+    from vision_agent_tools.models.siglip import Siglip
 
     model = Siglip()
     ```
@@ -34,7 +33,6 @@ The model processes a given image and provided labels and produces classificatio
     results = model(
         image=image,
         labels=labels,
-        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
     ```
 

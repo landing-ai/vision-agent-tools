@@ -1,7 +1,7 @@
 import pytest
 from PIL import Image
 
-from vision_agent_tools.models.siglip import Siglip, SiglipTask
+from vision_agent_tools.models.siglip import Siglip
 
 
 def test_zero_shot_image_classification(model):
@@ -11,7 +11,6 @@ def test_zero_shot_image_classification(model):
     result = model(
         image=image,
         labels=labels,
-        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
 
     assert result is not None
@@ -28,7 +27,6 @@ def test_zero_shot_image_classification_correctness(model):
     result = model(
         image=image,
         labels=labels,
-        task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
 
     assert result is not None
@@ -44,7 +42,6 @@ def test_zero_shot_image_classification_no_image(model):
     with pytest.raises(ValueError):
         model(
             labels=labels,
-            task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
         )
 
 
@@ -56,19 +53,6 @@ def test_zero_shot_image_classification_with_empty_labels(model):
         model(
             image=image,
             labels=labels,
-            task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
-        )
-
-
-def test_zero_shot_image_classification_with_invalid_task(model):
-    image = Image.open("tests/shared_data/images/car.jpg")
-    labels = ["2 cars", "1 car", "1 airplane", "1 boat"]
-
-    with pytest.raises(ValueError):
-        model(
-            image=image,
-            labels=labels,
-            task="invalid_task",
         )
 
 

@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import List, Dict, Any
 import torch
 from PIL import Image
@@ -7,10 +6,6 @@ from transformers import AutoProcessor, AutoModel
 from transformers import SiglipProcessor, SiglipModel
 
 from vision_agent_tools.shared_types import BaseMLModel, Device
-
-
-class SiglipTask(str, Enum):
-    ZERO_SHOT_IMAGE_CLASSIFICATION = "zero-shot-image-classification"
 
 
 class Siglip(BaseMLModel):
@@ -54,40 +49,9 @@ class Siglip(BaseMLModel):
         self,
         image: Image.Image,
         labels: List[str],
-        task: SiglipTask = SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     ) -> List[Dict[str, Any]]:
         """
         Performs image classification using the Siglip model and candidate labels.
-
-        Args:
-            - image (Image.Image): The image to classify.
-            - labels (List[str]): The list of candidate labels to classify the image.
-            - task (SiglipTask): The task to perform using the model:
-                - zero-shot image classification - "zero-shot-image-classification".
-
-        Returns:
-            Dict[str, List[Any]]: The classification results, containing the labels list and scores list.
-        """
-
-        if task == SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION:
-            output = self._zero_shot_classification(image, labels)
-        else:
-            raise ValueError(
-                f"Unsupported task: {task}. Supported tasks are: {', '.join([task.value for task in SiglipTask])}."
-            )
-
-        return output
-
-    def to(self, device: Device):
-        self._model.to(device)
-        self._processor.to(device)
-        self.device = device
-
-    def _zero_shot_classification(
-        self, image: Image.Image, labels: List[str]
-    ) -> Dict[str, List[Any]]:
-        """
-        Classifies the image using the Siglip model and candidate labels.
 
         Args:
             - image (Image.Image): The image to classify.
@@ -119,3 +83,8 @@ class Siglip(BaseMLModel):
             results["scores"].append(round(probs[0, i].item(), 4))
 
         return results
+
+    def to(self, device: Device):
+        self._model.to(device)
+        self._processor.to(device)
+        self.device = device
