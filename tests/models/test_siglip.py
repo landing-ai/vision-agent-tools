@@ -36,6 +36,21 @@ def test_zero_shot_image_classification_correctness(model):
     assert result["scores"][0] > result["scores"][2]
 
 
+def test_zero_shot_image_classification_single_label(model):
+    image = Image.open("tests/shared_data/images/car.jpg")
+    labels = ["a car"]
+
+    result = model(
+        image=image,
+        labels=labels,
+    )
+
+    assert result is not None
+    assert len(result["labels"]) == 1
+    assert len(result["scores"]) == 1
+    assert result["labels"][0] == "a car"
+
+
 def test_zero_shot_image_classification_no_image(model):
     labels = ["2 cars", "1 car", "1 airplane", "1 boat"]
 
