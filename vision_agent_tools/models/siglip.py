@@ -53,7 +53,7 @@ class Siglip(BaseMLModel):
     def __call__(
         self,
         image: Image.Image,
-        candidate_labels: List[str],
+        labels: List[str],
         task: SiglipTask = SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     ) -> List[Dict[str, Any]]:
         """
@@ -61,7 +61,7 @@ class Siglip(BaseMLModel):
 
         Args:
             - image (Image.Image): The image to classify.
-            - candidate_labels (List[str]): The list of candidate labels to classify the image.
+            - labels (List[str]): The list of candidate labels to classify the image.
             - task (SiglipTask): The task to perform using the model:
                 - zero-shot image classification - "zero-shot-image-classification".
 
@@ -70,7 +70,7 @@ class Siglip(BaseMLModel):
         """
 
         if task == SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION:
-            output = self._zero_shot_classification(image, candidate_labels)
+            output = self._zero_shot_classification(image, labels)
         else:
             raise ValueError(
                 f"Unsupported task: {task}. Supported tasks are: {', '.join([task.value for task in SiglipTask])}."
@@ -84,20 +84,20 @@ class Siglip(BaseMLModel):
         self.device = device
 
     def _zero_shot_classification(
-        self, image: Image.Image, candidate_labels: List[str]
+        self, image: Image.Image, labels: List[str]
     ) -> Dict[str, List[Any]]:
         """
         Classifies the image using the Siglip model and candidate labels.
 
         Args:
             - image (Image.Image): The image to classify.
-            - candidate_labels (List[str]): The list of candidate labels to classify the image.
+            - labels (List[str]): The list of candidate labels to classify the image.
 
         Returns:
             Dict[str, List[Any]]: The classification results, containing the labels list and scores list.
         """
 
-        texts = [f"This is a photo of {label}." for label in candidate_labels]
+        texts = [f"This is a photo of {label}." for label in labels]
 
         inputs = self._processor(
             text=texts,
@@ -114,7 +114,7 @@ class Siglip(BaseMLModel):
         probs = torch.sigmoid(logits_per_image)
 
         results = {"scores": [], "labels": []}
-        for i, label in enumerate(candidate_labels):
+        for i, label in enumerate(labels):
             results["labels"].append(label)
             results["scores"].append(round(probs[0, i].item(), 4))
 

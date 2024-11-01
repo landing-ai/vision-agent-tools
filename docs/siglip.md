@@ -7,7 +7,7 @@ This example demonstrates using the SigLIP model to perform image classification
 - **model_name** (`str`, optional): The name of the pre-trained model to use. Defaults to `"google/siglip-base-patch16-224"`.
 - **device** (`Device`, optional): The device to run the model on. If not specified, it will default to GPU if available, otherwise CPU.
 - **image** (`Image.Image`): The image to classify.
-- **candidate_labels** (`List[str]`): The list of candidate labels to classify the image.
+- **labels** (`List[str]`): The list of candidate labels to classify the image.
 - **task** (`SiglipTask`, optional): The task to perform using the model. Defaults to `SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION`.
 
 ### Perform Zero-Shot Image Classification
@@ -26,14 +26,14 @@ The model processes a given image and provided labels and produces classificatio
     from PIL import Image
 
     image = Image.open("path_to_your_image.jpg")
-    candidate_labels = ["cat", "dog", "bird"]
+    labels = ["cat", "dog", "bird"]
     ```
 
 3. **Run the Classification**:
     ```python
     results = model(
         image=image,
-        candidate_labels=candidate_labels,
+        labels=labels,
         task=SiglipTask.ZERO_SHOT_IMAGE_CLASSIFICATION,
     )
     ```
