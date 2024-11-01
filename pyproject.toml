@@ -116,6 +116,7 @@ clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
 qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
+siglip = ["flash-attn", "transformers", "sentencepiece", "protobuf"]
 
 [[tool.poetry.source]]
 name = "torch_cuda118"
