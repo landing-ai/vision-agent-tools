@@ -32,7 +32,10 @@ def filter_bbox_predictions(
     )
     new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
     filtered_preds = _filter_invalid_bboxes(
-        predictions=new_preds, image_size=image_size
+        predictions=new_preds,
+        image_size=image_size,
+        bboxes_key=bboxes_key,
+        label_key=label_key,
     )
 
     return filtered_preds
@@ -189,13 +192,12 @@ def _contains(box_a, box_b):
 
 
 def _filter_invalid_bboxes(
-    predictions: dict[str, Any], image_size: tuple[int, int]
+    predictions: dict[str, Any],
+    image_size: tuple[int, int],
+    bboxes_key: str = "bboxes",
+    label_key: str = "labels",
 ) -> dict[str, Any]:
     """Filters out invalid bounding boxes from the given predictions.
-
-    Args:
-        predictions: A dictionary containing 'bboxes' and 'labels' keys.
-        image_size: A tuple representing the image width and height.
 
     Returns:
         A new dictionary with filtered bounding boxes and labels.
@@ -205,7 +207,7 @@ def _filter_invalid_bboxes(
 
     filtered_bboxes = []
     filtered_labels = []
-    for bbox, label in zip(predictions["bboxes"], predictions["labels"]):
+    for bbox, label in zip(predictions[bboxes_key], predictions[label_key]):
         x1, y1, x2, y2 = bbox
         if 0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height:
             filtered_bboxes.append(bbox)
@@ -213,4 +215,4 @@ def _filter_invalid_bboxes(
         else:
             _LOGGER.warning(f"Removing invalid bbox {bbox}")
 
-    return {"bboxes": filtered_bboxes, "labels": filtered_labels}
+    return {bboxes_key: filtered_bboxes, label_key: filtered_labels}
