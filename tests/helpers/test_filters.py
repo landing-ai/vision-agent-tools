@@ -1,4 +1,7 @@
-from vision_agent_tools.helpers.filters import filter_bbox_predictions
+from vision_agent_tools.helpers.filters import (
+    filter_bbox_predictions,
+    _filter_invalid_bboxes,
+)
 
 
 def test_filter_bbox_predictions_remove_big_box():
@@ -190,3 +193,42 @@ def test_filter_bbox_predictions():
             "sheep",
         ],
     }
+
+
+def test_filter_valid_bboxes():
+    predictions = {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]]}
+    image_size = (100, 100)
+
+    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
+    assert invalid_bboxes == []
+
+
+def test_filter_invalid_bboxes_negative_coords():
+    predictions = {"bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]]}
+    image_size = (100, 100)
+
+    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
+    assert invalid_bboxes == [[-10, 20, 30, 40]]
+
+
+def test_filter_invalid_bboxes_out_of_bounds():
+    predictions = {"bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]]}
+    image_size = (100, 100)
+
+    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
+    assert invalid_bboxes == [[10, 20, 110, 40]]
+
+
+def test_filter_invalid_bboxes_mixed_valid_invalid():
+    predictions = {
+        "bboxes": [
+            [10, 20, 30, 40],
+            [-10, 20, 30, 40],
+            [50, 60, 70, 80],
+            [110, 20, 120, 40],
+        ]
+    }
+    image_size = (100, 100)
+
+    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
+    assert invalid_bboxes == [[-10, 20, 30, 40], [110, 20, 120, 40]]
