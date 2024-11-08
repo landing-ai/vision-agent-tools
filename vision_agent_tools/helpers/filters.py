@@ -31,14 +31,15 @@ def filter_bbox_predictions(
         new_preds[bboxes_key], new_preds[label_key]
     )
     new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
-    filtered_preds = _filter_invalid_bboxes(
+
+    bboxes_to_remove = _filter_invalid_bboxes(
         predictions=new_preds,
         image_size=image_size,
         bboxes_key=bboxes_key,
-        label_key=label_key,
     )
+    new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
 
-    return filtered_preds
+    return new_preds
 
 
 def _remove_whole_image_bbox(
@@ -195,24 +196,28 @@ def _filter_invalid_bboxes(
     predictions: dict[str, Any],
     image_size: tuple[int, int],
     bboxes_key: str = "bboxes",
-    label_key: str = "labels",
 ) -> dict[str, Any]:
-    """Filters out invalid bounding boxes from the given predictions.
+    """Filters out invalid bounding boxes from the given predictions and
+    returns a dictionary of invalid ones.
+
+    Args:
+        predictions: A dictionary containing 'bboxes' and 'labels' keys.
+        image_size: A tuple representing the image width and height.
+        bboxes_key: The key for bounding boxes in the predictions dictionary.
 
     Returns:
-        A new dictionary with filtered bounding boxes and labels.
+        A new dictionary with invalid bounding boxes and their corresponding
+        labels.
     """
 
     width, height = image_size
 
-    filtered_bboxes = []
-    filtered_labels = []
-    for bbox, label in zip(predictions[bboxes_key], predictions[label_key]):
+    invalid_bboxes = []
+
+    for bbox in zip(predictions[bboxes_key]):
         x1, y1, x2, y2 = bbox
-        if 0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height:
-            filtered_bboxes.append(bbox)
-            filtered_labels.append(label)
-        else:
+        if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
+            invalid_bboxes.append(bbox)
             _LOGGER.warning(f"Removing invalid bbox {bbox}")
 
-    return {bboxes_key: filtered_bboxes, label_key: filtered_labels}
+    return invalid_bboxes
