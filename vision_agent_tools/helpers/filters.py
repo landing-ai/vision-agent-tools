@@ -214,10 +214,10 @@ def _filter_invalid_bboxes(
 
     invalid_bboxes = []
 
-    for bbox in predictions[bboxes_key]:
+    for idx, bbox in enumerate(predictions[bboxes_key]):
         x1, y1, x2, y2 = bbox
         if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
-            invalid_bboxes.append(bbox)
+            invalid_bboxes.append(idx)
             _LOGGER.warning(f"Removing invalid bbox {bbox}")
 
     return invalid_bboxes

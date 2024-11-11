@@ -1,7 +1,4 @@
-from vision_agent_tools.helpers.filters import (
-    filter_bbox_predictions,
-    _filter_invalid_bboxes,
-)
+from vision_agent_tools.helpers.filters import filter_bbox_predictions
 
 
 def test_filter_bbox_predictions_remove_big_box():
@@ -196,27 +193,36 @@ def test_filter_bbox_predictions():
 
 
 def test_filter_valid_bboxes():
-    predictions = {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]]}
+    predictions = {
+        "bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
     image_size = (100, 100)
 
-    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
-    assert invalid_bboxes == []
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == predictions
 
 
 def test_filter_invalid_bboxes_negative_coords():
-    predictions = {"bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]]}
+    predictions = {
+        "bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
     image_size = (100, 100)
 
-    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
-    assert invalid_bboxes == [[-10, 20, 30, 40]]
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
 
 
 def test_filter_invalid_bboxes_out_of_bounds():
-    predictions = {"bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]]}
+    predictions = {
+        "bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
     image_size = (100, 100)
 
-    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
-    assert invalid_bboxes == [[10, 20, 110, 40]]
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
 
 
 def test_filter_invalid_bboxes_mixed_valid_invalid():
@@ -226,9 +232,13 @@ def test_filter_invalid_bboxes_mixed_valid_invalid():
             [-10, 20, 30, 40],
             [50, 60, 70, 80],
             [110, 20, 120, 40],
-        ]
+        ],
+        "labels": ["sheep", "sheep"],
     }
     image_size = (100, 100)
 
-    invalid_bboxes = _filter_invalid_bboxes(predictions, image_size)
-    assert invalid_bboxes == [[-10, 20, 30, 40], [110, 20, 120, 40]]
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {
+        "bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep"],
+    }
