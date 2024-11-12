@@ -88,9 +88,10 @@ class Text2ODSAM2(BaseMLModel):
         model_config: Text2ODSAM2Config | None = Text2ODSAM2Config()
     ):
         """
-        Initializes the Florence2SAM2 object with a pre-trained Florence2 model
+        Initializes the Text2ODSAM2 object with a pre-trained text2od model
         and a SAM2 model.
         """
+        self._model = model
         self._model_config = model_config
         self._text2od = TextToObjectDetection(model=model, model_config=self._model_config.text2od_config)
         self._sam2 = Sam2(self._model_config.sam2_config)
@@ -106,6 +107,7 @@ class Text2ODSAM2(BaseMLModel):
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         nms_threshold: float = 0.3,
+        confidence: float = 0.1,
     ) -> list[list[dict[str, Any]]]:
         """
         Text2ODSam2 model find objects in images and track objects in a video.
@@ -144,17 +146,19 @@ class Text2ODSAM2(BaseMLModel):
             chunk_length_frames=chunk_length_frames,
             iou_threshold=iou_threshold,
             nms_threshold=nms_threshold,
+            confidence=confidence,
         )
 
         text2od_payload = {
             "prompts": prompts,
             "images": images,
             "video": video,
-            "iou_threshold": iou_threshold,
             "nms_threshold": nms_threshold,
         }
-        if video is not None:
+        if video is not None and self._model is TextToObjectDetectionModel.FLORENCE2:
             text2od_payload["chunk_length_frames"] = chunk_length_frames
+        if confidence is not None:
+            text2od_payload["confidence"] = confidence
 
         text2od_payload_response = self._text2od(**text2od_payload)
         od_response = [
@@ -175,11 +179,3 @@ class Text2ODSAM2(BaseMLModel):
                 chunk_length_frames=chunk_length_frames,
                 iou_threshold=iou_threshold,
             )
-
-    # def load_base(self) -> None:
-    #     """Load the base Florence-2 model."""
-    #     self._florence2.load_base()
-
-    # def fine_tune(self, checkpoint: str) -> None:
-    #     """Load the fine-tuned Florence-2 model."""
-    #     self._florence2.fine_tune(checkpoint)
