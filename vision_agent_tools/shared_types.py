@@ -173,6 +173,7 @@ class ObjBboxAndMaskLabel(BaseModel):
     score: float
     bbox: BoundingBox
     mask: SegmentationBitMask
+    logits: SegmentationBitMask | None
 
     @field_serializer('mask')
     def serialize_mask(self, mask: SegmentationBitMask, _info):

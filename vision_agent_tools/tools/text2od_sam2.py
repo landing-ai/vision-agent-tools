@@ -162,10 +162,9 @@ class Text2ODSAM2(BaseMLModel):
 
         text2od_payload_response = self._text2od(**text2od_payload)
         od_response = [
-            ODWithScoreResponse(**item) if item is not None else None
+            ODWithScoreResponse(**item) if len(item.get("labels")) > 0 else None
             for item in text2od_payload_response
         ]
-
         if images is not None:
             return self._sam2(
                 images=images,
@@ -178,4 +177,5 @@ class Text2ODSAM2(BaseMLModel):
                 bboxes=od_response,
                 chunk_length_frames=chunk_length_frames,
                 iou_threshold=iou_threshold,
+                confidence=confidence,
             )

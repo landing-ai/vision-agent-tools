@@ -17,7 +17,6 @@ from vision_agent_tools.shared_types import (
     ODWithScoreResponse,
     ObjBboxAndMaskLabel,
     Sam2BitMask,
-    ObjMaskLabel,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -111,6 +110,7 @@ class Sam2(BaseMLModel):
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
         iou_threshold: float = 0.6,
+        confidence: float = 0.1,
     ) -> list[list[dict[str, Any]]]:
         """Run Sam2 on images or video and find segments based on the input.
 
@@ -223,7 +223,7 @@ class Sam2(BaseMLModel):
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
-    ) -> list[ObjMaskLabel] | list[ObjBboxAndMaskLabel]:
+    ) -> list[ObjBboxAndMaskLabel]:
         """Process the input image with the Sam2 image predictor using the given prompts.
 
         Args:
@@ -241,7 +241,7 @@ class Sam2(BaseMLModel):
                 Flag whether to output multiple masks.
 
         Returns:
-            list[ObjMaskLabel] | list[ObjBboxAndMaskLabel]:
+            list[ObjBboxAndMaskLabel]:
                 The output of the Sam2 model based on the input image.
                 list[ObjBboxAndMaskLabel] if bboxes_per_frame is not None:
                 [{
@@ -265,11 +265,12 @@ class Sam2(BaseMLModel):
     def _predict_video_with_bboxes(
         self,
         video: VideoNumpy,
-        bboxes: list[ODWithScoreResponse],
+        bboxes: list[ODWithScoreResponse] | None,
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
-    ) -> list[list[ObjBboxAndMaskLabel]]:
+        confidence: float=0.1,
+    ) -> list[list[ObjBboxAndMaskLabel | None]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
         Returns:
@@ -309,7 +310,21 @@ class Sam2(BaseMLModel):
                     Image.fromarray(video[start_frame_idx]),
                     bboxes_per_frame=bboxes[start_frame_idx],
                 )
-
+                if( len(objs) ==1 and objs[0].score < confidence):
+                    # for _ in range(chunk_length_frames):
+                    empty_pred = [
+                        ObjBboxAndMaskLabel(
+                            id=0,
+                            label="",
+                            score=0.0,
+                            bbox=[0,0,0,0],
+                            mask=np.zeros((video_shape[1], video_shape[2])),
+                            logits=None,
+                        )
+                    ]
+                    video_segments.append(empty_pred)
+                    last_chunk_frame_pred = empty_pred
+                    continue
                 # updates the predictions based on the predictions overlaps
                 updated_objs, objects_count = _update_reference_predictions(
                     last_chunk_frame_pred,
@@ -326,13 +341,12 @@ class Sam2(BaseMLModel):
                     annotation_id = updated_obj.id
                     annotation_id_to_label[annotation_id] = updated_obj.label
                     annotation_id_to_score[annotation_id] = updated_obj.score
-                    if updated_obj.score is not None:
-                        _, _, out_mask_logits = self.video_model.add_new_points_or_box(
-                            inference_state=inference_state,
-                            frame_idx=start_frame_idx,
-                            obj_id=annotation_id,
-                            box=updated_obj.bbox,
-                        )
+                    _, _, out_mask_logits = self.video_model.add_new_points_or_box(
+                        inference_state=inference_state,
+                        frame_idx=start_frame_idx,
+                        obj_id=annotation_id,
+                        box=updated_obj.bbox,
+                    )
 
                 # Propagate the predictions on the given video segment (chunk)
                 for (
@@ -353,11 +367,12 @@ class Sam2(BaseMLModel):
                         bbox = _mask_to_bbox(pred_mask)
                         video_segments[out_frame_idx].append(
                             ObjBboxAndMaskLabel(
-                                label=annotation_id_to_label[out_obj_id],
-                                bbox=bbox,
-                                score=annotation_id_to_score[out_obj_id],
-                                mask=pred_mask,
                                 id=out_obj_id,
+                                label=annotation_id_to_label[out_obj_id],
+                                score=annotation_id_to_score[out_obj_id],
+                                bbox=bbox,
+                                mask=pred_mask,
+                                logits=None,
                             )
                         )
 
@@ -379,7 +394,7 @@ class Sam2(BaseMLModel):
         input_box: np.ndarray | None = None,
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
-    ) -> list[list[ObjMaskLabel]]:
+    ) -> list[list[ObjBboxAndMaskLabel]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
         Returns:
@@ -432,8 +447,8 @@ class Sam2(BaseMLModel):
                         continue
 
                     video_segments[out_frame_idx].append(
-                        ObjMaskLabel(
-                            score=None, logits=None, mask=pred_mask, id=out_obj_id
+                        ObjBboxAndMaskLabel(
+                            score=1.0, logits=None, label="", mask=pred_mask, id=out_obj_id, bbox=_mask_to_bbox(pred_mask)
                         )
                     )
 
@@ -449,7 +464,7 @@ class Sam2(BaseMLModel):
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
-    ) -> list[ObjMaskLabel]:
+    ) -> list[ObjBboxAndMaskLabel]:
         annotations = []
         sam2_image_pred = self._predict_image_model(
             image,
@@ -469,9 +484,11 @@ class Sam2(BaseMLModel):
                 else sam2_logits[:, :]
             )
             annotations.append(
-                ObjMaskLabel(
+                ObjBboxAndMaskLabel(
                     id=idx,
+                    label="",
                     score=sam2_image_pred.scores[idx],
+                    bbox=_mask_to_bbox(mask),
                     mask=mask,
                     logits=logits,
                 )
@@ -509,18 +526,19 @@ class Sam2(BaseMLModel):
             annotations.append(
                 ObjBboxAndMaskLabel(
                     id=idx,
-                    bbox=preds[idx]["bbox"],
-                    score=preds[idx]["score"],
-                    mask=mask,
                     label=preds[idx]["label"],
+                    score=preds[idx]["score"],
+                    bbox=preds[idx]["bbox"],
+                    mask=mask,
+                    logits=None
                 )
             )
         return annotations
 
 
 def _update_reference_predictions(
-    last_predictions: list[ObjBboxAndMaskLabel],
-    new_predictions: list[ObjBboxAndMaskLabel],
+    last_predictions: list[ObjBboxAndMaskLabel] | None,
+    new_predictions: list[ObjBboxAndMaskLabel] | None,
     objects_count: int,
     iou_threshold: float = 0.8,
 ) -> tuple[list[ObjBboxAndMaskLabel], int]:
@@ -572,7 +590,7 @@ def _mask_to_bbox(mask: np.ndarray) -> list[int]:
 
 
 def _serialize(
-    frames: list[list[ObjMaskLabel]] | list[list[ObjBboxAndMaskLabel]],
+    frames: list[list[ObjBboxAndMaskLabel]],
 ) -> list[list[dict[str, Any]]]:
     return [
         [detection.model_dump() for detection in detections] for detections in frames
