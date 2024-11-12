@@ -242,3 +242,27 @@ def test_filter_invalid_bboxes_mixed_valid_invalid():
         "bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]],
         "labels": ["sheep"],
     }
+
+
+def test_filter_invalid_bboxes():
+    predictions_list = [
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 40, 70]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 60]], "labels": ["sheep", "sheep"]},
+    ]
+
+    image_size = (100, 100)
+
+    expected_results = [
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]},
+        {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]},
+        {"bboxes": [[10, 20, 30, 40]], "labels": ["sheep"]},
+        {"bboxes": [[10, 20, 30, 40]], "labels": ["sheep"]},
+    ]
+
+    for idx, prediction in enumerate(predictions_list):
+        results = filter_bbox_predictions(prediction, image_size)
+        assert results == expected_results[idx]
