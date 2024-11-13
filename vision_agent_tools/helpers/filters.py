@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import Any
 
 from vision_agent_tools.models.utils import calculate_bbox_iou
@@ -215,7 +216,8 @@ def _filter_invalid_bboxes(
     invalid_indices = []
 
     for idx, bbox in enumerate(predictions[bboxes_key]):
-        x1, y1, x2, y2 = bbox
+        bbox_ceil = [math.ceil(num) for num in bbox]
+        x1, y1, x2, y2 = bbox_ceil
         if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
             invalid_indices.append(idx)
             _LOGGER.warning(f"Removing invalid bbox {bbox}")
