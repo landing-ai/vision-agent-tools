@@ -115,20 +115,24 @@ class Sam2(BaseMLModel):
         """Run Sam2 on images or video and find segments based on the input.
 
         Returns:
-            list[list[ObjMaskLabel]]:
+            list[list[ODWithScoreResponse]]:
                 If bboxes are None, it returns an object with the masks, scores
                 and logits. Image example:
                     [[{
                         "id": 0,
+                        "label": "",
                         "mask": rle,
+                        "bbox": [x_min, y_min, x_max, y_max],
                         "score": 0.5,
                         "logits": HW,
                     }]]
                 Video example:
                     [[{
                         "id": 0,
+                        "label": ""
                         "mask": rle,
-                        "score": None,
+                        "bbox": [0,0,0,0]
+                        "score": 0.0,
                         "logits": None,
                     }]]
 
@@ -136,10 +140,12 @@ class Sam2(BaseMLModel):
                 If bboxes are not None it includes the masks alongside the bboxes.
                 and labels. For example:
                     [[{
-                        "id": 0,
+                        "id": 1,
                         "mask": rle,
                         "label": "car",
-                        "bbox": [0.1, 0.2, 0.3, 0.4]
+                        "bbox": [0.1, 0.2, 0.3, 0.4],
+                        "score": 0.55,
+                        "logits": None,
                     }]]
         """
         Sam2Request(
@@ -172,6 +178,7 @@ class Sam2(BaseMLModel):
                     bboxes,
                     chunk_length_frames=chunk_length_frames,
                     iou_threshold=iou_threshold,
+                    confidence=confidence,
                 )
             else:
                 predictions = self._predict_video(
@@ -248,7 +255,9 @@ class Sam2(BaseMLModel):
                     "id": 0,
                     "mask": rle,
                     "label": "car",
-                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                    "bbox": [0.1, 0.2, 0.3, 0.4],
+                    "score": 0.55,
+                    "logits": None
                 }]
         """
         if bboxes_per_frame is not None:
@@ -265,12 +274,12 @@ class Sam2(BaseMLModel):
     def _predict_video_with_bboxes(
         self,
         video: VideoNumpy,
-        bboxes: list[ODWithScoreResponse] | None,
+        bboxes: list[ODWithScoreResponse],
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         confidence: float=0.1,
-    ) -> list[list[ObjBboxAndMaskLabel | None]]:
+    ) -> list[list[ObjBboxAndMaskLabel]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
         Returns:
@@ -280,7 +289,9 @@ class Sam2(BaseMLModel):
                     "id": 0,
                     "mask": rle,
                     "label": "car",
-                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                    "bbox": [0.1, 0.2, 0.3, 0.4],
+                    "score": 0.55,
+                    "logits": None,
                 }]]
         """
         video_shape = video.shape
@@ -310,8 +321,9 @@ class Sam2(BaseMLModel):
                     Image.fromarray(video[start_frame_idx]),
                     bboxes_per_frame=bboxes[start_frame_idx],
                 )
+                # len(objs) == 1 when there are no bboxes values and the calculated score comes from SAM2
+                # and not from the text2od model
                 if( len(objs) ==1 and objs[0].score < confidence):
-                    # for _ in range(chunk_length_frames):
                     empty_pred = [
                         ObjBboxAndMaskLabel(
                             id=0,
@@ -398,7 +410,7 @@ class Sam2(BaseMLModel):
         """Process the input video with the SAM2 video predictor using the given prompts.
 
         Returns:
-            list[list[ObjMaskLabel]]:
+            list[list[ObjBboxAndMaskLabel]]:
                 The output of the Sam2 model based on the input image.
                 [[{
                     "id": 0,
@@ -537,8 +549,8 @@ class Sam2(BaseMLModel):
 
 
 def _update_reference_predictions(
-    last_predictions: list[ObjBboxAndMaskLabel] | None,
-    new_predictions: list[ObjBboxAndMaskLabel] | None,
+    last_predictions: list[ObjBboxAndMaskLabel],
+    new_predictions: list[ObjBboxAndMaskLabel],
     objects_count: int,
     iou_threshold: float = 0.8,
 ) -> tuple[list[ObjBboxAndMaskLabel], int]:
@@ -550,6 +562,8 @@ def _update_reference_predictions(
             of the video propagation.
         new_predictions:
             List containing the annotation predictions of the FlorenceV2 model prediction.
+        objects_count:
+            The current number of objects found and count
         iou_threshold:
             The IoU threshold value used to compare last_predictions and new_predictions
             annotation objects.
