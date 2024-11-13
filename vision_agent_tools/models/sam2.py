@@ -79,8 +79,8 @@ class Sam2(BaseMLModel):
     """It receives images, a prompt and returns the instance segmentation for the
     text prompt in each frame."""
 
-    def __init__(self, model_config: Sam2Config | None = Sam2Config()):
-        self.model_config = model_config
+    def __init__(self, model_config: Sam2Config | None = None):
+        self.model_config = model_config or Sam2Config()
         self.image_model = SAM2ImagePredictor.from_pretrained(
             self.model_config.hf_model
         )

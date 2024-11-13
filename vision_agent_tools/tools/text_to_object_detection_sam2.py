@@ -23,8 +23,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class Text2ODSAM2Config(BaseModel):
-    sam2_config: Sam2Config | None = Sam2Config()
-    text2od_config: Florence2Config | OWLV2Config | None = OWLV2Config()
+    sam2_config: Sam2Config | None = None
+    text2od_config: Florence2Config | OWLV2Config | None = None
 
 
 class Text2ODSam2Request(BaseModel):
@@ -88,14 +88,14 @@ class Text2ODSAM2(BaseMLModel):
     def __init__(
         self,
         model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
-        model_config: Text2ODSAM2Config | None = Text2ODSAM2Config(),
+        model_config: Text2ODSAM2Config | None = None,
     ):
         """
         Initializes the Text2ODSAM2 object with a pre-trained text2od model
         and a SAM2 model.
         """
         self._model = model
-        self._model_config = model_config
+        self._model_config = model_config or Text2ODSAM2Config()
         self._text2od = TextToObjectDetection(
             model=model, model_config=self._model_config.text2od_config
         )
@@ -170,7 +170,9 @@ class Text2ODSAM2(BaseMLModel):
 
         text2od_payload_response = self._text2od(**text2od_payload)
         od_response = [
-            ODWithScoreResponse(**item) if len(item.get("labels")) > 0 else None
+            ODWithScoreResponse(**item)
+            if item is not None and len(item.get("labels")) > 0
+            else None
             for item in text2od_payload_response
         ]
         if images is not None:

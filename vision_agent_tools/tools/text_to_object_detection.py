@@ -33,6 +33,12 @@ class TextToObjectDetectionRequest(BaseModel):
         le=1.0,
         description="The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).",
     )
+    chunk_length_frames: int | None = Field(
+        default=None,
+        ge=1,
+        le=30,
+        description="The number of frames for each chunk of video to analyze. The last chunk may have fewer frames.",
+    )
     confidence: float | None = Field(
         default=None,
         ge=0.0,
@@ -62,7 +68,7 @@ class TextToObjectDetection(BaseTool):
     def __init__(
         self,
         model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
-        model_config: OWLV2Config | None = None,
+        model_config: OWLV2Config | Florence2Config | None = None,
     ):
         self.model_name = model
 
@@ -83,6 +89,7 @@ class TextToObjectDetection(BaseTool):
         video: VideoNumpy | None = None,
         *,
         nms_threshold: float = 0.3,
+        chunk_length_frames: int | None = None,
         confidence: float | None = None,
     ) -> list[dict[str, Any]]:
         """Run object detection on the image based on text prompts.
@@ -96,6 +103,9 @@ class TextToObjectDetection(BaseTool):
                 A numpy array containing the different images, representing the video.
             nms_threshold:
                 The IoU threshold value used to apply a dummy agnostic Non-Maximum Suppression (NMS).
+            chunk_length_frames:
+                The number of frames for each chunk of video to analyze.
+                The last chunk may have fewer frames.
             confidence:
                 Confidence threshold for model predictions.
 
@@ -108,6 +118,7 @@ class TextToObjectDetection(BaseTool):
             images=images,
             video=video,
             nms_threshold=nms_threshold,
+            chunk_length_frames=chunk_length_frames,
             confidence=confidence,
         )
 
@@ -137,6 +148,7 @@ class TextToObjectDetection(BaseTool):
                 images=images,
                 video=video,
                 nms_threshold=nms_threshold,
+                chunk_length_frames=chunk_length_frames,
             )
 
     def to(self, device: Device):
