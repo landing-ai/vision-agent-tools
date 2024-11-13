@@ -13,6 +13,7 @@ class OCRModel(str, Enum):
 
 class OCR(BaseTool):
     """Tool to perform OCR on images using a specified ML model"""
+
     def __init__(self, model: OCRModel = OCRModel.FLORENCE2):
         model_class = get_model_class(model_name=model.value)
         model_instance = model_class()
@@ -23,7 +24,9 @@ class OCR(BaseTool):
         self, images: list[Image.Image], task: PromptTask = PromptTask.OCR
     ) -> dict[str, Any]:
         if task not in self._ocr_tasks:
-            raise ValueError(f"Invalid task: {task}. Supported tasks are: {self._ocr_tasks}")
+            raise ValueError(
+                f"Invalid task: {task}. Supported tasks are: {self._ocr_tasks}"
+            )
         return self.model(images=images, task=task)
 
     def to(self, device: Device) -> None:

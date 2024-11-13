@@ -14,7 +14,10 @@ from vision_agent_tools.shared_types import (
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 from vision_agent_tools.models.florence2 import Florence2Config
 from vision_agent_tools.models.owlv2 import OWLV2Config
-from vision_agent_tools.tools.text_to_object_detection import TextToObjectDetection, TextToObjectDetectionModel
+from vision_agent_tools.tools.text_to_object_detection import (
+    TextToObjectDetection,
+    TextToObjectDetectionModel,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,8 +87,8 @@ class Text2ODSAM2(BaseMLModel):
 
     def __init__(
         self,
-        model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2, 
-        model_config: Text2ODSAM2Config | None = Text2ODSAM2Config()
+        model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
+        model_config: Text2ODSAM2Config | None = Text2ODSAM2Config(),
     ):
         """
         Initializes the Text2ODSAM2 object with a pre-trained text2od model
@@ -93,7 +96,9 @@ class Text2ODSAM2(BaseMLModel):
         """
         self._model = model
         self._model_config = model_config
-        self._text2od = TextToObjectDetection(model=model, model_config=self._model_config.text2od_config)
+        self._text2od = TextToObjectDetection(
+            model=model, model_config=self._model_config.text2od_config
+        )
         self._sam2 = Sam2(self._model_config.sam2_config)
 
     @torch.inference_mode()
@@ -164,7 +169,10 @@ class Text2ODSAM2(BaseMLModel):
             text2od_payload["confidence"] = confidence
 
         text2od_payload_response = self._text2od(**text2od_payload)
-        od_response = [ODWithScoreResponse(**item) for item in text2od_payload_response]
+        od_response = [
+            ODWithScoreResponse(**item) if len(item.get("labels")) > 0 else None
+            for item in text2od_payload_response
+        ]
         if images is not None:
             return self._sam2(
                 images=images,

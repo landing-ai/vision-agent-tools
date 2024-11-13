@@ -278,7 +278,7 @@ class Sam2(BaseMLModel):
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
-        confidence: float=0.1,
+        confidence: float = 0.1,
     ) -> list[list[ObjBboxAndMaskLabel]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
@@ -323,13 +323,13 @@ class Sam2(BaseMLModel):
                 )
                 # len(objs) == 1 when there are no bboxes values and the calculated score comes from SAM2
                 # and not from the text2od model
-                if( len(objs) ==1 and objs[0].score < confidence):
+                if len(objs) == 1 and objs[0].score < confidence:
                     empty_pred = [
                         ObjBboxAndMaskLabel(
                             id=0,
                             label="",
                             score=0.0,
-                            bbox=[0,0,0,0],
+                            bbox=[0, 0, 0, 0],
                             mask=np.zeros((video_shape[1], video_shape[2])),
                             logits=None,
                         )
@@ -348,7 +348,7 @@ class Sam2(BaseMLModel):
                 # Add new label points to the video predictor coming from the
                 # bboxes predictions
                 annotation_id_to_label = {}
-                annotation_id_to_score= {}
+                annotation_id_to_score = {}
                 for updated_obj in updated_objs:
                     annotation_id = updated_obj.id
                     annotation_id_to_label[annotation_id] = updated_obj.label
@@ -460,7 +460,12 @@ class Sam2(BaseMLModel):
 
                     video_segments[out_frame_idx].append(
                         ObjBboxAndMaskLabel(
-                            score=1.0, logits=None, label="", mask=pred_mask, id=out_obj_id, bbox=_mask_to_bbox(pred_mask)
+                            score=1.0,
+                            logits=None,
+                            label="",
+                            mask=pred_mask,
+                            id=out_obj_id,
+                            bbox=_mask_to_bbox(pred_mask),
                         )
                     )
 
@@ -515,7 +520,7 @@ class Sam2(BaseMLModel):
             {
                 "bbox": bboxes_per_frame.bboxes[idx],
                 "label": bboxes_per_frame.labels[idx],
-                "score": bboxes_per_frame.scores[idx]
+                "score": bboxes_per_frame.scores[idx],
             }
             for idx in range(len(bboxes_per_frame.labels))
         ]
@@ -542,7 +547,7 @@ class Sam2(BaseMLModel):
                     score=preds[idx]["score"],
                     bbox=preds[idx]["bbox"],
                     mask=mask,
-                    logits=None
+                    logits=None,
                 )
             )
         return annotations

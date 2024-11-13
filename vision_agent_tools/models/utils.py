@@ -6,11 +6,7 @@ import gdown
 import torch
 import numpy as np
 
-from vision_agent_tools.shared_types import (
-    BoundingBox,
-    SegmentationBitMask,
-    Device
-)
+from vision_agent_tools.shared_types import BoundingBox, SegmentationBitMask, Device
 
 
 CURRENT_DIR = osp.dirname(osp.abspath(__file__))
@@ -21,7 +17,9 @@ def get_device() -> Device:
     return (
         Device.GPU
         if torch.cuda.is_available()
-        else Device.MPS if torch.backends.mps.is_available() else Device.CPU
+        else Device.MPS
+        if torch.backends.mps.is_available()
+        else Device.CPU
     )
 
 
