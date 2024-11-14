@@ -15,7 +15,7 @@ def test_dense_region_caption(shared_model):
         "task": task,
     }
     response = shared_model(**payload)
-    assert response == [{"labels": [], "bboxes": []}]
+    assert response == [{"labels": [], "bboxes": [], "scores": []}]
 
 
 def test_dense_region_caption_ft(unzip_model):
