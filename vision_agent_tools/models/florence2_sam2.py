@@ -10,7 +10,7 @@ from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
     PromptTask,
-    ODResponse,
+    ODWithScoreResponse,
 )
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
 from vision_agent_tools.models.florence2 import Florence2, Florence2Config
@@ -149,7 +149,7 @@ class Florence2SAM2(BaseMLModel):
 
         florence2_response = self._florence2(**florence2_payload)
         od_response = [
-            ODResponse(**item) if item is not None else None
+            ODWithScoreResponse(**item) if item is not None else None
             for item in florence2_response
         ]
 
