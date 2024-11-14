@@ -500,6 +500,11 @@ class Sam2(BaseMLModel):
                 if len(sam2_logits.shape) == 3
                 else sam2_logits[:, :]
             )
+
+            pred_mask = mask > 0.0
+            if np.max(pred_mask) == 0:
+                continue
+
             annotations.append(
                 ObjBboxAndMaskLabel(
                     id=idx,
