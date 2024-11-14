@@ -66,6 +66,7 @@ def test_caption_to_phrase_grounding_car_with_nms(shared_model):
                     373.1999816894531,
                 ]
             ],
+            "scores": [1.0],
         }
     ]
 
@@ -126,5 +127,6 @@ def test_caption_to_phrase_grounding_image_ft(unzip_model):
                 ]
             ],
             "labels": ["screw"],
+            "scores": [1.0],
         }
     ]
