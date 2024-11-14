@@ -23,6 +23,7 @@ def test_caption_to_phrase_grounding_cereal(shared_model):
         {
             "bboxes": [],
             "labels": [],
+            "scores": [],
         }
     ]
 
