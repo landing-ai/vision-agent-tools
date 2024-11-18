@@ -203,6 +203,17 @@ def test_filter_valid_bboxes():
     assert results == predictions
 
 
+def test_filter_wrong_order():
+    predictions = {
+        "bboxes": [[326.0, 362.6, 225.8, 262.9], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (835, 453)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 0]], "labels": ["sheep"]}
+
+
 def test_filter_invalid_bboxes_negative_coords():
     predictions = {
         "bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]],
