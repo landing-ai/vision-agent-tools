@@ -211,7 +211,7 @@ def test_filter_wrong_order():
     image_size = (835, 453)
 
     results = filter_bbox_predictions(predictions, image_size)
-    assert results == {"bboxes": [[50, 60, 70, 0]], "labels": ["sheep"]}
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
 
 
 def test_filter_invalid_bboxes_negative_coords():
