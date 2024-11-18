@@ -216,7 +216,7 @@ def _filter_invalid_bboxes(
     invalid_indices = []
 
     for idx, bbox in enumerate(predictions[bboxes_key]):
-        bbox_ceil = [math.ceil(num) for num in bbox]
+        bbox_ceil = [math.floor(num) for num in bbox]
         x1, y1, x2, y2 = bbox_ceil
         if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
             invalid_indices.append(idx)
