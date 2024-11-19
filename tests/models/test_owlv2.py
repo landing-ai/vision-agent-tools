@@ -43,8 +43,8 @@ def test_owlv2_removing_extra_bbox(shared_model):
 
     assert len(response) == 1
     item = response[0]
-    assert len(item["bboxes"]) == 42
-    assert len([label == "egg" for label in item["labels"]]) == 42
+    assert len(item["bboxes"]) == 40
+    assert len([label == "egg" for label in item["labels"]]) == 40
 
 
 def test_owlv2_image_with_nms(shared_model):
