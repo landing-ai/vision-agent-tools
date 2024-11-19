@@ -17,9 +17,18 @@ def filter_bbox_predictions(
 ) -> dict[str, Any]:
     new_preds = {}
 
-    # Remove the whole image bounding box if it is predicted
-    bboxes_to_remove = _remove_whole_image_bbox(predictions, image_size, bboxes_key)
+    # Remove invalid bboxes, other filters rely on well formed bboxes
+    bboxes_to_remove = _filter_invalid_bboxes(
+        predictions=predictions,
+        image_size=image_size,
+        bboxes_key=bboxes_key,
+    )
+
     new_preds = _remove_bboxes(predictions, bboxes_to_remove)
+
+    # Remove the whole image bounding box if it is predicted
+    bboxes_to_remove = _remove_whole_image_bbox(new_preds, image_size, bboxes_key)
+    new_preds = _remove_bboxes(new_preds, bboxes_to_remove)
 
     # Apply a dummy agnostic Non-Maximum Suppression (NMS) to get rid of any
     # overlapping predictions on the same object
@@ -183,3 +192,32 @@ def _contains(box_a, box_b):
         and x_max_a >= x_max_b
         and y_max_a >= y_max_b
     )
+
+
+def _filter_invalid_bboxes(
+    predictions: dict[str, Any],
+    image_size: tuple[int, int],
+    bboxes_key: str = "bboxes",
+) -> list[int]:
+    """Filters out invalid bounding boxes from the given predictions and
+    returns a list of indices of invalid boxes.
+
+    Args:
+        predictions: A dictionary containing 'bboxes' and 'labels' keys.
+        image_size: A tuple representing the image width and height.
+        bboxes_key: The key for bounding boxes in the predictions dictionary.
+
+    Returns:
+        A list of indices of invalid bounding boxes.
+    """
+    width, height = image_size
+
+    invalid_indices = []
+
+    for idx, bbox in enumerate(predictions[bboxes_key]):
+        x1, y1, x2, y2 = bbox
+        if not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height):
+            invalid_indices.append(idx)
+            _LOGGER.warning(f"Removing invalid bbox {bbox}")
+
+    return invalid_indices

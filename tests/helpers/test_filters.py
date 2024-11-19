@@ -190,3 +190,90 @@ def test_filter_bbox_predictions():
             "sheep",
         ],
     }
+
+
+def test_filter_valid_bboxes():
+    predictions = {
+        "bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (100, 100)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == predictions
+
+
+def test_filter_wrong_order():
+    predictions = {
+        "bboxes": [[326.0, 362.6, 225.8, 262.9], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (835, 453)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
+
+
+def test_filter_invalid_bboxes_negative_coords():
+    predictions = {
+        "bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (100, 100)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
+
+
+def test_filter_invalid_bboxes_out_of_bounds():
+    predictions = {
+        "bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (100, 100)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]}
+
+
+def test_filter_invalid_bboxes_mixed_valid_invalid():
+    predictions = {
+        "bboxes": [
+            [10, 20, 30, 40],
+            [-10, 20, 30, 40],
+            [50, 60, 70, 80],
+            [110, 20, 120, 40],
+        ],
+        "labels": ["sheep", "sheep"],
+    }
+    image_size = (100, 100)
+
+    results = filter_bbox_predictions(predictions, image_size)
+    assert results == {
+        "bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]],
+        "labels": ["sheep"],
+    }
+
+
+def test_filter_invalid_bboxes():
+    predictions_list = [
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[-10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 110, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 40, 70]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 60]], "labels": ["sheep", "sheep"]},
+    ]
+
+    image_size = (100, 100)
+
+    expected_results = [
+        {"bboxes": [[10, 20, 30, 40], [50, 60, 70, 80]], "labels": ["sheep", "sheep"]},
+        {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]},
+        {"bboxes": [[50, 60, 70, 80]], "labels": ["sheep"]},
+        {"bboxes": [[10, 20, 30, 40]], "labels": ["sheep"]},
+        {"bboxes": [[10, 20, 30, 40]], "labels": ["sheep"]},
+    ]
+
+    for idx, prediction in enumerate(predictions_list):
+        results = filter_bbox_predictions(prediction, image_size)
+        assert results == expected_results[idx]
