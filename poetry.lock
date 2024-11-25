@@ -5451,9 +5451,10 @@ nsfw-classification = ["scipy", "transformers"]
 owlv2 = ["scipy", "transformers"]
 qr-reader = ["qreader"]
 qwen2-vl = ["flash-attn", "flash-attn", "flash-attn", "qwen_vl_utils", "transformers"]
+sam-2-model = ["sam-2"]
 siglip = ["flash-attn", "flash-attn", "flash-attn", "protobuf", "sentencepiece", "transformers"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "faa4d40e75f0ed73825b5505e4efc465dca4ac257c42e7ae1dd17aa8d647ae3f"
+content-hash = "609f0b5acbfe5445b2a5d60095a4df3979327d0c5861fad2e38b091ee72caf21"

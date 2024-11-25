@@ -45,7 +45,7 @@ qwen_vl_utils = { version = "^0.0.8", optional = true }
 
 # this dependency is just here due to the ixc-25 model and because it's imported in one util file
 # that we don't use: https://huggingface.co/internlm/internlm-xcomposer2d5-7b/blob/main/ixc_utils.py#L9
-# as soon as they remove it we can extinguish from our side too 
+# as soon as they remove it we can extinguish from our side too
 decord = { version = "^0.6.0", optional = true }
 
 diffusers = { git = "https://github.com/huggingface/diffusers.git", branch = "main", optional = true }
@@ -117,6 +117,7 @@ ixc-25 = ["transformers", "lmdeploy", "decord"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
 qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
 siglip = ["flash-attn", "transformers", "sentencepiece", "protobuf"]
+sam-2-model = ["sam-2"]
 
 [[tool.poetry.source]]
 name = "torch_cuda118"
