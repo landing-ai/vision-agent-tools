@@ -105,7 +105,7 @@ class ODResponse(BaseModel):
     labels: list[str] = Field(
         description="list of labels corresponding to each bounding box"
     )
-    bboxes: list[list[float]] = Field(
+    bboxes: list[BoundingBox] = Field(
         description="list of bounding boxes, each represented as [x_min, y_min, x_max, y_max]"
     )
 
@@ -170,10 +170,12 @@ class ObjBboxAndMaskLabel(BaseModel):
 
     id: int
     label: str
-    bbox: list[float]
+    score: float
+    bbox: BoundingBox
     mask: SegmentationBitMask
+    logits: SegmentationBitMask | None
 
-    @field_serializer('mask')
+    @field_serializer("mask")
     def serialize_mask(self, mask: SegmentationBitMask, _info):
         return _binary_mask_to_rle(mask)
 
@@ -186,7 +188,7 @@ class ObjMaskLabel(BaseModel):
     logits: SegmentationBitMask | None
     mask: SegmentationBitMask
 
-    @field_serializer('mask')
+    @field_serializer("mask")
     def serialize_mask(self, mask: SegmentationBitMask, _info):
         return _binary_mask_to_rle(mask)
 

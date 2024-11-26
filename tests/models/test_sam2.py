@@ -28,7 +28,7 @@ def test_sam2_point_segmentation_image(shared_model, rle_decode_array):
     assert len(frame) == 1  # annotations
     annotations = frame[0]
 
-    assert annotations.keys() == {"id", "score", "mask", "logits"}
+    assert annotations.keys() == {"id", "label", "score", "bbox", "mask", "logits"}
     assert annotations["id"] == 0
     assert annotations["score"] == 0.9140625
     reverted_masks = rle_decode_array(annotations["mask"])
@@ -63,7 +63,7 @@ def test_sam2_box_segmentation_image(shared_model, rle_decode_array):
     assert len(frame) == 2  # annotations
     expected_scores = [0.953125, 0.921875]
     for idx, (score, annotation) in enumerate(zip(expected_scores, frame)):
-        assert annotation.keys() == {"id", "score", "mask", "logits"}
+        assert annotation.keys() == {"id", "label", "score", "bbox", "mask", "logits"}
         assert annotation["id"] == idx
         assert annotation["score"] == score
         reverted_masks = rle_decode_array(annotation["mask"])
@@ -97,7 +97,7 @@ def test_sam2_video_detection_segmentation(shared_model, rle_decode_array):
     for frame in response:
         assert len(frame) == 1  # annotations
         annotation = frame[0]
-        assert annotation.keys() == {"id", "score", "mask", "logits"}
+        assert annotation.keys() == {"id", "label", "score", "bbox", "mask", "logits"}
         assert annotation["id"] == 0
         assert annotation["score"] is None
         reverted_masks = rle_decode_array(annotation["mask"])

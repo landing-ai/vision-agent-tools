@@ -15,7 +15,7 @@ def test_region_proposal(shared_model):
         "task": task,
     }
     response = shared_model(**payload)
-    assert response == [{"bboxes": [], "labels": []}]
+    assert response == [{"bboxes": [], "labels": [], "scores": []}]
 
 
 def test_region_proposal_ft(unzip_model):

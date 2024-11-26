@@ -14,10 +14,9 @@ from vision_agent_tools.shared_types import (
     BaseMLModel,
     Device,
     VideoNumpy,
-    ODResponse,
+    ODWithScoreResponse,
     ObjBboxAndMaskLabel,
     Sam2BitMask,
-    ObjMaskLabel,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +34,7 @@ class Sam2Config(BaseModel):
     )
 
 
-class Florence2Sam2Request(BaseModel):
+class Sam2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     images: list[Image.Image] | None = Field(
@@ -45,7 +44,7 @@ class Florence2Sam2Request(BaseModel):
         None,
         description="A numpy array containing the different images, representing the video.",
     )
-    bboxes: list[ODResponse] | None = Field(
+    bboxes: list[ODWithScoreResponse] | None = Field(
         None,
         description="A list representing bboxes predictions for all frames.",
     )
@@ -80,8 +79,8 @@ class Sam2(BaseMLModel):
     """It receives images, a prompt and returns the instance segmentation for the
     text prompt in each frame."""
 
-    def __init__(self, model_config: Sam2Config | None = Sam2Config()):
-        self.model_config = model_config
+    def __init__(self, model_config: Sam2Config | None = None):
+        self.model_config = model_config or Sam2Config()
         self.image_model = SAM2ImagePredictor.from_pretrained(
             self.model_config.hf_model
         )
@@ -104,31 +103,36 @@ class Sam2(BaseMLModel):
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         *,
-        bboxes: list[ODResponse] | None = None,
+        bboxes: list[ODWithScoreResponse] | None = None,
         chunk_length_frames: int | None = 20,
         input_box: np.ndarray | None = None,
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
         iou_threshold: float = 0.6,
+        confidence: float = 0.1,
     ) -> list[list[dict[str, Any]]]:
         """Run Sam2 on images or video and find segments based on the input.
 
         Returns:
-            list[list[ObjMaskLabel]]:
+            list[list[ODWithScoreResponse]]:
                 If bboxes are None, it returns an object with the masks, scores
                 and logits. Image example:
                     [[{
                         "id": 0,
+                        "label": "",
                         "mask": rle,
+                        "bbox": [x_min, y_min, x_max, y_max],
                         "score": 0.5,
                         "logits": HW,
                     }]]
                 Video example:
                     [[{
                         "id": 0,
+                        "label": ""
                         "mask": rle,
-                        "score": None,
+                        "bbox": [0,0,0,0]
+                        "score": 0.0,
                         "logits": None,
                     }]]
 
@@ -136,13 +140,15 @@ class Sam2(BaseMLModel):
                 If bboxes are not None it includes the masks alongside the bboxes.
                 and labels. For example:
                     [[{
-                        "id": 0,
+                        "id": 1,
                         "mask": rle,
                         "label": "car",
-                        "bbox": [0.1, 0.2, 0.3, 0.4]
+                        "bbox": [0.1, 0.2, 0.3, 0.4],
+                        "score": 0.55,
+                        "logits": None,
                     }]]
         """
-        Florence2Sam2Request(
+        Sam2Request(
             images=images,
             video=video,
             input_box=input_box,
@@ -172,6 +178,7 @@ class Sam2(BaseMLModel):
                     bboxes,
                     chunk_length_frames=chunk_length_frames,
                     iou_threshold=iou_threshold,
+                    confidence=confidence,
                 )
             else:
                 predictions = self._predict_video(
@@ -218,12 +225,12 @@ class Sam2(BaseMLModel):
         self,
         image: Image.Image,
         *,
-        bboxes_per_frame: ODResponse | None = None,
+        bboxes_per_frame: ODWithScoreResponse | None = None,
         input_box: np.ndarray | None = None,
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
-    ) -> list[ObjMaskLabel] | list[ObjBboxAndMaskLabel]:
+    ) -> list[ObjBboxAndMaskLabel]:
         """Process the input image with the Sam2 image predictor using the given prompts.
 
         Args:
@@ -241,14 +248,16 @@ class Sam2(BaseMLModel):
                 Flag whether to output multiple masks.
 
         Returns:
-            list[ObjMaskLabel] | list[ObjBboxAndMaskLabel]:
+            list[ObjBboxAndMaskLabel]:
                 The output of the Sam2 model based on the input image.
                 list[ObjBboxAndMaskLabel] if bboxes_per_frame is not None:
                 [{
                     "id": 0,
                     "mask": rle,
                     "label": "car",
-                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                    "bbox": [0.1, 0.2, 0.3, 0.4],
+                    "score": 0.55,
+                    "logits": None
                 }]
         """
         if bboxes_per_frame is not None:
@@ -265,10 +274,11 @@ class Sam2(BaseMLModel):
     def _predict_video_with_bboxes(
         self,
         video: VideoNumpy,
-        bboxes: list[ODResponse],
+        bboxes: list[ODWithScoreResponse],
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
+        confidence: float = 0.1,
     ) -> list[list[ObjBboxAndMaskLabel]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
@@ -279,7 +289,9 @@ class Sam2(BaseMLModel):
                     "id": 0,
                     "mask": rle,
                     "label": "car",
-                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                    "bbox": [0.1, 0.2, 0.3, 0.4],
+                    "score": 0.55,
+                    "logits": None,
                 }]]
         """
         video_shape = video.shape
@@ -309,7 +321,22 @@ class Sam2(BaseMLModel):
                     Image.fromarray(video[start_frame_idx]),
                     bboxes_per_frame=bboxes[start_frame_idx],
                 )
-
+                # len(objs) == 1 when there are no bboxes values and the calculated score comes from SAM2
+                # and not from the text2od model
+                if len(objs) == 1 and objs[0].score < confidence:
+                    empty_pred = [
+                        ObjBboxAndMaskLabel(
+                            id=0,
+                            label="",
+                            score=0.0,
+                            bbox=[0, 0, 0, 0],
+                            mask=np.zeros((video_shape[1], video_shape[2])),
+                            logits=None,
+                        )
+                    ]
+                    video_segments.append(empty_pred)
+                    last_chunk_frame_pred = empty_pred
+                    continue
                 # updates the predictions based on the predictions overlaps
                 updated_objs, objects_count = _update_reference_predictions(
                     last_chunk_frame_pred,
@@ -321,9 +348,11 @@ class Sam2(BaseMLModel):
                 # Add new label points to the video predictor coming from the
                 # bboxes predictions
                 annotation_id_to_label = {}
+                annotation_id_to_score = {}
                 for updated_obj in updated_objs:
                     annotation_id = updated_obj.id
                     annotation_id_to_label[annotation_id] = updated_obj.label
+                    annotation_id_to_score[annotation_id] = updated_obj.score
                     _, _, out_mask_logits = self.video_model.add_new_points_or_box(
                         inference_state=inference_state,
                         frame_idx=start_frame_idx,
@@ -350,10 +379,12 @@ class Sam2(BaseMLModel):
                         bbox = _mask_to_bbox(pred_mask)
                         video_segments[out_frame_idx].append(
                             ObjBboxAndMaskLabel(
+                                id=out_obj_id,
                                 label=annotation_id_to_label[out_obj_id],
+                                score=annotation_id_to_score[out_obj_id],
                                 bbox=bbox,
                                 mask=pred_mask,
-                                id=out_obj_id,
+                                logits=None,
                             )
                         )
 
@@ -375,11 +406,11 @@ class Sam2(BaseMLModel):
         input_box: np.ndarray | None = None,
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
-    ) -> list[list[ObjMaskLabel]]:
+    ) -> list[list[ObjBboxAndMaskLabel]]:
         """Process the input video with the SAM2 video predictor using the given prompts.
 
         Returns:
-            list[list[ObjMaskLabel]]:
+            list[list[ObjBboxAndMaskLabel]]:
                 The output of the Sam2 model based on the input image.
                 [[{
                     "id": 0,
@@ -428,8 +459,13 @@ class Sam2(BaseMLModel):
                         continue
 
                     video_segments[out_frame_idx].append(
-                        ObjMaskLabel(
-                            score=None, logits=None, mask=pred_mask, id=out_obj_id
+                        ObjBboxAndMaskLabel(
+                            score=1.0,
+                            logits=None,
+                            label="",
+                            mask=pred_mask,
+                            id=out_obj_id,
+                            bbox=_mask_to_bbox(pred_mask),
                         )
                     )
 
@@ -445,7 +481,7 @@ class Sam2(BaseMLModel):
         input_points: np.ndarray | None = None,
         input_label: np.ndarray | None = None,
         multimask_output: bool = False,
-    ) -> list[ObjMaskLabel]:
+    ) -> list[ObjBboxAndMaskLabel]:
         annotations = []
         sam2_image_pred = self._predict_image_model(
             image,
@@ -464,10 +500,17 @@ class Sam2(BaseMLModel):
                 if len(sam2_logits.shape) == 3
                 else sam2_logits[:, :]
             )
+
+            pred_mask = mask > 0.0
+            if np.max(pred_mask) == 0:
+                continue
+
             annotations.append(
-                ObjMaskLabel(
+                ObjBboxAndMaskLabel(
                     id=idx,
+                    label="",
                     score=sam2_image_pred.scores[idx],
+                    bbox=_mask_to_bbox(mask),
                     mask=mask,
                     logits=logits,
                 )
@@ -475,13 +518,14 @@ class Sam2(BaseMLModel):
         return annotations
 
     def _get_bbox_and_mask_objs(
-        self, image: Image.Image, bboxes_per_frame: ODResponse | None = None
+        self, image: Image.Image, bboxes_per_frame: ODWithScoreResponse | None = None
     ) -> list[ObjBboxAndMaskLabel]:
         annotations = []
         preds = [
             {
                 "bbox": bboxes_per_frame.bboxes[idx],
                 "label": bboxes_per_frame.labels[idx],
+                "score": bboxes_per_frame.scores[idx],
             }
             for idx in range(len(bboxes_per_frame.labels))
         ]
@@ -504,9 +548,11 @@ class Sam2(BaseMLModel):
             annotations.append(
                 ObjBboxAndMaskLabel(
                     id=idx,
+                    label=preds[idx]["label"],
+                    score=preds[idx]["score"],
                     bbox=preds[idx]["bbox"],
                     mask=mask,
-                    label=preds[idx]["label"],
+                    logits=None,
                 )
             )
         return annotations
@@ -526,6 +572,8 @@ def _update_reference_predictions(
             of the video propagation.
         new_predictions:
             List containing the annotation predictions of the FlorenceV2 model prediction.
+        objects_count:
+            The current number of objects found and count
         iou_threshold:
             The IoU threshold value used to compare last_predictions and new_predictions
             annotation objects.
@@ -566,7 +614,7 @@ def _mask_to_bbox(mask: np.ndarray) -> list[int]:
 
 
 def _serialize(
-    frames: list[list[ObjMaskLabel]] | list[list[ObjBboxAndMaskLabel]],
+    frames: list[list[ObjBboxAndMaskLabel]],
 ) -> list[list[dict[str, Any]]]:
     return [
         [detection.model_dump() for detection in detections] for detections in frames

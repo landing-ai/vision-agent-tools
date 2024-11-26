@@ -9,24 +9,28 @@ from pydantic import BaseModel, Field, ConfigDict, model_validator
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     VideoNumpy,
-    PromptTask,
     ODWithScoreResponse,
 )
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
-from vision_agent_tools.models.florence2 import Florence2, Florence2Config
+from vision_agent_tools.models.florence2 import Florence2Config
+from vision_agent_tools.models.owlv2 import OWLV2Config
+from vision_agent_tools.tools.text_to_object_detection import (
+    TextToObjectDetection,
+    TextToObjectDetectionModel,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Florence2SAM2Config(BaseModel):
-    sam2_config: Sam2Config | None = Sam2Config()
-    florence2_config: Florence2Config | None = Florence2Config()
+class Text2ODSAM2Config(BaseModel):
+    sam2_config: Sam2Config | None = None
+    text2od_config: Florence2Config | OWLV2Config | None = None
 
 
-class Florence2Sam2Request(BaseModel):
+class Text2ODSam2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    prompt: str | None = Field(
+    prompts: list[str] | None = Field(
         "",
         description="The text input that complements the media to find or track objects.",
     )
@@ -54,6 +58,12 @@ class Florence2Sam2Request(BaseModel):
         le=1.0,
         description="The non-maximum suppression threshold value used to filter the Florence2 predictions.",
     )
+    confidence: float = Field(
+        1.0,
+        ge=0.1,
+        le=1.0,
+        description="The confidence threshold for model predictions.",
+    )
 
     @model_validator(mode="after")
     def check_images_and_video(self) -> Self:
@@ -70,35 +80,41 @@ class Florence2Sam2Request(BaseModel):
         return self
 
 
-class Florence2SAM2(BaseMLModel):
+class Text2ODSAM2(BaseMLModel):
     """A class that receives a video or images, a text prompt and returns the instance
     segmentation based on the input for each frame.
     """
 
     def __init__(
-        self, model_config: Florence2SAM2Config | None = Florence2SAM2Config()
+        self,
+        model: TextToObjectDetectionModel = TextToObjectDetectionModel.OWLV2,
+        model_config: Text2ODSAM2Config | None = None,
     ):
         """
-        Initializes the Florence2SAM2 object with a pre-trained Florence2 model
+        Initializes the Text2ODSAM2 object with a pre-trained text2od model
         and a SAM2 model.
         """
-        self._model_config = model_config
-        self._florence2 = Florence2(self._model_config.florence2_config)
+        self._model = model
+        self._model_config = model_config or Text2ODSAM2Config()
+        self._text2od = TextToObjectDetection(
+            model=model, model_config=self._model_config.text2od_config
+        )
         self._sam2 = Sam2(self._model_config.sam2_config)
 
     @torch.inference_mode()
     def __call__(
         self,
-        prompt: str,
+        prompts: list[str],
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         *,
         chunk_length_frames: int | None = 20,
         iou_threshold: float = 0.6,
         nms_threshold: float = 0.3,
+        confidence: float = 0.1,
     ) -> list[list[dict[str, Any]]]:
         """
-        Florence2Sam2 model find objects in images and track objects in a video.
+        Text2ODSam2 model find objects in images and track objects in a video.
 
         Args:
             prompt:
@@ -115,7 +131,9 @@ class Florence2SAM2(BaseMLModel):
                 new_predictions objects.
             nms_threshold:
                 The non-maximum suppression threshold value used to filter the
-                Florence2 predictions.
+                Text2OD predictions.
+            confidence:
+                Confidence threshold for model predictions
 
         Returns:
             list[list[dict[str, Any]]]:
@@ -124,35 +142,39 @@ class Florence2SAM2(BaseMLModel):
                     "id": 0,
                     "mask": rle,
                     "label": "car",
-                    "bbox": [0.1, 0.2, 0.3, 0.4]
+                    "bbox": [0.1, 0.2, 0.3, 0.4],
+                    "score": 0.55,
+                    "logits": None,
                 }]]
         """
-        Florence2Sam2Request(
-            prompt=prompt,
+        Text2ODSam2Request(
+            prompts=prompts,
             images=images,
             video=video,
             chunk_length_frames=chunk_length_frames,
             iou_threshold=iou_threshold,
             nms_threshold=nms_threshold,
+            confidence=confidence,
         )
 
-        florence2_payload = {
-            "task": PromptTask.CAPTION_TO_PHRASE_GROUNDING,
-            "prompt": prompt,
+        text2od_payload = {
+            "prompts": prompts,
             "images": images,
             "video": video,
-            "batch_size": 5,
             "nms_threshold": nms_threshold,
         }
-        if video is not None:
-            florence2_payload["chunk_length_frames"] = chunk_length_frames
+        if video is not None and self._model is TextToObjectDetectionModel.FLORENCE2:
+            text2od_payload["chunk_length_frames"] = chunk_length_frames
+        if confidence is not None:
+            text2od_payload["confidence"] = confidence
 
-        florence2_response = self._florence2(**florence2_payload)
+        text2od_payload_response = self._text2od(**text2od_payload)
         od_response = [
-            ODWithScoreResponse(**item) if item is not None else None
-            for item in florence2_response
+            ODWithScoreResponse(**item)
+            if item is not None and len(item.get("labels")) > 0
+            else None
+            for item in text2od_payload_response
         ]
-
         if images is not None:
             return self._sam2(
                 images=images,
@@ -165,12 +187,5 @@ class Florence2SAM2(BaseMLModel):
                 bboxes=od_response,
                 chunk_length_frames=chunk_length_frames,
                 iou_threshold=iou_threshold,
+                confidence=confidence,
             )
-
-    def load_base(self) -> None:
-        """Load the base Florence-2 model."""
-        self._florence2.load_base()
-
-    def fine_tune(self, checkpoint: str) -> None:
-        """Load the fine-tuned Florence-2 model."""
-        self._florence2.fine_tune(checkpoint)

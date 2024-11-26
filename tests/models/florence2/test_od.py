@@ -17,6 +17,7 @@ def test_large_model_od_image(shared_large_model):
         {
             "bboxes": [],
             "labels": [],
+            "scores": [],
         }
     ]
 
@@ -34,6 +35,7 @@ def test_small_model_od_image(shared_model):
         {
             "bboxes": [],
             "labels": [],
+            "scores": [],
         }
     ]
 
@@ -64,6 +66,7 @@ def test_od_ft(unzip_model):
                 [738.3040161132812, 1373.18408203125, 881.6640625, 1557.5040283203125]
             ],
             "labels": ["screw"],
+            "scores": [1.0],
         }
     ]
 
@@ -94,6 +97,7 @@ def test_large_model_base_with_small_model_od_ft(unzip_model):
                 [738.3040161132812, 1373.18408203125, 881.6640625, 1557.5040283203125]
             ],
             "labels": ["screw"],
+            "scores": [1.0],
         }
     ]
 
@@ -124,6 +128,7 @@ def test_od_ft_and_base_and_ft(unzip_model):
                 [738.3040161132812, 1373.18408203125, 881.6640625, 1557.5040283203125]
             ],
             "labels": ["screw"],
+            "scores": [1.0],
         }
     ]
 
@@ -139,6 +144,7 @@ def test_od_ft_and_base_and_ft(unzip_model):
         {
             "bboxes": [],
             "labels": [],
+            "scores": [],
         }
     ]
 
@@ -156,5 +162,6 @@ def test_od_ft_and_base_and_ft(unzip_model):
                 [738.3040161132812, 1373.18408203125, 881.6640625, 1557.5040283203125]
             ],
             "labels": ["screw"],
+            "scores": [1.0],
         }
     ]

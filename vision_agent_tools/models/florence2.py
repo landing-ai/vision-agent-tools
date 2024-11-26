@@ -15,7 +15,7 @@ from vision_agent_tools.shared_types import (
     Device,
     Florence2ResponseType,
     BaseMLModel,
-    ODResponse,
+    ODWithScoreResponse,
     Florence2OCRResponse,
     Florence2TextResponse,
     Florence2OpenVocabularyResponse,
@@ -360,7 +360,11 @@ def _serialize(
                 | PromptTask.REGION_PROPOSAL
             ):
                 detections.append(
-                    ODResponse(bboxes=detection["bboxes"], labels=detection["labels"])
+                    ODWithScoreResponse(
+                        bboxes=detection["bboxes"],
+                        labels=detection["labels"],
+                        scores=[1.0] * len(detection["labels"]),
+                    )
                 )
             case PromptTask.OCR_WITH_REGION:
                 detections.append(
