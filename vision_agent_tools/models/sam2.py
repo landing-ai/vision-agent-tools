@@ -311,15 +311,11 @@ class Sam2(BaseMLModel):
                 ):
                     _LOGGER.debug("Skipping predictions due to empty bounding boxes")
 
-                    next_frame_idx = (
-                        start_frame_idx + chunk_length_frames
-                        if (start_frame_idx + chunk_length_frames) < num_frames
-                        else num_frames
+                    next_frame_idx = min(
+                        start_frame_idx + chunk_length_frames, num_frames
                     )
 
                     empty_frames = next_frame_idx - start_frame_idx
-
-                    _LOGGER.debug(f"Adding {empty_frames} items to the list")
 
                     video_segments.extend([[] for _ in range(empty_frames)])
                     continue
