@@ -305,19 +305,22 @@ class Sam2(BaseMLModel):
             for start_frame_idx in range(0, num_frames, chunk_length_frames):
                 self.video_model.reset_state(inference_state)
 
-                next_frame_idx = (
-                    start_frame_idx + chunk_length_frames
-                    if (start_frame_idx + chunk_length_frames) < num_frames
-                    else num_frames - 1
-                )
-
                 if (
                     bboxes[start_frame_idx] is None
                     or len(bboxes[start_frame_idx].bboxes) == 0
                 ):
                     _LOGGER.debug("Skipping predictions due to empty bounding boxes")
 
+                    next_frame_idx = (
+                        start_frame_idx + chunk_length_frames
+                        if (start_frame_idx + chunk_length_frames) < num_frames
+                        else num_frames
+                    )
+
                     empty_frames = next_frame_idx - start_frame_idx
+
+                    _LOGGER.debug(f"Adding {empty_frames} items to the list")
+
                     video_segments.extend([[] for _ in range(empty_frames)])
                     continue
 
@@ -372,10 +375,14 @@ class Sam2(BaseMLModel):
                                 id=out_obj_id,
                             )
                         )
-
+                index = (
+                    start_frame_idx + chunk_length_frames
+                    if (start_frame_idx + chunk_length_frames) < num_frames
+                    else num_frames - 1
+                )
                 # Save the last frame predictions to later update the newly found
                 # object ids
-                last_chunk_frame_pred = video_segments[next_frame_idx]
+                last_chunk_frame_pred = video_segments[index]
 
         return video_segments
 
