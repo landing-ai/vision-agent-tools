@@ -311,7 +311,10 @@ class Sam2(BaseMLModel):
                     else num_frames - 1
                 )
 
-                if len(bboxes[start_frame_idx].bboxes) == 0:
+                if (
+                    bboxes[start_frame_idx] is None
+                    or len(bboxes[start_frame_idx].bboxes) == 0
+                ):
                     _LOGGER.debug("Skipping predictions due to empty bounding boxes")
 
                     num_frames = next_frame_idx - start_frame_idx
