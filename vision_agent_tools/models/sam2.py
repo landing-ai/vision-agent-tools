@@ -331,6 +331,15 @@ class Sam2(BaseMLModel):
                         box=updated_obj.bbox,
                     )
 
+                if (
+                    not inference_state["output_dict"]["cond_frame_outputs"]
+                    and not inference_state["output_dict"]["non_cond_frame_outputs"]
+                ):
+                    _LOGGER.warning(
+                        f"No points available for propagation at frame {start_frame_idx}. Skipping propagation."
+                    )
+                    continue
+
                 # Propagate the predictions on the given video segment (chunk)
                 for (
                     out_frame_idx,
