@@ -317,7 +317,14 @@ class Sam2(BaseMLModel):
 
                     empty_frames = next_frame_idx - start_frame_idx
 
-                    video_segments.extend([[] for _ in range(empty_frames)])
+                    remaining_frames = num_frames - len(video_segments)
+
+                    if remaining_frames <= 0:
+                        break
+
+                    frames_to_add = min(empty_frames, remaining_frames)
+
+                    video_segments.extend([[] for _ in range(frames_to_add)])
                     continue
 
                 objs = self._predict_image(
