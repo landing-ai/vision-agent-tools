@@ -1,23 +1,23 @@
 import logging
 from typing import Any
 
-import torch
 import numpy as np
+import torch
 from PIL import Image
-from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 from sam2.sam2_video_predictor import SAM2VideoPredictor
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from typing_extensions import Self
 
-from vision_agent_tools.models.utils import get_device, calculate_mask_iou
+from vision_agent_tools.models.utils import calculate_mask_iou, get_device
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     Device,
-    VideoNumpy,
-    ODResponse,
     ObjBboxAndMaskLabel,
-    Sam2BitMask,
     ObjMaskLabel,
+    ODResponse,
+    Sam2BitMask,
+    VideoNumpy,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -305,6 +305,19 @@ class Sam2(BaseMLModel):
             for start_frame_idx in range(0, num_frames, chunk_length_frames):
                 self.video_model.reset_state(inference_state)
 
+                next_frame_idx = (
+                    start_frame_idx + chunk_length_frames
+                    if (start_frame_idx + chunk_length_frames) < num_frames
+                    else num_frames - 1
+                )
+
+                if len(bboxes[start_frame_idx].bboxes) == 0:
+                    _LOGGER.debug("Skipping predictions due to empty bounding boxes")
+
+                    num_frames = next_frame_idx - start_frame_idx
+                    video_segments.extend([[] for _ in range(num_frames)])
+                    continue
+
                 objs = self._predict_image(
                     Image.fromarray(video[start_frame_idx]),
                     bboxes_per_frame=bboxes[start_frame_idx],
@@ -330,15 +343,6 @@ class Sam2(BaseMLModel):
                         obj_id=annotation_id,
                         box=updated_obj.bbox,
                     )
-
-                if (
-                    not inference_state["output_dict"]["cond_frame_outputs"]
-                    and not inference_state["output_dict"]["non_cond_frame_outputs"]
-                ):
-                    _LOGGER.warning(
-                        f"No points available for propagation at frame {start_frame_idx}. Skipping propagation."
-                    )
-                    continue
 
                 # Propagate the predictions on the given video segment (chunk)
                 for (
@@ -366,14 +370,9 @@ class Sam2(BaseMLModel):
                             )
                         )
 
-                index = (
-                    start_frame_idx + chunk_length_frames
-                    if (start_frame_idx + chunk_length_frames) < num_frames
-                    else num_frames - 1
-                )
                 # Save the last frame predictions to later update the newly found
                 # object ids
-                last_chunk_frame_pred = video_segments[index]
+                last_chunk_frame_pred = video_segments[next_frame_idx]
 
         return video_segments
 

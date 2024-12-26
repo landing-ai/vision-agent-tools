@@ -1,12 +1,12 @@
 import json
 
-import pytest
 import numpy as np
+import pytest
 from PIL import Image
 
-from vision_agent_tools.shared_types import Florence2ModelName
 from vision_agent_tools.models.florence2 import Florence2Config
 from vision_agent_tools.models.florence2_sam2 import Florence2SAM2, Florence2SAM2Config
+from vision_agent_tools.shared_types import Florence2ModelName
 
 
 def test_florence2sam2_image(shared_model, assert_predictions):
@@ -95,6 +95,24 @@ def test_florence2sam2_video(shared_model, assert_predictions):
     prompt = "tomato"
 
     response = shared_model(prompt, video=test_video)
+
+    with open(
+        "tests/models/data/results/florence2sam2_video_results.json", "r"
+    ) as dest:
+        expected_results = json.load(dest)
+
+    assert_predictions(response, expected_results, img_size[::-1])
+
+
+def test_florence2sam2_video_chunk_length(shared_model, assert_predictions):
+    tomatoes_image = Image.open("tests/shared_data/images/tomatoes.jpg")
+    img_size = tomatoes_image.size
+    np_test_img = np.array(tomatoes_image, dtype=np.uint8)
+    zeros = np.zeros((img_size[1], img_size[0], 3), dtype=np.uint8)
+    test_video = np.array([np_test_img, zeros])
+    prompt = "tomato"
+
+    response = shared_model(prompt, video=test_video, chunk_length_frames=1)
 
     with open(
         "tests/models/data/results/florence2sam2_video_results.json", "r"
