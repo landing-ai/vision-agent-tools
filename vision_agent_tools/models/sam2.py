@@ -1,23 +1,23 @@
 import logging
 from typing import Any
 
-import torch
 import numpy as np
+import torch
 from PIL import Image
-from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 from sam2.sam2_video_predictor import SAM2VideoPredictor
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from typing_extensions import Self
 
-from vision_agent_tools.models.utils import get_device, calculate_mask_iou
+from vision_agent_tools.models.utils import calculate_mask_iou, get_device
 from vision_agent_tools.shared_types import (
     BaseMLModel,
     Device,
-    VideoNumpy,
-    ODResponse,
     ObjBboxAndMaskLabel,
-    Sam2BitMask,
     ObjMaskLabel,
+    ODResponse,
+    Sam2BitMask,
+    VideoNumpy,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -305,6 +305,28 @@ class Sam2(BaseMLModel):
             for start_frame_idx in range(0, num_frames, chunk_length_frames):
                 self.video_model.reset_state(inference_state)
 
+                if (
+                    bboxes[start_frame_idx] is None
+                    or len(bboxes[start_frame_idx].bboxes) == 0
+                ):
+                    _LOGGER.debug("Skipping predictions due to empty bounding boxes")
+
+                    next_frame_idx = min(
+                        start_frame_idx + chunk_length_frames, num_frames
+                    )
+
+                    empty_frames = next_frame_idx - start_frame_idx
+
+                    remaining_frames = num_frames - len(video_segments)
+
+                    if remaining_frames <= 0:
+                        break
+
+                    frames_to_add = min(empty_frames, remaining_frames)
+
+                    video_segments.extend([[] for _ in range(frames_to_add)])
+                    continue
+
                 objs = self._predict_image(
                     Image.fromarray(video[start_frame_idx]),
                     bboxes_per_frame=bboxes[start_frame_idx],
@@ -356,7 +378,6 @@ class Sam2(BaseMLModel):
                                 id=out_obj_id,
                             )
                         )
-
                 index = (
                     start_frame_idx + chunk_length_frames
                     if (start_frame_idx + chunk_length_frames) < num_frames

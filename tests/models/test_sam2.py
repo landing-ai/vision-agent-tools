@@ -1,9 +1,9 @@
-import pytest
 import numpy as np
+import pytest
 from PIL import Image
 
-from vision_agent_tools.shared_types import Device
 from vision_agent_tools.models.sam2 import Sam2, Sam2Config
+from vision_agent_tools.shared_types import Device, ODResponse
 
 
 def test_sam2_point_segmentation_image(shared_model, rle_decode_array):
@@ -69,6 +69,17 @@ def test_sam2_box_segmentation_image(shared_model, rle_decode_array):
         reverted_masks = rle_decode_array(annotation["mask"])
         assert reverted_masks.shape == test_image.size[::-1]
         assert annotation["logits"].shape == (256, 256)
+
+
+def test_sam2_empty_bounding_box(shared_model):
+    image_path = "tests/shared_data/images/tomatoes.jpg"
+    test_image = Image.open(image_path)
+
+    empty_bboxes = [ODResponse(labels=[], bboxes=[])]
+
+    response = shared_model(images=[test_image], bboxes=empty_bboxes)
+
+    assert response == [[]]
 
 
 def test_sam2_invalid_media(shared_model):
