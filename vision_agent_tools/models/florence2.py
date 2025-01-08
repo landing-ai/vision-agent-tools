@@ -54,8 +54,8 @@ class Florence2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     task: PromptTask = Field(description="The task to be performed on the image/video.")
-    prompt: Annotated[str | None, StringConstraints(min_length=1, max_length=800)] = (
-        Field("", description="The text input that complements the prompt task.")
+    prompt: Annotated[str | None, StringConstraints(max_length=800)] = Field(
+        "", description="The text input that complements the prompt task."
     )
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
