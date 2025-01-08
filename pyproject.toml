@@ -6,9 +6,9 @@ authors = ["Landing AI <dev@landing.ai>"]
 readme = "README.md"
 
 [tool.poetry.urls]
-"homepage" = "https://landing.ai"
-"repository" = "https://github.com/landing-ai/vision-agent-tools"
-"documentation" = "https://github.com/landing-ai/vision-agent-tools"
+"Homepage" = "https://landing.ai"
+"Repository" = "https://github.com/landing-ai/vision-agent-tools"
+"Documentation" = "https://github.com/landing-ai/vision-agent-tools"
 
 [build-system]
 requires = ["poetry-core>=1.8.0", "setuptools", "packaging", "wheel", "torch"]
