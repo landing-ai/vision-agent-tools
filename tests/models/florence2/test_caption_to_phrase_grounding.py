@@ -1,4 +1,7 @@
 import json
+
+import pytest
+import pydantic
 from PIL import Image
 
 from vision_agent_tools.models.florence2 import Florence2, Florence2Config
@@ -127,3 +130,20 @@ def test_caption_to_phrase_grounding_image_ft(unzip_model):
             "labels": ["screw"],
         }
     ]
+
+
+def test_caption_to_phrase_grounding_prompt_length_limit(shared_large_model):
+    image_path = "tests/shared_data/images/sheep_aerial.jpg"
+    task = PromptTask.CAPTION_TO_PHRASE_GROUNDING
+    prompt = ", ".join(
+        ["1"] * 268
+    )  # this string repeats the sequence `1, ` 267 times + `1` this gives a string of length 802
+    image = Image.open(image_path)
+
+    payload = {
+        "images": [image],
+        "task": task,
+        "prompt": prompt,
+    }
+    with pytest.raises(pydantic.ValidationError):
+        shared_large_model(**payload)

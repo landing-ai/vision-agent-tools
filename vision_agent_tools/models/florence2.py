@@ -1,12 +1,13 @@
 import logging
-from typing import Optional, Any
+from typing import Any
 
 import torch
 import numpy as np
 from PIL import Image
-from typing_extensions import Self
+from typing_extensions import Self, Annotated
 from transformers import AutoModelForCausalLM, AutoProcessor
 from pydantic import Field, BaseModel, model_validator, ConfigDict
+from pydantic.types import StringConstraints
 
 from vision_agent_tools.shared_types import (
     VideoNumpy,
@@ -53,8 +54,8 @@ class Florence2Request(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     task: PromptTask = Field(description="The task to be performed on the image/video.")
-    prompt: str | None = Field(
-        "", description="The text input that complements the prompt task."
+    prompt: Annotated[str | None, StringConstraints(min_length=1, max_length=800)] = (
+        Field("", description="The text input that complements the prompt task.")
     )
     images: list[Image.Image] | None = None
     video: VideoNumpy | None = None
@@ -109,7 +110,7 @@ class Florence2(BaseMLModel):
     def __call__(
         self,
         task: PromptTask,
-        prompt: Optional[str] = "",
+        prompt: str | None = "",
         images: list[Image.Image] | None = None,
         video: VideoNumpy | None = None,
         *,
