@@ -18,7 +18,7 @@ class Siglip(BaseMLModel):
 
     def __init__(
         self,
-        model_name: str | None = "google/siglip-base-patch16-224",
+        model_name: str | None = "google/siglip-so400m-patch14-384",
         device: Device | None = None,
     ):
         """
