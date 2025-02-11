@@ -36,7 +36,7 @@ scipy = { version = "^1.13.1", optional = true }
 peft = { version = "^0.11.1", optional = true }
 timm = { version = "^0.6.7", optional = true }
 einops = { version = "^0.8.0", optional = true }
-transformers = { extras = ["torch"], version = "^4.45.0", optional = true }
+transformers = { extras = ["torch"], version = "^4.48.0", optional = true }
 controlnet-aux = { version = "^0.0.9", optional = true }
 lmdeploy = { version = "^0.5.3", optional = true }
 sentencepiece = { version = "^0.2.0", optional = true }
