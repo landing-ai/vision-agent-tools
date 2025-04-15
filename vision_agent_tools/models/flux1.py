@@ -54,6 +54,7 @@ class Flux1(BaseMLModel):
         hf_model: str = "black-forest-labs/FLUX.1-schnell",
         dtype: torch.dtype = torch.bfloat16,
         enable_sequential_cpu_offload: bool = True,
+        hf_access_token: str | None = None,
     ):
         """
         Initializes the Flux1 image generation tool.
@@ -69,19 +70,19 @@ class Flux1(BaseMLModel):
         """
 
         self._pipeline_img_generation = FluxPipeline.from_pretrained(
-            hf_model, torch_dtype=dtype
+            hf_model, torch_dtype=dtype, token=hf_access_token
         )
         if enable_sequential_cpu_offload:
             self._pipeline_img_generation.enable_sequential_cpu_offload()
 
         self._pipeline_mask_inpainting = FluxInpaintPipeline.from_pretrained(
-            hf_model, torch_dtype=dtype
+            hf_model, torch_dtype=dtype, token=hf_access_token
         )
         if enable_sequential_cpu_offload:
             self._pipeline_mask_inpainting.enable_sequential_cpu_offload()
 
         self._pipeline_img2img = FluxImg2ImgPipeline.from_pretrained(
-            hf_model, torch_dtype=dtype
+            hf_model, torch_dtype=dtype, token=hf_access_token
         )
         if enable_sequential_cpu_offload:
             self._pipeline_img2img.enable_sequential_cpu_offload()
