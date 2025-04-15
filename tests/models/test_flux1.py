@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from PIL import Image
 from pydantic import ValidationError
@@ -198,4 +200,4 @@ def test_image_to_image(model):
 
 @pytest.fixture(scope="module")
 def model():
-    return Flux1()
+    return Flux1(hf_access_token=os.environ["HF_ACCESS_TOKEN"])
