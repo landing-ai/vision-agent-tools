@@ -33,6 +33,8 @@ jobs:
           poetry-version: "1.7.1"
 
       - name: tests
+        env:
+          HF_ACCESS_TOKEN: ${{ secrets.HF_ACCESS_TOKEN }}
         run: |
           poetry run pip install wheel
           make install
