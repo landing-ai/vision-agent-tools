@@ -97,6 +97,7 @@ all = [
     "sentencepiece",
     "protobuf",
     "qwen_vl_utils",
+    "google-genai"
 ]
 qr-reader = ["qreader"]
 owlv2 = ["transformers", "scipy"]
@@ -119,6 +120,7 @@ florence2-sam2 = [
 clip-media-sim = ["transformers"]
 ixc-25 = ["transformers", "lmdeploy", "decord"]
 flux1 = ["transformers", "diffusers", "sentencepiece", "protobuf"]
+gemini-image-editor = ["google-genai"]
 qwen2-vl = ["qwen_vl_utils", "transformers", "flash-attn"]
 siglip = ["flash-attn", "transformers", "sentencepiece", "protobuf"]
 sam2-model = ["sam-2", "huggingface-hub"]
