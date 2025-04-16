@@ -55,7 +55,7 @@ diffusers = { git = "https://github.com/huggingface/diffusers.git", branch = "ma
 
 loca = { git = "https://github.com/landing-ai/loca.git", branch = "main", optional = true }
 sam-2 = { git = "https://github.com/landing-ai/segment-anything-2.git", branch = "main", optional = true }
-depth-anything-v2 = { git = "https://github.com/cmaloney111/dav2-test.git", branch = "main", optional = true }
+depth-anything-v2 = { git = "https://github.com/landing-ai/depth-anything-v2-core.git", branch = "main", optional = true }
 
 
 [tool.poetry.group.dev.dependencies]

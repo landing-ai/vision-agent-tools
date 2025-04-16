@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  
 jobs:
   unit-tests:
     name: unit tests
