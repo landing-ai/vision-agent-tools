@@ -179,7 +179,7 @@ class TextToObjectDetection(BaseTool):
 This setup ensures that your tools can automatically select and use the correct model for any given task and avoid tools using models that do not match with their designated task.
 
 ## Adding new dependencies
-Afer that you can add the dependencies as optional like so:
+After that you can add the dependencies as optional like so:
 
 ```bash
 poetry add transformers --optional
