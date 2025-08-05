@@ -200,7 +200,7 @@ class Florence2(BaseMLModel):
             self._model_config.model_name.value,
             self._model_config.model_name.value,
             revision=_MODEL_REVISION_PER_MODEL_NAME[
-                self._model_config.model_name.value
+                Florence2ModelName.FLORENCE_2_BASE_FT
             ],
         )
         self._fine_tuned = False
