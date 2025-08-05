@@ -199,16 +199,20 @@ class Florence2(BaseMLModel):
         self._load(
             self._model_config.model_name.value,
             self._model_config.model_name.value,
-            revision=_MODEL_REVISION_PER_MODEL_NAME[
-                self._model_config.model_name.value
-            ],
+            revision=_MODEL_REVISION_PER_MODEL_NAME[self._model_config.model_name],
         )
         self._fine_tuned = False
 
     def fine_tune(self, checkpoint: str) -> None:
         """Load the fine-tuned Florence-2 model."""
         _LOGGER.info("Fine-tuning the Florence-2 model.")
-        self._load(checkpoint, checkpoint)
+        self._load(
+            checkpoint,
+            checkpoint,
+            revision=_MODEL_REVISION_PER_MODEL_NAME[
+                Florence2ModelName.FLORENCE_2_BASE_FT
+            ],
+        )
         self._fine_tuned = True
 
     def to(self, device: Device) -> None:
