@@ -22,7 +22,7 @@ This repository provides a suite of tools designed to tackle your image and vide
 
 # Ready to Get Started?
 
-For a quick and easy introduction to the core functionalities, head over to the Vision Agent web app: https://va.landing.ai/tool. This is a great starting point to get familiar with the capabilities and potential of the tools before diving deeper into the code.
+For a quick and easy introduction to the core functionalities, head over to the Third-Party APIs: [https://va.landing.ai/demo/tpa](https://va.landing.ai/demo/tpa). This is a great starting point to get familiar with the capabilities and potential of the tools before diving deeper into the code.
 
 Let's Build Something Amazing!
 
